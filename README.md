@@ -32,7 +32,9 @@ Only the live site, following the course rule that *the repository is the site, 
 | File | What it is |
 |---|---|
 | `index.html` | The prototype (all screens, styles and scripts in one file) |
-| `manifest.webmanifest`, `sw.js`, `icon-*.png`, `apple-touch-icon.png` | What makes the site installable and work offline |
+| `manifest.webmanifest`, `sw.js` | What makes the site installable and work offline |
+| `icon.svg` | App icon source (from the Figma App icon component); also the browser tab icon |
+| `icon-512.png`, `icon-192.png`, `apple-touch-icon.png` (180) | App icon exported from `icon.svg`, square, no rounded corners (the phone rounds them) |
 | `.nojekyll` | Tells GitHub Pages to serve the files as they are |
 
 Research (interviews, survey answers), working documents and drafts stay in the private project folder, because everything in a public repository is public.

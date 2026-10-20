@@ -1,6 +1,6 @@
 // Bump VERSION on every release, or visitors stay on the old cached version.
-var VERSION = "decibuy-v1";
-var CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
+var VERSION = "decibuy-v2";
+var CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(CORE); }));
