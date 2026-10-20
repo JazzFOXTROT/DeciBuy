@@ -21,6 +21,8 @@ Price facts, hours of work, installments and a savings goal are shown as referen
 
 The panel on the left jumps to any screen and simulates the phone's light / dark setting.
 
+**On a phone** the page opens as the app itself: full screen, no device frame and no panel. Bottom elements (tab bar, buttons, folders at the bottom) stick to the bottom of any screen height, and long screens scroll. In Safari, Share → Add to Home Screen opens it like an installed app.
+
 ## Verdict logic (MVP)
 
 Judged on the full price, as a share of monthly **spare money** (take-home − rent − other bills):
