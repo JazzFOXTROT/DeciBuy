@@ -46,13 +46,14 @@ Judged on the full price, as a share of monthly **spare money** (take-home − r
 | Level | Share of spare money | Verdict |
 |---|---|---|
 | Small | ≤ 5% | Buy |
-| Comfortable | 5–25% | Buy |
+| Comfortable | 5–25% (irregular income: 5–15%) | Buy |
 | Stretch | 25–100% | Buy early in the pay cycle · **Wait for payday** after half of it has passed · irregular income: Buy under 50%, Not now from 50% |
 | Over | > 100% | Not now |
 
 - Hours of work = take-home ÷ 173.33 h per month.
 - **No price → no verdict** (grey folder). A known price that couldn't be refreshed keeps its verdict with a "Couldn't check the price right now" note.
 - Thresholds are design assumptions to validate in usability testing.
+- Every verdict screen ends with: *DeciBuy helps you decide. The final call is always yours.*
 
 ## Design rules
 

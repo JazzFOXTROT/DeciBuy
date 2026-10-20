@@ -179,6 +179,7 @@ body{background:var(--page);color:var(--ink);font-family:var(--fb);overflow:hidd
 .cl .msg{position:absolute;left:20px;top:159px;font:600 15px/21px var(--fb)}
 .acts{position:absolute;left:0;top:0;width:402px;height:130px;z-index:55}
 .acts .btn{top:0}
+.disc{position:absolute;left:24px;top:0;width:354px;text-align:center;font:500 13px/18px var(--fb);color:var(--tx2);z-index:55;pointer-events:none}
 .acts .note{position:absolute;top:64px;left:0;width:402px;text-align:center;font:500 13px/18px var(--fb);color:var(--tx2)}
 .acts .lnks{position:absolute;left:0;width:402px;display:flex;justify-content:center;gap:32px;font:600 15px/18px var(--fb)}
 .acts .lnks span{cursor:pointer;padding:8px 6px;margin:-8px -6px}
@@ -451,7 +452,8 @@ function verdictOf(key, ctx = {}){
   const p = P[key], m = money(), c = cycle(), u = A.U;
   if (!p.price) return {key, name:p.name, price:'Price unknown', v:'neutral', verdict:'', reason:'We couldn’t get the price, so there’s no verdict yet.', changed:'Re-check to try again. Nothing is decided without a price.', hero:null, tiles:[], wm:'', graph:false, unknown:true};
   const share = p.price / m.spare, pct = Math.round(share*100);
-  const level = share <= .05 ? 'Small' : share <= .25 ? 'Comfortable' : share <= 1 ? 'Stretch' : 'Over';
+  const comfy = c ? .25 : .15; // irregular income: Comfortable is 5–15%, Stretch from 15% (verdict logic v03)
+  const level = share <= .05 ? 'Small' : share <= comfy ? 'Comfortable' : share <= 1 ? 'Stretch' : 'Over';
   const hrs = hoursText(p.price);
   const instT = p.inst ? [`${p.inst} × $${fmtN(Math.ceil(p.price/p.inst))}`, `full price $${fmtN(p.price)}`] : null;
   let v, reason;
@@ -543,6 +545,7 @@ class Stack{
     setv(this.back,{o:0, x:-8}); this.back.style.pointerEvents = 'none';
     tap(this.back, () => this.onBack(), {scale:.85});
     this.acts = h('<div class="acts"></div>'); this.layer.appendChild(this.acts); setv(this.acts,{o:0}); this.acts.style.pointerEvents = 'none';
+    this.disc = h('<div class="disc">DeciBuy helps you decide. The final call is always yours.</div>'); this.layer.appendChild(this.disc); setv(this.disc,{o:0});
     cfg.items.forEach(d => this.make(d));
     this.layout({instant:true});
   }
@@ -706,6 +709,11 @@ class Stack{
     this.acts.style.pointerEvents = show ? 'auto' : 'none';
     if (want) sp(this.acts, {o:show ? 1 : 0, y:116 - (this.sy || 0) + this.openH(this.get(want)) + 16 + (show ? 0 : 14)}, {response:show ? .5 : .25, delay:show ? .12 : 0});
     else sp(this.acts, {o:0}, {response:.2});
+    sp(this.disc, {o:show ? 1 : 0, y:this.discY()}, {response:show ? .5 : .2, delay:show ? .2 : 0});
+  }
+  discY(){
+    const it = this.open && this.get(this.open); if (!it) return DHn - 120;
+    return Math.max(DHn - 120, 116 - (this.sy || 0) + this.openH(it) + 16 + (this.actsH || 82) + 14);
   }
   buildActs(){
     const a = this.actionSet();
@@ -728,12 +736,13 @@ class Stack{
   maxSy(){
     if (!this.open || this.phase !== 'open' || this.raised) return 0;
     const it = this.get(this.open), bottom = 116 + this.openH(it) + 16 + (this.page === 0 ? (this.actsH || 82) : 0);
-    return Math.max(0, bottom + 18 - (DHn - 82));
+    return Math.max(0, bottom + (this.page === 0 ? 46 : 18) - (DHn - 82));
   }
   placeScroll(){
     const it = this.get(this.open); if (!it) return;
     setv(it.el, {y:116 - this.sy}); setv(this.back, {y:-this.sy});
     setv(this.acts, {y:116 - this.sy + this.openH(it) + 16});
+    setv(this.disc, {y:this.discY()});
   }
   setRaised(r, vel){ if (!this.open) return; this.raised = r; this.layout({vel, spring:{response:.48, damping:r ? .82 : .9}}); }
   setPage(p, vx = 0){
