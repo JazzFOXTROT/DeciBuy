@@ -626,14 +626,13 @@ class Stack{
     } else {
       const oit = this.get(this.open);
       const isCalc = this.phase === 'calc';
-      G[oit.id] = {x:24, y:116, w:354, h:this.openH(oit), r:24, o:1, s:raised ? .94 : 1, z:50, face:isCalc ? 'calc' : 'open', role:isCalc ? 'calc' : 'open', cls:'opened'};
+      G[oit.id] = {x:24, y:116 - (this.sy || 0), w:354, h:this.openH(oit), r:24, o:1, s:raised ? .94 : 1, z:50, face:isCalc ? 'calc' : 'open', role:isCalc ? 'calc' : 'open', cls:'opened'};
       const rem = this.items.filter(i => i.id !== this.open);
       rem.forEach((it, j) => {
         if (!raised){
-          const ab = this.phase === 'open' && this.content ? 116 + this.openH(oit) + 16 + (this.content.v === 'wait' ? 110 : 82) : 0;
-          const py = Math.min(Math.max(DHn - 82, ab + 6), DHn - 22);
+          const py = DHn - 82;
           const Pp = [[24,py,354,1],[36,py-10,330,.75],[48,py-20,306,0]][Math.min(j,2)];
-          G[it.id] = {x:Pp[0], y:Pp[1], w:Pp[2], h:201, r:16, o:Pp[3], s:1, z:45-j, face:'tab', role:'peek', cls:j === 0 ? 'pk pkf' : 'pk', more:j === 0 && rem.length > 1 ? `+${rem.length-1} more` : ''};
+          G[it.id] = {x:Pp[0], y:Pp[1], w:Pp[2], h:201, r:16, o:Pp[3], s:1, z:58-j, face:'tab', role:'peek', cls:j === 0 ? 'pk pkf' : 'pk', more:j === 0 && rem.length > 1 ? `+${rem.length-1} more` : ''};
         } else {
           G[it.id] = {x:24, y:DHn-208-j*64, w:354, h:201, r:16, o:1, s:1, z:70-j, face:'tab', role:'over', cls:'ov'};
         }
@@ -691,7 +690,7 @@ class Stack{
   chrome(inst){
     const open = this.open != null;
     const sp = (el, v, o) => inst ? setv(el, v) : spring(el, v, o);
-    sp(this.back, {o:open ? 1 : 0, x:open ? 0 : -8}, {response:.35});
+    sp(this.back, {o:open ? 1 : 0, x:open ? 0 : -8, y:-(this.sy || 0)}, {response:.35});
     this.back.style.pointerEvents = open ? 'auto' : 'none';
     this.cfg.onMode && this.cfg.onMode(open ? 'open' : 'list', inst);
     const want = (open && this.phase === 'open') ? this.open : null;
@@ -701,11 +700,12 @@ class Stack{
     }
     const show = want && this.page === 0 && !this.raised;
     this.acts.style.pointerEvents = show ? 'auto' : 'none';
-    if (want) sp(this.acts, {o:show ? 1 : 0, y:116 + this.openH(this.get(want)) + 16 + (show ? 0 : 14)}, {response:show ? .5 : .25, delay:show ? .12 : 0});
+    if (want) sp(this.acts, {o:show ? 1 : 0, y:116 - (this.sy || 0) + this.openH(this.get(want)) + 16 + (show ? 0 : 14)}, {response:show ? .5 : .25, delay:show ? .12 : 0});
     else sp(this.acts, {o:0}, {response:.2});
   }
   buildActs(){
     const a = this.actionSet();
+    this.actsH = a.note ? 110 : 82;
     this.acts.innerHTML = `<div class="btn">${a.primary}</div>${a.note ? `<div class="note">${a.note}</div>` : ''}<div class="lnks" style="top:${a.note ? 92 : 64}px">${a.links.map(l => `<span>${l}</span>`).join('')}</div>`;
     tap(q('.btn', this.acts), () => doAction(this, a.primary));
     qa('.lnks span', this.acts).forEach(s => tap(s, () => doAction(this, s.textContent), {scale:.94, op:.6}));
@@ -713,17 +713,28 @@ class Stack{
   onBack(){ if (this.page === 1) return this.setPage(0); if (this.raised) return this.setRaised(false); this.close(); }
   openItem(id, phase = 'open', override){
     const it = this.get(id); if (!it) return;
-    this.open = id; this.phase = phase; this.page = 0; this.raised = false; this.fanD = 0; this.actsFor = undefined;
+    this.open = id; this.phase = phase; this.page = 0; this.raised = false; this.fanD = 0; this.actsFor = undefined; this.sy = 0;
     if (phase === 'open') this.renderOpen(it, override || verdictOf(it.key, {saved:this.cfg.kind !== 'drafts' && (this.cfg.kind === 'items' || (A.items && A.items.has(it.key)))}));
     else this.content = null;
     this.layout();
     if (phase === 'open' && this.content && this.content.graph && A.graphFirst) later(380, () => { if (this.open === id && this.page === 0) this.setPage(1); });
   }
-  close(vel){ this.open = null; this.raised = false; this.page = 0; this.phase = 'open'; this.layout({vel}); }
+  close(vel){ this.open = null; this.raised = false; this.page = 0; this.phase = 'open'; this.sy = 0; this.layout({vel}); }
+  // on short screens (Safari with its bars) the open item scrolls under the folders at the bottom
+  maxSy(){
+    if (!this.open || this.phase !== 'open' || this.raised) return 0;
+    const it = this.get(this.open), bottom = 116 + this.openH(it) + 16 + (this.page === 0 ? (this.actsH || 82) : 0);
+    return Math.max(0, bottom + 18 - (DHn - 82));
+  }
+  placeScroll(){
+    const it = this.get(this.open); if (!it) return;
+    setv(it.el, {y:116 - this.sy}); setv(this.back, {y:-this.sy});
+    setv(this.acts, {y:116 - this.sy + this.openH(it) + 16});
+  }
   setRaised(r, vel){ if (!this.open) return; this.raised = r; this.layout({vel, spring:{response:.48, damping:r ? .82 : .9}}); }
   setPage(p, vx = 0){
     const it = this.get(this.open); if (!it || !it.trk) return;
-    this.page = p;
+    this.page = p; this.sy = 0;
     spring(it.trk, {x:-p*354}, {response:.45, damping:.92, velocity:{x:vx}});
     if (p === 1){ const gl = q('.gl', it.el); gl.style.transition = 'none'; gl.style.strokeDashoffset = '1'; gl.getBoundingClientRect(); gl.style.transition = INSTANT ? 'none' : 'stroke-dashoffset 1.1s cubic-bezier(.3,.7,.2,1) .15s'; gl.style.strokeDashoffset = '0';
       qa('.gd', it.el).forEach((d, i) => { d.style.transition = 'none'; d.style.opacity = 0; d.getBoundingClientRect(); d.style.transition = INSTANT ? 'none' : `opacity .3s ${0.7 + i*.35}s`; d.style.opacity = 1; }); }
@@ -797,7 +808,8 @@ class Stack{
         mode = null;
         const r = ctx.role;
         if (r === 'list' && ctx.dir === 'y') mode = 'fan';
-        if (r === 'open' && ctx.dir === 'y' && dy > 0 && this.page === 0 && this.phase === 'open') mode = 'dismiss';
+        if (r === 'open' && ctx.dir === 'y' && this.phase === 'open' && this.maxSy() > 0 && (dy < 0 || this.sy > 0)){ mode = 'scroll'; ctx.sy0 = this.sy; if (this._sp) this._sp._sp = {}; }
+        else if (r === 'open' && ctx.dir === 'y' && dy > 0 && this.page === 0 && this.phase === 'open') mode = 'dismiss';
         if (r === 'open' && ctx.dir === 'x' && it.trk && this.phase === 'open') mode = 'pager';
         if ((r === 'peek' || r === 'over') && ctx.dir === 'y'){ mode = 'raise'; rem = this.items.filter(i => i.id !== this.open).map(i => i.id); G0 = this.geo(false); G1 = this.geo(true); }
         if (r !== 'open') spring(el, {s:1}, {response:.3});
@@ -805,6 +817,7 @@ class Stack{
       },
       move:(ctx, dx, dy) => {
         if (mode === 'fan'){ this.fanD = -dy > 0 ? rubber(-dy, 420, .7) : -rubber(dy, 200, .4); const G = this.geo(); for (const i of this.items) setv(i.el, {y:G[i.id].y}); }
+        else if (mode === 'scroll'){ const mx = this.maxSy(); let y = ctx.sy0 - dy; if (y < 0) y = -rubber(-y, 200, .5); if (y > mx) y = mx + rubber(y - mx, 200, .5); this.sy = y; this.placeScroll(); }
         else if (mode === 'dismiss'){ const d = Math.max(0, dy); setv(el, {y:116 + d*0.92, s:1 - Math.min(d, 420)/2600}); setv(this.acts, {o:Math.max(0, 1 - d/140)}); }
         else if (mode === 'pager'){ let x = -this.page*354 + dx; if (x > 0) x = rubber(x, 354, .5); if (x < -354) x = -354 + rubber(x + 354, 354, .5); setv(it.trk, {x}); }
         else if (mode === 'raise'){ let t = this.raised ? 1 - dy/260 : -dy/260; t = t > 1 ? 1 + rubber(t - 1, 1, .25) : t < 0 ? -rubber(-t, 1, .2) : t; this.mix(G0, G1, t, rem); setv(this.dim, {o:clamp(t, 0, 1)*.38}); const o = this.get(this.open); if (o) setv(o.el, {s:1 - .06*clamp(t, 0, 1)}); }
@@ -812,6 +825,12 @@ class Stack{
       up:(ctx, dx, dy, v, isTap) => {
         if (isTap){ const g = this.geo()[it.id]; spring(el, {s:g ? g.s : 1}, {response:.35, damping:.7}); return this.tapped(it); }
         if (mode === 'fan'){ this.fanD = 0; const vel = {}; for (const i of this.items) vel[i.id] = {y:v.y}; this.layout({vel, spring:{response:.55, damping:.62}}); }
+        else if (mode === 'scroll'){
+          const mx = this.maxSy(), target = clamp(this.sy - project(v.y, .995), 0, mx);
+          if (!this._sp){ this._sp = {}; this._sp._ap = s2 => { this.sy = s2.y; this.placeScroll(); }; }
+          S(this._sp).y = this.sy; this._sp._sp = {};
+          spring(this._sp, {y:target}, {response:.6, damping:1, velocity:{y:-v.y}});
+        }
         else if (mode === 'dismiss'){ const p = dy + project(v.y); if (p > 150){ const vel = {}; vel[it.id] = {y:v.y}; this.close(vel); } else this.layout({spring:{response:.45, damping:.8}}); }
         else if (mode === 'pager'){ const p = dx + project(v.x); let np = this.page; if (p < -90) np = 1; if (p > 90) np = 0; this.setPage(np, v.x); }
         else if (mode === 'raise'){ const p = this.raised ? dy + project(v.y) : -(dy + project(v.y)); const vel = {}; for (const id of rem) vel[id] = {y:v.y}; if (this.raised) this.setRaised(!(p > 110), vel); else this.setRaised(p > 90, vel); }
@@ -1000,6 +1019,11 @@ function tabbar(){
 }
 function showTabbar(on, inst, scr){ const tb = A.tabbar; if (!tb) return; if (scr && A.screens && A.screens[A.tab] !== scr) return; (inst ? setv : spring)(tb, {y:on ? 0 : 110, o:on ? 1 : 0}, {response:.42}); tb.style.pointerEvents = on ? '' : 'none'; }
 function bounceTab(id){ const t = q(`.tab[data-t="${id}"] .ti`, A.tabbar); if (!t) return; setv(t, {s:1.35}); spring(t, {s:1}, {response:.5, damping:.45}); }
+function fabMode(inst){
+  const f = A.fab; if (!f) return;
+  const on = A.tab === 'home' && !(A.home && A.home.open);
+  (inst ? setv : spring)(f, {s:on ? 1 : .4, o:on ? 1 : 0}, {response:.38}); f.style.pointerEvents = on ? '' : 'none';
+}
 function switchTab(id, inst){
   if (A.tab === id && !inst) return;
   const prev = A.screens[A.tab], next = A.screens[id];
@@ -1009,6 +1033,7 @@ function switchTab(id, inst){
   if (inst){ for (const [k, s] of Object.entries(A.screens)) setv(s, {o:k === id ? 1 : 0, y:0}); }
   else { if (prev) spring(prev, {o:0}, {response:.22}); setv(next, {o:0, y:10}); spring(next, {o:1, y:0}, {response:.42}); }
   if (next._enter) next._enter(inst);
+  fabMode(inst);
 }
 function hdrMode(hdr, mode, inst){ (inst ? setv : spring)(hdr, {o:mode === 'open' ? 0 : 1, y:mode === 'open' ? -8 : 0}, {response:mode === 'open' ? .3 : .45}); hdr.style.pointerEvents = mode === 'open' ? 'none' : ''; }
 function toast(txt, o = {}){
@@ -1088,7 +1113,8 @@ function buildHome(){
   tap(q('.go-items', el), () => switchTab('items'), {scale:.98});
   tap(fab, () => pushAdd(), {scale:.9});
   A.home = new Stack(el, {kind:'home', baseY:620, items:[{key:'sneaker'}, {key:'lamp'}, {key:'nike'}],
-    onMode:(m, inst) => { if (m === 'open' && el.scrollTop) el.scrollTo({top:0, behavior:inst ? 'auto' : 'smooth'}); el.style.overflowY = m === 'open' ? 'hidden' : ''; hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); (inst ? setv : spring)(fab, {s:m === 'open' ? .4 : 1, o:m === 'open' ? 0 : 1}, {response:.38}); fab.style.pointerEvents = m === 'open' ? 'none' : ''; }});
+    onMode:(m, inst) => { if (m === 'open' && el.scrollTop) el.scrollTo({top:0, behavior:inst ? 'auto' : 'smooth'}); el.style.overflowY = m === 'open' ? 'hidden' : ''; hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); fabMode(); }});
+  A.fab = fab;
   el._enter = inst => { const f = q('.spfill', el); if (inst) return setv(f, {sx:1}); setv(f, {sx:0}); spring(f, {sx:1}, {response:1, delay:.2}); };
   return el;
 }
@@ -1691,6 +1717,7 @@ function build(p){
   const items = buildItems();
   A.screens = {home:buildHome(), check:buildCheck(p.drafts || 'two', p.offline), items, money:buildMoney()};
   for (const k of ['home','check','items','money']) main.appendChild(A.screens[k]);
+  main.appendChild(A.fab); A.fab.style.zIndex = 150;
   A.tabbar = tabbar(); main.appendChild(A.tabbar);
   A.ovl = h('<div class="ovl"></div>'); main.appendChild(A.ovl);
   A.nav.base(main);
