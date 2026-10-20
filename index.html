@@ -1099,7 +1099,7 @@ function renderGoal(host){
 }
 
 /* ---------------- Home ---------------- */
-function buildHome(){
+function buildHome(fresh){
   const el = h(`<div class="scr scroll">
     <div class="a" style="left:0;top:873px;width:1px;height:1px"></div>
     <div class="hdr L">
@@ -1117,6 +1117,10 @@ function buildHome(){
       <div class="row" style="top:459px">Black Friday is in 5 weeks</div>
       <div class="row go-items" data-b="changes" style="top:515px;cursor:pointer"></div>
       <div class="sec" style="top:583px">Recent checks</div>
+      <div class="hempty L" style="pointer-events:none">
+        <div class="a" style="left:24px;top:618px;width:354px;font:500 15px/21px var(--fb);color:var(--tx2)">Your checks will show up here.</div>
+        <div class="btn hadd" style="top:651px;width:auto;padding:0 20px;height:40px;font:700 15px/40px var(--fb)">Add manually</div>
+      </div>
     </div>
     <div class="fab" style="left:310px;top:${B(707)}">${IC.add}</div>
   </div>`);
@@ -1125,7 +1129,9 @@ function buildHome(){
   tap(q('.edit', el), () => pushQ('spare'), {scale:.9, op:.6});
   tap(q('.go-items', el), () => switchTab('items'), {scale:.98});
   tap(fab, () => pushAdd(), {scale:.9});
-  A.home = new Stack(el, {kind:'home', baseY:620, items:[{key:'sneaker'}, {key:'lamp'}, {key:'nike'}],
+  tap(q('.hadd', el), () => pushAdd(), {scale:.95});
+  A.home = new Stack(el, {kind:'home', baseY:620, items:fresh ? [] : [{key:'sneaker'}, {key:'lamp'}, {key:'nike'}],
+    onChange:(st, inst) => { const e = q('.hempty', el), n = st.items.length; (inst ? setv : spring)(e, {o:n ? 0 : 1}, {response:.35}); q('.hadd', el).style.pointerEvents = n ? 'none' : 'auto'; },
     onMode:(m, inst) => { if (m === 'open' && el.scrollTop) el.scrollTo({top:0, behavior:inst ? 'auto' : 'smooth'}); el.style.overflowY = m === 'open' ? 'hidden' : ''; hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); fabMode(); }});
   A.fab = fab;
   el._enter = inst => { const f = q('.spfill', el); if (inst) return setv(f, {sx:1}); setv(f, {sx:0}); spring(f, {sx:1}, {response:1, delay:.2}); };
@@ -1208,7 +1214,7 @@ const SORTS = [
   ['Fits now', (a, b) => vRank(a.key) - vRank(b.key)],
   ['Waiting longest', (a, b) => (vRank(a.key) === 1 ? 0 : 1) - (vRank(b.key) === 1 ? 0 : 1) || P[a.key].added - P[b.key].added],
 ];
-function buildItems(){
+function buildItems(fresh){
   const el = h(`<div class="scr">
     <div class="hdr L">
       <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
@@ -1222,7 +1228,7 @@ function buildItems(){
   tap(q('.gear', el), () => pushSettings(), {scale:.85});
   tap(q('.sortb', el), () => sortSheet(), {scale:.92, op:.6});
   tap(q('.recheck', el), () => recheckAll(), {scale:.92, op:.6});
-  A.items = new Stack(el, {kind:'items', baseY:228, items:[{key:'lamp'}, {key:'nike'}, {key:'canon'}, {key:'dyson'}],
+  A.items = new Stack(el, {kind:'items', baseY:228, items:fresh ? [] : [{key:'lamp'}, {key:'nike'}, {key:'canon'}, {key:'dyson'}],
     onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
     onChange:(st, inst) => { q('.icount', el).textContent = `${st.items.length} saved`; (inst ? setv : spring)(q('.iempty', el), {o:st.items.length ? 0 : 1}, {response:.3}); }});
   A.sortIdx = 2;
@@ -1723,12 +1729,15 @@ function build(p){
   seedProducts();
   if (p.prep) p.prep();
   A.U = p.onb !== undefined ? NEWU() : JSON.parse(JSON.stringify(EMMA), (k, v) => k === 'payday' ? new Date(v) : v);
+  // a new user (after onboarding) starts with nothing; demo items only for the screen jumps
+  const fresh = p.onb !== undefined || !!p.fresh;
+  if (p.fresh){ A.U.goal = null; A.U.spent = 0; }
   A.nav = new Nav(D);
   const main = h('<div class="scr" style="overflow:hidden"></div>');
   A.main = main;
   A.home = A.check = A.items = null;
-  const items = buildItems();
-  A.screens = {home:buildHome(), check:buildCheck(p.drafts || 'two', p.offline), items, money:buildMoney()};
+  const items = buildItems(fresh);
+  A.screens = {home:buildHome(fresh), check:buildCheck(fresh ? 'empty' : (p.drafts || 'two'), p.offline), items, money:buildMoney()};
   for (const k of ['home','check','items','money']) main.appendChild(A.screens[k]);
   main.appendChild(A.fab); A.fab.style.zIndex = 150;
   A.tabbar = tabbar(); main.appendChild(A.tabbar);
@@ -1775,7 +1784,7 @@ const FLOWS = [
     ['M3','Re-check: Lamp',{tab:'items', go:() => openKey(A.items, 'lamp')}],
     ['M3','Re-check: Price dropped',{tab:'items', go:() => openKey(A.items, 'nike')}],
   ]],
-  ['Tabs', [['H','Home',{tab:'home'}],['MM1','My money',{tab:'money'}],['SET1','Settings',{tab:'home', go:() => pushSettings()}]]],
+  ['Tabs', [['H','Home',{tab:'home'}],['new','Home, new user (empty)',{tab:'home', fresh:true}],['MM1','My money',{tab:'money'}],['SET1','Settings',{tab:'home', go:() => pushSettings()}]]],
   ['Edge states', [['E1','Link not readable',{tab:'check', drafts:'two', go:() => pushAdd(true)}],['E2','No internet',{tab:'check', offline:true}],['new','Price unknown',{tab:'items', prep:() => { Object.assign(P.dyson, {price:null, failed:false, found:349}); }, go:() => openKey(A.items, 'dyson')}]]],
 ];
 function jump(p){
