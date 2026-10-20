@@ -1,0 +1,1740 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="DeciBuy: interactive hi-fi prototype of a purchase decision assistant.">
+<title>DeciBuy Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: review panel on the left, the phone (402×874, the Figma frame) on the right, scaled to fit. */
+:root{
+  --page:#E8EBEF; --panel:#FFFFFF; --ink:#0B0C0E; --ink2:#5B5F66; --line:#D5D9DF; --chip:#F3F4F6; --accent:#206AED;
+  /* DeciBuy Light tokens (Figma "DeciBuy color", Light mode). The phone is the Light design on purpose. */
+  --blue:#569EF6; --blueS:#206AED; --tint:#E3EEFD; --tint2:#C9DEFC;
+  --buy:#56F683; --buyT:#C5FDD5; --wait:#F6DB56; --waitT:#FAE991; --no:#F66B56; --noT:#FEA699;
+  --bg:#FFFFFF; --sf:#F3F4F6; --sf2:#E6E8EC; --ln:#D5D9DF; --tx:#000000; --tx2:#5B5F66; --dis:#B9BEC6;
+  --fd:'Bricolage Grotesque','Arial Black',system-ui,sans-serif; --fb:'Manrope',system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --page:#141518; --panel:#1C1D21; --ink:#F2F3F5; --ink2:#A1A1A6; --line:#2C2E33; --chip:#26282D; --accent:#569EF6; color-scheme:dark } }
+:root[data-theme="dark"]{ --page:#141518; --panel:#1C1D21; --ink:#F2F3F5; --ink2:#A1A1A6; --line:#2C2E33; --chip:#26282D; --accent:#569EF6; color-scheme:dark }
+html,body{height:100%;margin:0}
+:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}
+[hidden]{display:none!important}
+body{background:var(--page);color:var(--ink);font-family:var(--fb);overflow:hidden;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+.app{height:100%;display:flex;align-items:center;justify-content:center;gap:48px}
+/* ---------- review panel ---------- */
+.panel{width:300px;flex:none;max-height:calc(100% - 40px);overflow:auto;background:var(--panel);border-radius:22px;padding:22px 20px 18px;box-sizing:border-box;box-shadow:0 1px 0 var(--line),0 20px 50px rgba(0,0,0,.06)}
+.p-head{display:flex;gap:12px;align-items:center}
+.p-logo{width:40px;height:40px;border-radius:10px;flex:none;background:#569EF6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 76 76'%3E%3Cpath d='M47.3 38.3l1-2.3c3.4.1 6.3.6 8.5 1.6 2.2 1 3.9 2.3 5 4 1.1 1.7 1.7 3.7 1.7 6 0 2.4-.6 4.6-1.7 6.4-1.1 1.9-2.8 3.4-5 4.5-2.2 1.1-4.9 1.6-8.2 1.6H15.7l3.5-22.9-3.5-21.7h31.8c4.1 0 7.3 1 9.6 2.9 2.3 1.9 3.4 4.6 3.4 8 0 1.9-.4 3.6-1.3 5.3-.9 1.7-2.3 3.1-4.2 4.3-1.9 1.2-4.5 1.9-7.7 2.3zM27.9 57.2l-4.8-5.7h22.2c1.8 0 3.2-.4 4.2-1.3 1-.9 1.5-2.1 1.5-3.6s-.5-2.8-1.6-3.7c-1.1-.9-2.7-1.4-4.8-1.4H26.3V33h16.7c1.4 0 2.6-.4 3.6-1.3 1-.9 1.5-2 1.5-3.5 0-1.2-.4-2.2-1.3-2.9-.8-.8-2-1.2-3.6-1.2h-20l4.7-5.8 3 18.9-3 20z' fill='%23fff'/%3E%3C/svg%3E") center/100% no-repeat}
+.p-name{font:800 20px/1.1 var(--fd)}
+.p-sub{font:600 13px/1.4 var(--fb);color:var(--ink2)}
+.p-hint{font:500 13px/1.5 var(--fb);color:var(--ink2);margin:14px 0 10px}
+.p-gest{display:grid;gap:6px;margin:0 0 16px;padding:12px;border-radius:14px;background:var(--chip);font:500 12.5px/1.4 var(--fb)}
+.p-gest b{font-weight:700}
+.p-gt{font:700 11px/1.3 var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin:14px 0 6px}
+.p-list{display:grid;gap:2px}
+.p-list button{all:unset;cursor:pointer;display:flex;gap:10px;align-items:baseline;padding:7px 10px;border-radius:10px;font:600 13.5px/1.3 var(--fb);color:var(--ink)}
+.p-list button:hover{background:var(--chip)}
+.p-list button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.p-list button.on{background:var(--accent);color:#fff}
+.p-list button b{font:700 11.5px/1 var(--fb);min-width:34px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.p-list button.on b{color:rgba(255,255,255,.8)}
+.p-foot{font:500 12px/1.45 var(--fb);color:var(--ink2);margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.p-toggle{display:none}
+.p-phone{display:flex;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.p-phone button{all:unset;flex:1;text-align:center;cursor:pointer;padding:7px 0;border-radius:9px;font:600 13px/1.2 var(--fb);color:var(--ink2)}
+.p-phone button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.p-phone button:focus-visible{outline:2px solid var(--accent)}
+/* ---------- phone ---------- */
+.stage{position:relative;flex:none;width:calc(426px * var(--sc,1));height:calc(898px * var(--sc,1))}
+.phone{position:absolute;left:0;top:0;width:426px;height:898px;transform:scale(var(--sc,1));transform-origin:0 0;border-radius:68px;background:#0B0B0C;padding:12px;box-sizing:border-box;box-shadow:0 0 0 2px #2A2B2F inset,0 40px 80px rgba(0,0,0,.22),0 8px 24px rgba(0,0,0,.12)}
+.device{--btn:#000;--btnTx:#fff;--disTx:#fff;--field:#fff;--toast:#000;--sheet:#fff;--sysSheet:#F3F4F6;--sysCard:#fff;--notif:rgba(255,255,255,.86);--notifTx:#000;--glass:rgba(255,255,255,.72);--thumb:#fff;--chg:rgba(255,255,255,.5);--optbg:#F3F4F6;--chev:#5B5F66;
+  position:relative;width:402px;height:874px;border-radius:56px;overflow:hidden;background:var(--bg);color:var(--tx);font-family:var(--fb);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;isolation:isolate;clip-path:inset(0 round 56px)}
+.device *{box-sizing:border-box}
+.L{position:absolute;inset:0}
+.scr{position:absolute;left:0;top:0;width:402px;height:874px;background:var(--bg);overflow:hidden}
+.pushed{box-shadow:-18px 0 40px rgba(0,0,0,.10)}
+.a{position:absolute}
+.island{position:absolute;left:138px;top:11px;width:126px;height:37px;border-radius:20px;background:#000;z-index:950}
+.sb{position:absolute;left:0;top:0;width:402px;height:54px;z-index:900;pointer-events:none;color:#000;transition:color .35s}
+.sb.lt{color:#fff}
+.sb .tm{position:absolute;left:42px;top:20px;font:600 17px/20px var(--fb)}
+.sb svg{position:absolute;left:304px;top:24px}
+.hi{position:absolute;left:131px;top:861px;width:140px;height:5px;border-radius:3px;background:#000;z-index:900;pointer-events:none;transition:background .35s}
+.hi.lt{background:#fff}
+/* Dark: Figma "DeciBuy color" Dark mode. Verdict colors and the tiles inside them stay the same. */
+.device.dk{--bg:#000;--sf:#1C1C1E;--sf2:#2C2C2E;--ln:#3A3A3C;--tx:#fff;--tx2:#A1A1A6;--dis:#48484A;--tint:#18263D;--tint2:#203556;
+  --btn:#fff;--btnTx:#000;--disTx:#8E8E93;--field:#000;--toast:#2C2C2E;--sheet:#1C1C1E;--sysSheet:#1C1C1E;--sysCard:#2C2C2E;--notif:rgba(44,44,46,.86);--notifTx:#fff;--glass:rgba(28,28,30,.72);--thumb:#636366;--chg:rgba(255,255,255,.08);--optbg:#2C2C2E;--chev:#A1A1A6}
+.device.dk .sb{color:#fff}
+.device.dk .hi{background:#fff}
+.device.dk .tabbar{box-shadow:0 6px 20px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.06)}
+.device.thx, .device.thx *{transition:background-color .45s ease,color .45s ease,border-color .45s ease,box-shadow .45s ease !important}
+.fd.tintf .chip{background:var(--bg);color:var(--tx)}
+.fd.tintf .op-changed{background:var(--chg)}
+.seg{position:absolute;width:200px;height:32px;border-radius:9px;background:var(--sf2);display:flex}
+.seg span{flex:1;text-align:center;font:600 13px/32px var(--fb);position:relative;z-index:1;cursor:pointer}
+.seg-th{position:absolute;left:0;top:2px;width:64px;height:28px;border-radius:7px;background:var(--thumb);box-shadow:0 2px 6px rgba(0,0,0,.14)}
+.fab rect{fill:var(--btn)} .fab path{stroke:var(--btnTx)}
+/* type */
+.eyebrow{position:absolute;left:24px;font:800 24px/1.1 var(--fb);color:var(--tx2);white-space:nowrap}
+.ttl{position:absolute;left:24px;font:800 32px/1.1 var(--fd);white-space:nowrap}
+.h36{font:800 36px/1.1 var(--fd);text-wrap:balance}
+.sub16{font:600 16px/1.4 var(--fb);color:var(--tx2)}
+.sec{position:absolute;left:28px;font:700 18px/1.3 var(--fb)}
+.row{position:absolute;left:24px;width:430px;height:48px;border-radius:14px;background:var(--sf);font:500 15px/48px var(--fb);padding-left:16px;white-space:nowrap}
+.row .rv{position:absolute;left:0;width:338px;text-align:right;font:600 13px/48px var(--fb)}
+.ico{position:absolute;width:28px;height:28px;display:grid;place-items:center;cursor:pointer;z-index:5}
+.ico::after{content:"";position:absolute;inset:-10px}
+.btn{position:absolute;left:24px;width:354px;height:52px;border-radius:100px;background:var(--btn);color:var(--btnTx);font:700 17px/52px var(--fb);text-align:center;cursor:pointer;transition:background-color .3s,color .3s}
+.btn.dis{background:var(--dis);color:var(--disTx);pointer-events:none}
+.lnk{position:absolute;left:0;width:402px;text-align:center;font:600 15px/18px var(--fb)}
+.lnk span{cursor:pointer;display:inline-block;padding:6px 4px;margin:-6px -4px}
+.foot{position:absolute;left:24px;width:354px;text-align:center;font:500 13px/18px var(--fb);color:var(--tx2)}
+.field{position:absolute;width:314px;height:65px;border-radius:14px;background:var(--field);padding:12px 16px 0}
+.field .fl{font:600 12px/16px var(--fb);color:var(--tx2)}
+.field .fv{font:500 15px/21px var(--fb);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.field .ph{color:var(--dis)}
+.tgl{position:absolute;width:51px;height:31px;border-radius:16px;background:var(--sf2);transition:background-color .25s;cursor:pointer}
+.tgl.on{background:var(--blueS)}
+.tgl i{position:absolute;left:0;top:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.04)}
+/* tab bar */
+.tabbar{position:absolute;left:20px;top:791px;width:361px;height:63px;border-radius:32px;background:var(--glass);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);box-shadow:0 6px 20px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.04);z-index:200}
+.tab{position:absolute;top:10px;width:64px;height:44px;display:flex;flex-direction:column;align-items:center;color:var(--blue);cursor:pointer}
+.tab .tl{font:400 12px/16px var(--fb);margin-top:4px;white-space:nowrap}
+.tab.on{color:var(--blueS)}
+.tab.on .tl{font-weight:700}
+.tab svg{display:block}
+/* home */
+.spare{position:absolute;left:24px;width:354px;border-radius:20px;background:var(--blueS);color:#fff}
+.spare .a{left:24px}
+.fab{position:absolute;width:68px;height:68px;border-radius:34px;cursor:pointer;z-index:30;box-shadow:0 10px 24px rgba(0,0,0,.18)}
+/* stacks */
+.stk{position:absolute;inset:0;pointer-events:none;z-index:20}
+.stk > *{pointer-events:auto}
+.stk-dim{position:absolute;inset:0;background:#000;opacity:0;z-index:60}
+.fd{position:absolute;left:0;top:0;overflow:hidden;box-shadow:0 -2px 10px rgba(0,0,0,.08);transition:background-color .5s ease,box-shadow .35s;cursor:pointer;touch-action:none;will-change:transform}
+.fd.opened{box-shadow:0 0 0 rgba(0,0,0,0);cursor:default}
+.fd.pk{box-shadow:0 -4px 14px rgba(0,0,0,.12)}
+.fd.ov{box-shadow:0 -6px 22px rgba(0,0,0,.16)}
+.face{position:absolute;left:0;right:0;top:0}
+.f-tab .nm{position:absolute;left:16px;top:16px;font:600 17px/22px var(--fb);white-space:nowrap;transition:font-size .3s,top .3s}
+.f-tab .dt{position:absolute;right:16px;top:19px;font:600 13px/18px var(--fb);white-space:nowrap;transition:opacity .2s}
+.f-tab .more{position:absolute;right:16px;top:14px;font:600 13px/18px var(--fb);opacity:0;transition:opacity .25s}
+.fd.pk .nm{font-size:15px;top:12px;line-height:18px}
+.fd.pk .dt{opacity:0}
+.fd.pkf .more{opacity:1}
+.op{position:relative;padding:20px 20px 64px}
+.op-name{font:600 18px/23px var(--fb)}
+.op-price{font:500 14px/20px var(--fb);margin-top:2px}
+.op-sub{font:500 14px/20px var(--fb);margin-top:2px;opacity:.65}
+.op-verdict{font:800 44px/1 var(--fd);margin-top:8px;text-wrap:balance;position:relative;z-index:1}
+.op-reason{font:600 16px/22px var(--fb);margin-top:8px;position:relative;z-index:1}
+.op-changed{margin-top:10px;border-radius:12px;background:rgba(255,255,255,.42);padding:7px 12px;font:600 13px/18px var(--fb);position:relative;z-index:1}
+.tile{background:#fff;border-radius:16px;position:relative;z-index:1}
+.hero{margin-top:8px;padding:16px;cursor:pointer}
+.hero .n{font:700 24px/29px var(--fd)}
+.hero .s{font:500 14px/20px var(--fb);color:rgba(0,0,0,.65);margin-top:6px}
+.bar{height:8px;border-radius:4px;background:var(--sf2);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:8px;border-radius:4px;background:#000}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;position:relative;z-index:1}
+.tiles .tile{padding:14px}
+.tiles .n{font:700 19px/23px var(--fd)}
+.tiles .s{font:500 13px/18px var(--fb);margin-top:2px}
+.wm{position:absolute;left:-8px;top:calc(100% - 52px);font:800 104px/1 var(--fd);white-space:nowrap;z-index:0;pointer-events:none}
+.pg{overflow:hidden;width:354px}
+.trk{display:flex;align-items:flex-start;width:708px}
+.trk > .op{width:354px;flex:none}
+.pager{display:flex;align-items:center;justify-content:space-between;margin-top:8px;height:34px}
+.dots{display:flex;align-items:center;gap:8px;font:600 13px/18px var(--fb);color:rgba(0,0,0,.65)}
+.dots i{width:8px;height:8px;border-radius:50%;background:#fff;display:block}
+.dots i.k{background:#000}
+.dots span{margin-right:2px}
+.chip{background:#fff;border-radius:100px;padding:8px 14px;font:600 13px/18px var(--fb);white-space:nowrap;display:inline-block}
+.graph{margin-top:8px;height:230px;padding:0}
+.graph svg{position:absolute;left:0;top:0}
+.pv{padding:20px}
+.pv .chip{margin-top:8px}
+.dr{position:absolute;left:0;right:0;top:0;padding:20px}
+.dr-bot{position:absolute;left:20px;right:20px;bottom:20px;display:flex;justify-content:space-between;align-items:center;font:500 13px/18px var(--fb);color:var(--tx2)}
+.calc{height:40px;padding:0 25px;border-radius:100px;background:var(--btn);color:var(--btnTx);font:700 15px/40px var(--fb);cursor:pointer;transition:background-color .35s}
+.calc.dis{background:var(--dis);color:var(--disTx)}
+.dfield{margin-top:8px;height:67px;border-radius:14px;background:var(--field);padding:12px 16px 0;cursor:text}
+.dfield .fl{font:600 12px/16px var(--fb);color:var(--tx2)}
+.dfield input{all:unset;display:block;width:100%;font:500 17px/23px var(--fb);margin-top:4px;color:var(--tx)}
+.dfield input::placeholder{color:var(--dis)}
+.cl{padding:20px}
+.cl .track{position:absolute;left:20px;top:142px;width:314px;height:8px;border-radius:4px;background:var(--tint2);overflow:hidden}
+.cl .track i{position:absolute;left:0;top:0;height:8px;width:314px;border-radius:4px;background:var(--blueS);transform-origin:0 0}
+.cl .msg{position:absolute;left:20px;top:159px;font:600 15px/21px var(--fb)}
+.acts{position:absolute;left:0;top:0;width:402px;height:130px;z-index:55}
+.acts .btn{top:0}
+.acts .note{position:absolute;top:64px;left:0;width:402px;text-align:center;font:500 13px/18px var(--fb);color:var(--tx2)}
+.acts .lnks{position:absolute;left:0;width:402px;display:flex;justify-content:center;gap:32px;font:600 15px/18px var(--fb)}
+.acts .lnks span{cursor:pointer;padding:8px 6px;margin:-8px -6px}
+/* toast, sheets, dialogs */
+.ovl{position:absolute;inset:0;z-index:300;pointer-events:none}
+.ovl > *{pointer-events:auto}
+.toast{position:absolute;left:24px;top:703px;width:354px;min-height:64px;border-radius:16px;background:var(--toast);color:#fff;font:500 15px/21px var(--fb);padding:11px 16px;display:flex;align-items:center;z-index:310}
+.dim{position:absolute;inset:0;background:#000}
+.sheet{position:absolute;left:0;width:402px;background:var(--sheet);border-radius:24px 24px 0 0;touch-action:none}
+.grab{position:absolute;left:183px;top:8px;width:36px;height:5px;border-radius:3px;background:var(--dis)}
+.opt{position:absolute;left:24px;width:354px;height:46px;border-radius:14px;background:var(--optbg);font:500 15px/46px var(--fb);padding-left:16px;cursor:pointer;transition:color .2s}
+.opt.on{color:var(--blueS);font-weight:600;font-size:16px}
+.opt-hl{position:absolute;left:24px;width:354px;height:46px;border-radius:14px;background:var(--tint);pointer-events:none}
+.opt-hl svg{position:absolute;right:14px;top:11px}
+.dialog{position:absolute;left:32px;top:260px;width:338px;border-radius:24px;background:var(--sheet);padding:24px 24px 22px;text-align:center}
+.lock{position:absolute;inset:0;background:var(--blueS);color:#fff;z-index:1}
+.notif{position:absolute;left:16px;top:430px;width:370px;height:91px;border-radius:24px;background:var(--notif);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);color:var(--notifTx);cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+/* onboarding */
+.prog{position:absolute;left:64px;top:88px;width:314px;height:4px;display:flex;gap:4px}
+.prog span{flex:1;height:4px;border-radius:2px;background:var(--sf2);overflow:hidden;position:relative}
+.prog span i{position:absolute;left:0;top:0;height:4px;width:49px;border-radius:2px;background:var(--blueS);transform-origin:0 0}
+.ohead{position:absolute;left:24px;top:132px;width:354px}
+.ohead .sub16{margin-top:12px}
+.pick{position:absolute;left:0;top:338px;width:402px;height:300px;cursor:grab;touch-action:none;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 30%,#000 70%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 30%,#000 70%,transparent 100%)}
+.pick .sel{position:absolute;left:24px;top:125px;width:354px;height:48px;border-radius:14px;background:var(--sf)}
+.pick .pi{position:absolute;left:24px;width:354px;text-align:center;font:600 18px/23px var(--fb);white-space:nowrap;pointer-events:none}
+.choice{position:absolute;left:24px;width:354px;height:52px;border-radius:14px;background:var(--sf);font:600 17px/52px var(--fb);padding-left:16px;cursor:pointer;transition:color .2s}
+.choice.on{color:#fff}
+.choice-hl{position:absolute;left:24px;width:354px;height:52px;border-radius:14px;background:var(--blueS);pointer-events:none}
+.choice-hl svg{position:absolute;right:16px;top:14px}
+.step{position:absolute;left:24px;width:354px;height:67px;border-radius:16px;background:var(--sf);display:flex;align-items:center;gap:14px;padding-left:16px;font:600 17px/22px var(--fb)}
+.step b{width:30px;height:30px;border-radius:50%;background:var(--blueS);color:#fff;display:grid;place-items:center;font:700 15px/1 var(--fb)}
+.caret{display:inline-block;width:3px;height:48px;background:var(--blueS);margin-left:4px;vertical-align:-6px;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){ .caret{animation:none} }
+.field input,.dfield input{all:unset;display:block;width:100%;font:500 15px/21px var(--fb);margin-top:4px;color:var(--tx);-webkit-user-select:text;user-select:text;cursor:text}
+.field input::placeholder{color:var(--dis)}
+.field .sfx{position:absolute;left:44px;top:32px;font:500 15px/21px var(--fb);color:var(--tx2);pointer-events:none}
+.bigin{all:unset;width:300px;text-align:center;font:800 56px/60px var(--fd);color:var(--tx);caret-color:var(--blueS);-webkit-user-select:text;user-select:text}
+.bigin::placeholder{color:var(--dis)}
+.dchip{width:56px;height:64px;flex:none;border-radius:14px;background:var(--sf);display:flex;flex-direction:column;align-items:center;justify-content:center;font:500 11px/14px var(--fb);color:var(--tx2);cursor:pointer;transition:background-color .2s,color .2s}
+.dchip b{font:700 18px/22px var(--fb);color:var(--tx);transition:color .2s}
+.dchip.on{background:var(--blueS);color:rgba(255,255,255,.8)}
+.dchip.on b{color:#fff}
+.tact{font:700 15px/21px var(--fb);color:var(--blue);padding:8px 4px 8px 16px;cursor:pointer}
+.device input{touch-action:manipulation}
+.tile.hist{cursor:pointer;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.08)}
+.tile .go{position:absolute;right:12px;top:14px;display:grid;place-items:center}
+.tile.hist .n{padding-right:22px}
+.pdots{position:absolute;right:20px;bottom:24px;display:flex;gap:7px;z-index:2;padding:8px;margin:-8px;cursor:pointer}
+.pdots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.95);display:block}
+.pdots i.k{background:#000}
+.chip.sf{cursor:pointer}
+/* responsive */
+@media (max-width: 880px){
+  .app{gap:0}
+  .panel{position:fixed;left:12px;right:12px;bottom:12px;top:auto;width:auto;max-height:70%;z-index:50;transform:translateY(calc(100% + 24px));transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+  .panel.open{transform:none}
+  .p-toggle{display:block;position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;all:unset;cursor:pointer;background:var(--ink);color:var(--page);font:700 14px/1 var(--fb);padding:12px 16px;border-radius:100px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="panel" id="panel" aria-label="Screens">
+    <div class="p-head"><div class="p-logo" aria-hidden="true"></div><div><div class="p-name">DeciBuy</div><div class="p-sub">Hi-fi prototype · Light · 31 screens</div></div></div>
+    <p class="p-hint">Use it like a phone. Pick any screen below to jump straight to it. Light / Dark: Settings → Appearance.</p>
+    <div class="p-gest">
+      <div><b>Tap a folder</b> to open it. The others slide down and wait at the bottom.</div>
+      <div><b>Pull the stack up</b> on Home, My items or Check to spread it.</div>
+      <div><b>Tap or pull up</b> the folders at the bottom to raise them, then pick one.</div>
+      <div><b>Swipe an open folder down</b> to close it.</div>
+      <div><b>Swipe the Wait folder left</b> for the price graph.</div>
+      <div><b>Swipe from the left edge</b> to go back.</div>
+    </div>
+    <div class="p-gt" style="margin-top:0">Phone appearance (for “System”)</div><div class="p-phone"><button type="button" data-m="light">Light</button><button type="button" data-m="dark">Dark</button></div>
+    <div id="plist"></div>
+    <div class="p-foot">Springs follow Apple's fluid-interface model: every motion can be grabbed mid-flight, and a flick keeps its speed.</div>
+  </aside>
+  <button class="p-toggle" id="ptoggle">Screens</button>
+  <div class="stage" id="stage">
+    <div class="phone"><div class="device" id="D"></div></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   Spring engine (Apple model: damping ratio + response; interruptible)
+   ===================================================================== */
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let INSTANT = false, SC = 1;
+const ACT = new Set();
+let running = false, lastT = 0;
+const S = el => el._s || (el._s = {x:0, y:0, s:1, o:1});
+function apply(el){
+  const s = el._s;
+  if (el._ap) { el._ap(s); return; }
+  el.style.transform = `translate3d(${s.x}px,${s.y}px,0)` + (s.s !== 1 ? ` scale(${s.s})` : '') + (s.sx !== undefined ? ` scaleX(${s.sx})` : '');
+  el.style.opacity = s.o;
+  if (s.w !== undefined) el.style.width = s.w + 'px';
+  if (s.h !== undefined) el.style.height = s.h + 'px';
+  if (s.r !== undefined) el.style.borderRadius = s.r + 'px';
+}
+function setv(el, v){ if(!el) return; const s = S(el); for (const k in v){ s[k] = v[k]; if (el._sp) delete el._sp[k]; } apply(el); }
+function initial(el, key){
+  if (key === 'w') return el.offsetWidth; if (key === 'h') return el.offsetHeight;
+  if (key === 'r') return 0; if (key === 's' || key === 'o' || key === 'sx') return 1; return 0;
+}
+function spring(el, v, o = {}){
+  if (!el) return;
+  if (INSTANT){ setv(el, v); if (o.onDone) o.onDone(); return; }
+  const s = S(el); el._sp = el._sp || {};
+  let resp = o.response ?? 0.42, damp = o.damping ?? 1;
+  if (RM){ resp = Math.min(resp, 0.18); damp = 1; }
+  const k = (2*Math.PI/resp)**2, c = 4*Math.PI*damp/resp;
+  for (const key in v){
+    if (s[key] === undefined) s[key] = initial(el, key);
+    const prev = el._sp[key];
+    const vel = (o.velocity && o.velocity[key] !== undefined) ? o.velocity[key] : (prev ? prev.v : 0);
+    el._sp[key] = {t:v[key], v:vel, k, c, wait:(RM?0:(o.delay||0))};
+  }
+  el._done = o.onDone || null;
+  ACT.add(el); kick();
+}
+function kick(){ if (running) return; running = true; lastT = performance.now(); requestAnimationFrame(tick); }
+function tick(now){
+  const dt = Math.min(0.05, (now - lastT)/1000); lastT = now;
+  for (const el of ACT){
+    const s = el._s, sp = el._sp || {}; let active = false;
+    for (const key in sp){
+      const e = sp[key];
+      if (e.wait > 0){ e.wait -= dt; active = true; continue; }
+      let x = s[key], v = e.v; const n = Math.max(1, Math.ceil(dt*240)), hh = dt/n;
+      for (let i=0;i<n;i++){ const a = -e.k*(x - e.t) - e.c*v; v += a*hh; x += v*hh; }
+      const small = (key==='o'||key==='s'||key==='sx');
+      const eps = small ? 0.0008 : 0.08;
+      if (Math.abs(x - e.t) < eps && Math.abs(v) < (small?0.01:0.8)){ x = e.t; delete sp[key]; }
+      else { e.v = v; active = true; }
+      s[key] = x;
+    }
+    apply(el);
+    if (!active){ ACT.delete(el); const d = el._done; el._done = null; if (d) d(); }
+  }
+  if (ACT.size) requestAnimationFrame(tick); else running = false;
+}
+const later = (ms, fn) => setTimeout(fn, INSTANT ? 0 : ms);
+
+/* gestures */
+const D = document.getElementById('D');
+function pt(e){ const r = D.getBoundingClientRect(); return {x:(e.clientX - r.left)/SC, y:(e.clientY - r.top)/SC}; }
+class VT{ constructor(){ this.p = []; } add(x,y){ this.p.push({x,y,t:performance.now()}); if (this.p.length > 6) this.p.shift(); }
+  v(){ const p = this.p; if (p.length < 2) return {x:0,y:0}; const a = p[0], b = p[p.length-1]; if (performance.now() - b.t > 90) return {x:0,y:0}; const dt = Math.max(0.008, (b.t - a.t)/1000); return {x:(b.x-a.x)/dt, y:(b.y-a.y)/dt}; } }
+const project = (v, d = 0.99) => (v/1000)*d/(1-d);
+const rubber = (o, dim = 300, c = 0.55) => (o*dim*c)/(dim + c*Math.abs(o));
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function gesture(el, H){
+  el.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const p0 = pt(e), ctx = {p0, vt:new VT(), dir:null, target:e.target};
+    if (H.down && H.down(ctx, e) === false) return;
+    ctx.vt.add(p0.x, p0.y);
+    const pid = e.pointerId;
+    const mv = ev => { if (ev.pointerId !== pid) return; const p = pt(ev); ctx.vt.add(p.x, p.y); const dx = p.x - p0.x, dy = p.y - p0.y;
+      if (!ctx.dir){ if (Math.hypot(dx,dy) < 8) return; ctx.dir = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'; try { el.setPointerCapture(pid); } catch(_){} H.start && H.start(ctx, dx, dy); }
+      H.move && H.move(ctx, dx, dy); };
+    const up = ev => { el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+      const p = pt(ev); H.up && H.up(ctx, p.x - p0.x, p.y - p0.y, ctx.vt.v(), !ctx.dir && ev.type === 'pointerup'); };
+    el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  });
+}
+function tap(el, fn, o = {}){
+  if (!el) return;
+  const sc = o.scale ?? 0.97; let down = false, p0;
+  el.addEventListener('pointerdown', e => { if (o.pass !== true) e.stopPropagation(); down = true; p0 = pt(e); spring(el, {s:sc}, {response:.16}); if (o.op) spring(el,{o:o.op},{response:.12}); });
+  const end = go => e => { if (!down) return; down = false; spring(el, Object.assign({s:1}, o.op?{o:1}:{}), {response:.38, damping:.72});
+    if (go){ const p = pt(e); if (Math.hypot(p.x-p0.x, p.y-p0.y) < 14) fn(e); } };
+  el.addEventListener('pointerup', end(true)); el.addEventListener('pointercancel', end(false)); el.addEventListener('pointerleave', end(false));
+}
+function h(html){ const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+const q = (s, r = document) => r.querySelector(s);
+const qa = (s, r = document) => [...r.querySelectorAll(s)];
+
+/* =====================================================================
+   Icons (exported from the Figma components)
+   ===================================================================== */
+const IC = {
+  back:`<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(2 2)"/></svg>`,
+  gear:`<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M11.28 4.83a2.73 2.73 0 0 1 5.44 0 2.73 2.73 0 0 0 3.87 2.23 2.73 2.73 0 0 1 2.72 4.7 2.73 2.73 0 0 0 0 4.47 2.73 2.73 0 0 1-2.72 4.71 2.73 2.73 0 0 0-3.87 2.23 2.73 2.73 0 0 1-5.44 0 2.73 2.73 0 0 0-3.87-2.23 2.73 2.73 0 0 1-2.72-4.71 2.73 2.73 0 0 0 0-4.47 2.73 2.73 0 0 1 2.72-4.7 2.73 2.73 0 0 0 3.87-2.23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="14" cy="14" r="3.5" stroke="currentColor" stroke-width="2"/></svg>`,
+  add:`<svg width="68" height="68" viewBox="0 0 68 68" fill="none"><rect width="68" height="68" rx="34" fill="#000"/><path d="M18.25 34H49.75M34 18.25V49.75" stroke="#fff" stroke-width="6" stroke-linecap="round"/></svg>`,
+  home:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .71-1.53l7-6a2 2 0 0 1 2.58 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`,
+  check:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5h6M19 2v6"/><path d="M2.05 2.05l1.1-.03a1 1 0 0 1 1.01.82l2.69 14.35a1 1 0 0 0 .98.81H18"/><path d="M4.56 5H12"/><path d="M6.25 14h12.71a2 2 0 0 0 1.99-1.57l.17-1.04"/><circle cx="18" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>`,
+  items:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12h-5M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>`,
+  money:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/><path d="M16 10h.01M2 8v1a2 2 0 0 0 2 2h1"/></svg>`,
+  tick:(c='currentColor')=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  chev:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="var(--chev)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  bell:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#206AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`,
+  alert:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>`,
+  offline:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.8A15 15 0 0 1 6.2 6.2M22 8.8a16 16 0 0 0-11-4.2M5 12.9a10 10 0 0 1 5.2-2.7M19 12.9a10 10 0 0 0-2.3-1.6M8.5 16.4a5 5 0 0 1 7 0M12 20h.01M2 2l20 20"/></svg>`,
+  app:(s=48,r=10)=>`<svg width="${s}" height="${s}" viewBox="0 0 76 76" fill="none"><rect width="76" height="76" rx="${r*76/s}" fill="#569EF6"/><path d="M47.3 38.3l1-2.3c3.4.1 6.3.6 8.5 1.6 2.2 1 3.9 2.3 5 4 1.1 1.7 1.7 3.7 1.7 6 0 2.4-.6 4.6-1.7 6.4-1.1 1.9-2.8 3.4-5 4.5-2.2 1.1-4.9 1.6-8.2 1.6H15.7l3.5-22.9-3.5-21.7h31.8c4.1 0 7.3 1 9.6 2.9 2.3 1.9 3.4 4.6 3.4 8 0 1.9-.4 3.6-1.3 5.3-.9 1.7-2.3 3.1-4.2 4.3-1.9 1.2-4.5 1.9-7.7 2.3zM27.9 57.2l-4.8-5.7h22.2c1.8 0 3.2-.4 4.2-1.3 1-.9 1.5-2.1 1.5-3.6s-.5-2.8-1.6-3.7c-1.1-.9-2.7-1.4-4.8-1.4H26.3V33h16.7c1.4 0 2.6-.4 3.6-1.3 1-.9 1.5-2 1.5-3.5 0-1.2-.4-2.2-1.3-2.9-.8-.8-2-1.2-3.6-1.2h-20l4.7-5.8 3 18.9-3 20z" fill="#FAFAFA"/></svg>`,
+};
+IC.graph = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 7-8"/><path d="M15 7h4v4"/></svg>`;
+const VC = {buy:'#56F683', wait:'#F6DB56', notnow:'#F66B56', neutral:'var(--sf2)'};
+const isVerdictColor = c => c === VC.buy || c === VC.wait || c === VC.notnow;
+const VT_ = {buy:'#C5FDD5', wait:'#FAE991', notnow:'#FEA699', neutral:'#F3F4F6'};
+
+/* =====================================================================
+   User data + verdict engine (docs/prd/2026-10-13_verdict-logic_v03.md)
+   ===================================================================== */
+const INC = [['Under $1,500',1250],['$1,500–1,900',1700],['$1,900–2,300',2100],['$2,300–3,000',2650],['$3,000–4,000',3500],['$4,000+',4500]];
+const BILLS = [['Under $150',100],['$150–350',250],['$350–450',400],['$450–700',575],['$700+',800]];
+const RHY = ['Monthly','Every 2 weeks','Varies'];
+const TODAY = new Date(2026, 9, 24); // the prototype's "today": Fri, Oct 24 (as on the hi-fi screens)
+const DAY = 864e5;
+const WD = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtShort = d => `${MO[d.getMonth()]} ${d.getDate()}`;
+const fmtLong = d => `${WD[d.getDay()]}, ${fmtShort(d)}`;
+const fmtN = n => Math.round(n).toLocaleString('en-US');
+const r10 = n => Math.round(n/10)*10;
+const EMMA = {name:'Emma', inc:2, rhy:0, payday:new Date(2026,9,28), rent:1200, bills:2, goal:{name:'Trip to Japan', target:3000, per:100, saved:600}, spent:160};
+const NEWU = () => ({name:'', inc:2, rhy:0, payday:new Date(2026,9,28), rent:null, bills:2, goal:null, spent:0});
+const P = {}; // products by key
+function seedProducts(){
+  Object.assign(P, {
+    sneaker:{name:'Sneaker cleaning kit', price:39, site:'', fact:['Near lowest','price in 90 days'], added:0, hist:[44,43,44,41,40,38,39,39]},
+    lamp:{name:'Mushroom table lamp', price:180, site:'ikea.com', inst:4, added:1, hist:[181,178,183,164,149,155,174,180]},
+    nike:{name:'Nike Air Force 1 ’07', price:110, was:130, site:'nike.com', added:2, hist:[130,130,128,130,130,125,115,110]},
+    canon:{name:'Canon EOS R50', price:1240, fact:['$90 cheaper','in the last 90 days'], site:'canon.com', added:3, hist:[1299,1279,1249,1199,1150,1189,1229,1240]},
+    dyson:{name:'Dyson V8', price:349, failed:true, site:'dyson.com', added:4, hist:[379,365,359,345,329,339,349,349]},
+    sony:{name:'Sony WH-1000XM5', price:298, site:'sony.com', added:5},
+    lampD:{name:'Mushroom table lamp', price:null, site:'ikea.com', inst:4, added:6, hist:[181,178,183,164,149,155,174,180]},
+  });
+}
+function money(){
+  const u = A.U, inc = u.incExact || INC[u.inc][1], bills = BILLS[u.bills][1], mid = inc - (u.rent || 0) - bills;
+  return {inc, bills, mid, spare:Math.max(mid, 1), lo:Math.max(0, r10(mid - 50)), hi:Math.max(0, r10(mid + 50)), rate:inc/173.33};
+}
+function cycle(){
+  const u = A.U; if (u.rhy === 2) return null;
+  const len = u.rhy === 0 ? 30 : 14;
+  const days = Math.max(0, Math.round((u.payday - TODAY)/DAY));
+  return {next:u.payday, days, len, passed:clamp(1 - days/len, 0, 1)};
+}
+function hoursText(price){
+  const hrs = price / money().rate;
+  if (hrs < 1) return `About ${Math.max(5, Math.round(hrs*60/5)*5)} minutes`;
+  if (hrs < 1.5) return 'About 1 hour';
+  return `About ${Math.round(hrs)} hours`;
+}
+function monthsText(x){
+  const h = Math.round(x*2)/2; if (h <= 1) return 'a month';
+  const w = Math.floor(h); return `${w}${h - w ? '½' : ''} months`;
+}
+function verdictOf(key, ctx = {}){
+  const p = P[key], m = money(), c = cycle(), u = A.U;
+  if (!p.price) return {key, name:p.name, price:'Price unknown', v:'neutral', verdict:'', reason:'We couldn’t get the price, so there’s no verdict yet.', changed:'Re-check to try again. Nothing is decided without a price.', hero:null, tiles:[], wm:'', graph:false, unknown:true};
+  const share = p.price / m.spare, pct = Math.round(share*100);
+  const level = share <= .05 ? 'Small' : share <= .25 ? 'Comfortable' : share <= 1 ? 'Stretch' : 'Over';
+  const hrs = hoursText(p.price);
+  const instT = p.inst ? [`${p.inst} × $${fmtN(Math.ceil(p.price/p.inst))}`, `full price $${fmtN(p.price)}`] : null;
+  let v, reason;
+  if (m.mid <= 0){ v = 'notnow'; reason = 'Your bills take all of your spare money right now.'; }
+  else if (level === 'Small'){ v = 'buy'; reason = `Small buy, ${hrs.toLowerCase()} of work.`; }
+  else if (level === 'Comfortable'){ v = 'buy'; reason = 'Fits your month.'; }
+  else if (level === 'Stretch'){
+    if (!c){ if (share < .5){ v = 'buy'; reason = `Takes about ${share < .3 ? 'a quarter' : share < .42 ? 'a third' : 'half'} of a typical month.`; } else { v = 'notnow'; reason = 'That’s more than half of a typical month.'; } }
+    else if (c.passed > .5){ v = 'wait'; reason = c.days === 0 ? 'Payday is today.' : `Payday is in ${c.days} ${c.days === 1 ? 'day' : 'days'}. Buying now leaves you short.`; }
+    else { v = 'buy'; reason = 'Fits your month.'; }
+  } else { v = 'notnow'; reason = `That’s about ${monthsText(share)} of your spare money.`; }
+  const drop = p.was && p.was > p.price ? p.was - p.price : 0;
+  if (ctx.saved && v === 'buy' && drop) reason = `Price dropped $${fmtN(drop)} since you saved it.`;
+  let changed = null;
+  if (ctx.saved) changed = p.failed ? 'Couldn’t check the price right now. This uses the last price we saw.' : drop ? `What changed: $${fmtN(p.was)} → $${fmtN(p.price)}.` : 'What changed: price is the same as when you saved it.';
+  const hero = v === 'wait' ? [`${c.days} ${c.days === 1 ? 'day' : 'days'}`, `Next payday · ${fmtShort(c.next)}`, c.passed] : [level, `${pct}% of your spare money`, Math.min(1, share)];
+  const hoursT = [hrs, 'of work'];
+  let tiles;
+  if (v === 'wait') tiles = [instT || hoursT, [`${pct}%`, 'of your spare money']];
+  else if (v === 'buy') tiles = [hoursT, (ctx.saved && drop) ? [`$${fmtN(drop)} less`, 'than when you saved it', !!p.hist] : p.fact ? [...p.fact, !!p.hist] : (instT || (ctx.saved ? ['Black Friday', 'is in 5 weeks'] : ['Tracking', 'starts today']))];
+  else tiles = [p.fact ? [...p.fact, !!p.hist] : hoursT, ['Black Friday', 'is in 5 weeks']];
+  const priceLine = p.inst ? `$${fmtN(p.price)} or ${p.inst} × $${fmtN(Math.ceil(p.price/p.inst))}` : drop ? `$${fmtN(p.price)} · was $${fmtN(p.was)}` : `$${fmtN(p.price)}`;
+  const word = {buy:'BUY', wait:'WAIT FOR PAYDAY', notnow:'NOT NOW'}[v];
+  return {key, name:p.name, price:priceLine, v, verdict:word, reason, changed, hero, tiles, wm:{buy:'BUY', wait:'WAIT', notnow:'NOT NOW'}[v], graph:!!p.hist, level};
+}
+const LAMP_PAYDAY = () => ({key:'lamp', name:'Mushroom table lamp', price:'$180', v:'buy', verdict:'BUY', reason:'Payday came. It fits your month now.', changed:'What changed: price is the same as when you saved it.', hero:['Payday came','New month · Oct 28',.03], tiles:[['4 × $45','full price $180'],[hoursText(180),'of work']], wm:'BUY', graph:true});
+function statusOf(key){
+  const p = P[key]; if (!p.price) return 'Price unknown'; if (p.failed) return 'Couldn’t check';
+  const v = verdictOf(key, {saved:true}), c = cycle();
+  if (v.v === 'wait') return `Payday in ${c.days} ${c.days === 1 ? 'day' : 'days'}`;
+  if (p.was && p.was > p.price) return `−$${fmtN(p.was - p.price)}`;
+  return 'Same price';
+}
+
+function opPage1(c){
+  return `<div class="op p1">
+    <div class="wm" style="color:${VT_[c.v]}">${c.wm}</div>
+    <div class="op-name">${c.name}</div>
+    <div class="op-price">${c.price}</div>
+    ${c.verdict ? `<div class="op-verdict">${c.verdict}</div>` : ''}
+    <div class="op-reason">${c.reason}</div>
+    ${c.changed ? `<div class="op-changed">${c.changed}</div>` : ''}
+    ${c.hero ? `<div class="tile hero"><div class="n">${c.hero[0]}</div><div class="s">${c.hero[1]}</div><div class="bar"><i style="width:${Math.round(c.hero[2]*282)}px"></i></div></div>` : ''}
+    <div class="tiles">${c.tiles.map(t => `<div class="tile ${t[2] && c.graph ? 'hist' : ''}"><div class="n">${t[0]}</div><div class="s">${t[1]}</div>${t[2] && c.graph ? `<span class="go">${IC.graph}</span>` : ''}</div>`).join('')}</div>
+    ${c.graph ? '<div class="pdots"><i class="k"></i><i></i></div>' : ''}
+  </div>`;
+}
+const OFFS = [-90,-78,-66,-54,-42,-28,-14,0];
+function opGraph(c){
+  const p = P[c.key] || {}, H = (p.hist || []).slice();
+  if (p.price) H[H.length - 1] = p.price;
+  const mx = Math.max(...H), mn = Math.min(...H), span = Math.max(1, mx - mn);
+  const pts = H.map((v, i) => [Math.round(16 + (OFFS[i] + 90)/90*274), Math.round(60 + (mx - v)/span*90)]);
+  const li = H.lastIndexOf(mn), now = H[H.length - 1], last = pts[pts.length - 1];
+  const lowDate = OFFS[li] === 0 ? 'today' : fmtShort(new Date(TODAY.getTime() + OFFS[li]*DAY));
+  const d = 'M' + pts.map(q_ => q_.join(',')).join(' L');
+  const near = now - mn <= mn*.03;
+  const line = near ? 'Near its lowest price in 90 days.' : `It was $${fmtN(now - mn)} cheaper in the last 90 days.`;
+  const cyc = cycle(), sub = {buy:'Buy', wait:'Wait for payday', notnow:'Not now'}[c.v] + (cyc && c.v === 'wait' ? ` · Payday in ${cyc.days} ${cyc.days === 1 ? 'day' : 'days'}` : '');
+  const nowLbl = p.failed ? `$${fmtN(now)} last seen` : `$${fmtN(now)} now`;
+  return `<div class="op p2" style="padding-bottom:22px">
+    <div class="op-name">${c.name}</div>
+    <div class="op-sub">${sub}</div>
+    <div class="pager"><div class="dots"><span>2 of 2</span><i></i><i class="k"></i></div><div class="chip sf">${A.graphFirst ? 'Shown first ✓' : 'Show this first'}</div></div>
+    <div style="font:800 32px/35px var(--fd);margin-top:8px">Price in 90 days</div>
+    <div class="tile graph"><svg width="314" height="230" viewBox="0 0 314 230" fill="none">
+      <path class="gl" d="${d}" stroke="#000" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0"/>
+      ${li !== H.length - 1 ? `<circle class="gd" cx="${last[0]}" cy="${last[1]}" r="6" fill="#fff" stroke="#000" stroke-width="2"/>` : ''}
+      <circle class="gd" cx="${pts[li][0]}" cy="${pts[li][1]}" r="6" fill="#56F683" stroke="#000" stroke-width="2"/>
+      <text x="298" y="${last[1] > 105 ? last[1] + 28 : Math.max(24, last[1] - 22)}" text-anchor="end" font-family="Manrope,system-ui" font-weight="600" font-size="13" fill="#000">${nowLbl}</text>
+      <text x="157" y="203" text-anchor="middle" font-family="Manrope,system-ui" font-weight="600" font-size="13" fill="#000">Lowest $${fmtN(mn)} · ${lowDate}</text>
+    </svg></div>
+    <div style="font:600 16px/22px var(--fb);margin-top:8px">${line}</div>
+    <div style="font:500 13px/18px var(--fb);color:rgba(0,0,0,.65);margin-top:8px">← Swipe back to the verdict</div>
+  </div>`;
+}
+
+/* =====================================================================
+   Folder stack: one component for Home, My items and Check.
+   ===================================================================== */
+class Stack{
+  constructor(scr, cfg){
+    this.scr = scr; this.cfg = cfg; this.items = [];
+    this.open = null; this.phase = 'open'; this.raised = false; this.fanD = 0; this.page = 0; this.content = null;
+    this.layer = h('<div class="stk"></div>'); scr.appendChild(this.layer);
+    this.dim = h('<div class="stk-dim"></div>'); this.layer.appendChild(this.dim); setv(this.dim,{o:0}); this.dim.style.pointerEvents = 'none';
+    tap(this.dim, () => this.setRaised(false), {scale:1});
+    this.back = h(`<div class="ico" style="left:24px;top:80px;z-index:56">${IC.back}</div>`); this.layer.appendChild(this.back);
+    setv(this.back,{o:0, x:-8}); this.back.style.pointerEvents = 'none';
+    tap(this.back, () => this.onBack(), {scale:.85});
+    this.acts = h('<div class="acts"></div>'); this.layer.appendChild(this.acts); setv(this.acts,{o:0}); this.acts.style.pointerEvents = 'none';
+    cfg.items.forEach(d => this.make(d));
+    this.layout({instant:true});
+  }
+  get(id){ return this.items.find(i => i.id === id); }
+  has(key){ return this.items.some(i => i.key === key); }
+  hasName(name){ return this.items.some(i => P[i.key].name === name); }
+  bodyHTML(it){
+    const k = this.cfg.kind, p = P[it.key];
+    if (k === 'items'){ const st = !p.price ? 'Couldn’t get the price' : p.failed ? 'Couldn’t check the price right now' : statusOf(it.key);
+      return `<div class="pv"><div class="op-name">${p.name}</div><div class="op-price" style="opacity:.65">${!p.price ? 'Price unknown' : p.was && p.was > p.price ? `$${fmtN(p.price)} · was $${fmtN(p.was)}` : `$${fmtN(p.price)}`}</div><div class="chip">${st}</div></div>`; }
+    if (k === 'drafts') return draftBody(it);
+    return '';
+  }
+  detail(it){
+    const k = this.cfg.kind;
+    if (k === 'items') return statusOf(it.key);
+    if (k === 'drafts') return it.detail || '';
+    return '';
+  }
+  make(d, idx){
+    const it = Object.assign({}, d), k = this.cfg.kind, p = P[it.key];
+    it.id = it.id || it.key;
+    const body = this.bodyHTML(it);
+    const el = h(`<div class="fd" data-id="${it.id}">
+      <div class="face f-tab"><span class="nm">${p.name}</span><span class="dt">${this.detail(it)}</span><span class="more"></span></div>
+      ${body ? `<div class="face f-body">${body}</div>` : ''}
+      ${k === 'drafts' ? `<div class="face f-calc"><div class="cl"><div class="op-name">${p.name}</div><div class="op-price cl-site" style="color:var(--tx2)">${p.site || 'Added manually'}${p.price ? ' · $' + fmtN(p.price) : ''}</div><div class="track"><i></i></div><div class="msg">Checking your month and the price…</div></div></div>` : ''}
+      <div class="face f-open"></div>
+    </div>`);
+    it.el = el; it.more = q('.more', el); it.faces = {};
+    for (const f of qa('.face', el)) it.faces[f.classList[1].slice(2)] = f;
+    for (const f of Object.values(it.faces)) setv(f, {o:0});
+    it.cur = null;
+    this.layer.appendChild(el);
+    if (idx === undefined) this.items.push(it); else this.items.splice(idx, 0, it);
+    this.bind(it);
+    if (k === 'drafts') wireDraft(this, it);
+    return it;
+  }
+  renderOpen(it, c){
+    this.content = c;
+    const f = it.faces.open;
+    f.innerHTML = c.graph ? `<div class="pg"><div class="trk">${opPage1(c)}${opGraph(c)}</div></div>` : opPage1(c);
+    it.trk = c.graph ? q('.trk', f) : null;
+    if (it.trk) setv(it.trk, {x:0});
+    const go = () => { if (this.open === it.id && this.phase === 'open') this.setPage(1); };
+    qa('.p1 .hist', f).forEach(t => tap(t, go, {scale:.97, pass:true}));
+    const pd = q('.p1 .pdots', f); if (pd) tap(pd, go, {scale:.9, pass:true});
+    const sf = q('.p2 .sf', f); if (sf) tap(sf, () => { A.graphFirst = !A.graphFirst; sf.textContent = A.graphFirst ? 'Shown first ✓' : 'Show this first'; }, {scale:.94, pass:true});
+    it.cur = it.cur === 'open' ? null : it.cur;
+  }
+  refreshData(){
+    for (const it of this.items){
+      const dt = q('.dt', it.el); if (dt) dt.textContent = this.detail(it);
+      if (this.cfg.kind === 'items' && it.faces.body) it.faces.body.innerHTML = this.bodyHTML(it);
+    }
+    if (!this.open) this.layout();
+  }
+  bodyH(it){ return it.bodyH || 201; }
+  openH(it){
+    if (this.phase === 'calc' && this.open === it.id) return 200;
+    const f = it.faces.open;
+    const pg = this.page === 1 ? q('.p2', f) : q('.p1', f);
+    return pg ? Math.round(pg.offsetHeight) : 201;
+  }
+  role(it){ if (this.open == null) return 'list'; if (this.open === it.id) return 'open'; return this.raised ? 'over' : 'peek'; }
+  color(it, role){
+    if (this.cfg.kind === 'drafts'){
+      if (role === 'open') return VC[this.content ? this.content.v : 'neutral'];
+      if (role === 'back') return 'var(--tint2)';
+      return 'var(--tint)';
+    }
+    if (role === 'open' && this.content) return VC[this.content.v];
+    return VC[verdictOf(it.key, {saved:this.cfg.kind === 'items'}).v];
+  }
+  geo(raised = this.raised){
+    const G = {}, n = this.items.length, k = this.cfg.kind;
+    if (this.open == null){
+      const d = this.fanD;
+      this.items.forEach((it, i) => {
+        const front = k !== 'home' && i === n - 1;
+        const y = this.cfg.baseY - d + i*(56 + 0.22*d);
+        G[it.id] = {x:24, y, w:354, h:front ? this.bodyH(it) : 201, r:front ? 24 : 16, o:1, s:1, z:10+i, face:front ? 'body' : 'tab', role:front ? 'front' : 'back', cls:''};
+      });
+    } else {
+      const oit = this.get(this.open);
+      const isCalc = this.phase === 'calc';
+      G[oit.id] = {x:24, y:116, w:354, h:this.openH(oit), r:24, o:1, s:raised ? .94 : 1, z:50, face:isCalc ? 'calc' : 'open', role:isCalc ? 'calc' : 'open', cls:'opened'};
+      const rem = this.items.filter(i => i.id !== this.open);
+      rem.forEach((it, j) => {
+        if (!raised){
+          const Pp = [[24,792,354,1],[36,782,330,.75],[48,772,306,0]][Math.min(j,2)];
+          G[it.id] = {x:Pp[0], y:Pp[1], w:Pp[2], h:201, r:16, o:Pp[3], s:1, z:45-j, face:'tab', role:'peek', cls:j === 0 ? 'pk pkf' : 'pk', more:j === 0 && rem.length > 1 ? `+${rem.length-1} more` : ''};
+        } else {
+          G[it.id] = {x:24, y:874-208-j*64, w:354, h:201, r:16, o:1, s:1, z:70-j, face:'tab', role:'over', cls:'ov'};
+        }
+      });
+    }
+    return G;
+  }
+  layout(o = {}){
+    const G = this.geo();
+    for (const it of this.items){
+      const g = G[it.id], el = it.el;
+      const col = this.color(it, g.role), onV = isVerdictColor(col);
+      el.style.zIndex = g.z; el.className = 'fd ' + g.cls + (onV ? '' : ' tintf');
+      el.style.backgroundColor = col; el.style.color = onV ? '#000' : 'var(--tx)';
+      it.more.textContent = g.more || '';
+      const vals = {x:g.x, y:g.y, w:g.w, h:g.h, r:g.r, o:g.o, s:g.s};
+      if (o.instant) setv(el, vals);
+      else spring(el, vals, Object.assign({response:.5, damping:.86}, o.spring || {}, {velocity:o.vel && o.vel[it.id]}));
+      this.faces(it, g.face, o.instant);
+    }
+    const dimO = (this.open && this.raised) ? .38 : 0;
+    o.instant ? setv(this.dim, {o:dimO}) : spring(this.dim, {o:dimO}, {response:.35});
+    this.dim.style.pointerEvents = dimO ? 'auto' : 'none';
+    this.chrome(o.instant);
+    this.cfg.onChange && this.cfg.onChange(this, o.instant);
+  }
+  faces(it, face, inst){
+    const was = it.cur; it.cur = face;
+    for (const [name, f] of Object.entries(it.faces)){
+      const on = name === face;
+      f.style.pointerEvents = on ? 'auto' : 'none';
+      const v = {o:on ? 1 : 0, y:on ? 0 : (name === 'open' || name === 'calc' ? 14 : -6)};
+      if (inst) setv(f, v); else spring(f, v, {response:on ? .45 : .22, delay:on && name !== 'tab' ? .06 : 0});
+    }
+    if (face === 'open' && was !== 'open' && !inst){
+      const p1 = q('.p1', it.faces.open); if (!p1) return;
+      [...p1.children].forEach((ch, i) => {
+        if (ch.classList.contains('wm')){ setv(ch, {y:46}); spring(ch, {y:0}, {response:.75, delay:.16}); }
+        else { setv(ch, {o:0, y:10}); spring(ch, {o:1, y:0}, {response:.5, delay:.05 + i*.028}); }
+      });
+      const bar = q('.hero .bar i', p1);
+      if (bar){ setv(bar, {sx:0}); bar.style.transformOrigin = '0 0'; spring(bar, {sx:1}, {response:.9, delay:.25}); }
+    }
+  }
+  actionSet(){
+    const c = this.content, cyc = cycle();
+    const note = c.v === 'wait' && cyc ? `We’ll remind you on ${fmtShort(cyc.next)}` : null;
+    const saved = this.cfg.kind === 'items' || (this.cfg.kind === 'home' && A.items && A.items.has(c.key));
+    if (c.unknown) return {primary:'Re-check', links:['Remove']};
+    if (c.reminder) return {primary:'Bought', links:['Wait again','Remove']};
+    if (saved) return {primary:'Bought', links:['Wait again','Remove']};
+    if (c.v === 'buy') return {primary:'Bought', links:['Save to My items','Dismiss']};
+    return {primary:'Save to My items', note, links:['Bought','Dismiss']};
+  }
+  chrome(inst){
+    const open = this.open != null;
+    const sp = (el, v, o) => inst ? setv(el, v) : spring(el, v, o);
+    sp(this.back, {o:open ? 1 : 0, x:open ? 0 : -8}, {response:.35});
+    this.back.style.pointerEvents = open ? 'auto' : 'none';
+    this.cfg.onMode && this.cfg.onMode(open ? 'open' : 'list', inst);
+    const want = (open && this.phase === 'open') ? this.open : null;
+    if (this.actsFor !== want){
+      this.actsFor = want;
+      if (want){ this.buildActs(); setv(this.acts, {o:0, y:116 + this.openH(this.get(want)) + 40}); }
+    }
+    const show = want && this.page === 0 && !this.raised;
+    this.acts.style.pointerEvents = show ? 'auto' : 'none';
+    if (want) sp(this.acts, {o:show ? 1 : 0, y:116 + this.openH(this.get(want)) + 16 + (show ? 0 : 14)}, {response:show ? .5 : .25, delay:show ? .12 : 0});
+    else sp(this.acts, {o:0}, {response:.2});
+  }
+  buildActs(){
+    const a = this.actionSet();
+    this.acts.innerHTML = `<div class="btn">${a.primary}</div>${a.note ? `<div class="note">${a.note}</div>` : ''}<div class="lnks" style="top:${a.note ? 92 : 64}px">${a.links.map(l => `<span>${l}</span>`).join('')}</div>`;
+    tap(q('.btn', this.acts), () => doAction(this, a.primary));
+    qa('.lnks span', this.acts).forEach(s => tap(s, () => doAction(this, s.textContent), {scale:.94, op:.6}));
+  }
+  onBack(){ if (this.page === 1) return this.setPage(0); if (this.raised) return this.setRaised(false); this.close(); }
+  openItem(id, phase = 'open', override){
+    const it = this.get(id); if (!it) return;
+    this.open = id; this.phase = phase; this.page = 0; this.raised = false; this.fanD = 0; this.actsFor = undefined;
+    if (phase === 'open') this.renderOpen(it, override || verdictOf(it.key, {saved:this.cfg.kind !== 'drafts' && (this.cfg.kind === 'items' || (A.items && A.items.has(it.key)))}));
+    else this.content = null;
+    this.layout();
+    if (phase === 'open' && this.content && this.content.graph && A.graphFirst) later(380, () => { if (this.open === id && this.page === 0) this.setPage(1); });
+  }
+  close(vel){ this.open = null; this.raised = false; this.page = 0; this.phase = 'open'; this.layout({vel}); }
+  setRaised(r, vel){ if (!this.open) return; this.raised = r; this.layout({vel, spring:{response:.48, damping:r ? .82 : .9}}); }
+  setPage(p, vx = 0){
+    const it = this.get(this.open); if (!it || !it.trk) return;
+    this.page = p;
+    spring(it.trk, {x:-p*354}, {response:.45, damping:.92, velocity:{x:vx}});
+    if (p === 1){ const gl = q('.gl', it.el); gl.style.transition = 'none'; gl.style.strokeDashoffset = '1'; gl.getBoundingClientRect(); gl.style.transition = INSTANT ? 'none' : 'stroke-dashoffset 1.1s cubic-bezier(.3,.7,.2,1) .15s'; gl.style.strokeDashoffset = '0';
+      qa('.gd', it.el).forEach((d, i) => { d.style.transition = 'none'; d.style.opacity = 0; d.getBoundingClientRect(); d.style.transition = INSTANT ? 'none' : `opacity .3s ${0.7 + i*.35}s`; d.style.opacity = 1; }); }
+    this.layout();
+  }
+  // removes the item from this stack; mode: 'drop' | 'fly' | 'clone-fly' | 'instant'
+  take(id, mode = 'drop'){
+    const it = this.get(id); if (!it) return null;
+    const idx = this.items.indexOf(it), el = it.el;
+    const data = {id:it.id, key:it.key, detail:it.detail, bodyH:it.bodyH};
+    if (mode === 'clone-fly'){
+      const cl = el.cloneNode(true); cl._s = Object.assign({}, S(el)); this.layer.appendChild(cl); cl.style.zIndex = 90; apply(cl);
+      const hh = cl._s.h || 400;
+      spring(cl, {x:228-177, y:815-hh/2, s:.04}, {response:.62, damping:.92, onDone:() => cl.remove()});
+      spring(cl, {o:0}, {response:.3, delay:.32});
+      setv(el, {o:0});
+      if (this.open === id){ this.open = null; this.raised = false; this.page = 0; this.phase = 'open'; }
+      this.layout(); spring(el, {o:1}, {response:.4, delay:.35});
+      return {data, idx};
+    }
+    this.items.splice(idx, 1);
+    if (this.open === id){ this.open = null; this.raised = false; this.page = 0; this.phase = 'open'; }
+    el.style.zIndex = 90;
+    if (mode === 'instant') el.remove();
+    else if (mode === 'fly'){ const hh = S(el).h || 400; spring(el, {x:228-177, y:815-hh/2, s:.04}, {response:.62, damping:.92, onDone:() => el.remove()}); spring(el, {o:0}, {response:.3, delay:.32}); }
+    else spring(el, {y:S(el).y + 520, s:.9, o:0}, {response:.55, damping:1, onDone:() => el.remove()});
+    this.layout(mode === 'instant' ? {instant:true} : {});
+    return {data, idx};
+  }
+  insert(data, idx, inst){
+    const at = idx === undefined ? this.items.length : Math.min(idx, this.items.length);
+    const it = this.make(data, at);
+    const g = this.geo()[it.id];
+    setv(it.el, {x:g.x, y:inst ? g.y : g.y + 60, w:g.w, h:g.h, r:g.r, o:inst ? 1 : 0, s:inst ? 1 : .96});
+    this.layout(inst ? {instant:true} : {spring:{response:.6, damping:.8}});
+    return it;
+  }
+  bringFront(it){ this.items = this.items.filter(i => i !== it).concat(it); this.layout({spring:{response:.55, damping:.82}}); }
+  sortBy(fn){ this.items.sort(fn); this.layout({spring:{response:.6, damping:.8}}); }
+  wave(){
+    const G = this.geo();
+    this.items.forEach((it, i) => { const g = G[it.id]; spring(it.el, {y:g.y - 12}, {response:.26, delay:i*.07, onDone:() => spring(it.el, {y:g.y}, {response:.5, damping:.55})}); });
+  }
+  calc(it){
+    this.openItem(it.id, 'calc');
+    const bar = q('.cl .track i', it.el);
+    setv(bar, {sx:0}); bar.style.transformOrigin = '0 0';
+    spring(bar, {sx:.4}, {response:.9, delay:.35});
+    later(1150, () => spring(bar, {sx:1}, {response:.8}));
+    later(1900, () => {
+      if (this.open !== it.id || this.phase !== 'calc') return;
+      this.phase = 'open';
+      const c = verdictOf(it.key);
+      this.renderOpen(it, c); this.actsFor = undefined;
+      this.layout({spring:{response:.62, damping:.8}});
+      if (A.home) A.home.addRecent(it.key);
+    });
+  }
+  addRecent(key){
+    const ex = this.items.find(i => P[i.key].name === P[key].name);
+    if (ex) this.take(ex.id, 'instant');
+    this.insert({key}, this.items.length, true);
+    while (this.items.length > 3) this.take(this.items[0].id, 'instant');
+  }
+  mix(G0, G1, t, ids){ for (const id of ids){ const a = G0[id], b = G1[id], el = this.get(id).el; setv(el, {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, w:a.w+(b.w-a.w)*t, o:a.o+(b.o-a.o)*t}); } }
+  bind(it){
+    const el = it.el; let mode = null; let G0, G1, rem;
+    gesture(el, {
+      down:(ctx) => { ctx.role = this.role(it); if (ctx.role !== 'open') spring(el, {s:(S(el).s || 1)*0.985}, {response:.18}); },
+      start:(ctx, dx, dy) => {
+        mode = null;
+        const r = ctx.role;
+        if (r === 'list' && ctx.dir === 'y') mode = 'fan';
+        if (r === 'open' && ctx.dir === 'y' && dy > 0 && this.page === 0 && this.phase === 'open') mode = 'dismiss';
+        if (r === 'open' && ctx.dir === 'x' && it.trk && this.phase === 'open') mode = 'pager';
+        if ((r === 'peek' || r === 'over') && ctx.dir === 'y'){ mode = 'raise'; rem = this.items.filter(i => i.id !== this.open).map(i => i.id); G0 = this.geo(false); G1 = this.geo(true); }
+        if (r !== 'open') spring(el, {s:1}, {response:.3});
+        if (mode === 'raise') this.items.forEach(i => { if (rem.includes(i.id)) i.el.className = 'fd ov'; });
+      },
+      move:(ctx, dx, dy) => {
+        if (mode === 'fan'){ this.fanD = -dy > 0 ? rubber(-dy, 420, .7) : -rubber(dy, 200, .4); const G = this.geo(); for (const i of this.items) setv(i.el, {y:G[i.id].y}); }
+        else if (mode === 'dismiss'){ const d = Math.max(0, dy); setv(el, {y:116 + d*0.92, s:1 - Math.min(d, 420)/2600}); setv(this.acts, {o:Math.max(0, 1 - d/140)}); }
+        else if (mode === 'pager'){ let x = -this.page*354 + dx; if (x > 0) x = rubber(x, 354, .5); if (x < -354) x = -354 + rubber(x + 354, 354, .5); setv(it.trk, {x}); }
+        else if (mode === 'raise'){ let t = this.raised ? 1 - dy/260 : -dy/260; t = t > 1 ? 1 + rubber(t - 1, 1, .25) : t < 0 ? -rubber(-t, 1, .2) : t; this.mix(G0, G1, t, rem); setv(this.dim, {o:clamp(t, 0, 1)*.38}); const o = this.get(this.open); if (o) setv(o.el, {s:1 - .06*clamp(t, 0, 1)}); }
+      },
+      up:(ctx, dx, dy, v, isTap) => {
+        if (isTap){ const g = this.geo()[it.id]; spring(el, {s:g ? g.s : 1}, {response:.35, damping:.7}); return this.tapped(it); }
+        if (mode === 'fan'){ this.fanD = 0; const vel = {}; for (const i of this.items) vel[i.id] = {y:v.y}; this.layout({vel, spring:{response:.55, damping:.62}}); }
+        else if (mode === 'dismiss'){ const p = dy + project(v.y); if (p > 150){ const vel = {}; vel[it.id] = {y:v.y}; this.close(vel); } else this.layout({spring:{response:.45, damping:.8}}); }
+        else if (mode === 'pager'){ const p = dx + project(v.x); let np = this.page; if (p < -90) np = 1; if (p > 90) np = 0; this.setPage(np, v.x); }
+        else if (mode === 'raise'){ const p = this.raised ? dy + project(v.y) : -(dy + project(v.y)); const vel = {}; for (const id of rem) vel[id] = {y:v.y}; if (this.raised) this.setRaised(!(p > 110), vel); else this.setRaised(p > 90, vel); }
+        else this.layout();
+        mode = null;
+      }
+    });
+  }
+  tapped(it){
+    const r = this.role(it), k = this.cfg.kind;
+    const front = this.items[this.items.length - 1] === it;
+    if (r === 'list'){
+      if (k === 'drafts'){ if (!front) this.bringFront(it); return; }
+      this.openItem(it.id);
+    }
+    else if (r === 'peek') this.setRaised(true);
+    else if (r === 'over'){
+      if (k === 'drafts' && !it.done){ this.open = null; this.raised = false; this.page = 0; this.items = this.items.filter(i => i !== it).concat(it); return this.layout({spring:{response:.55, damping:.86}}); }
+      this.openItem(it.id);
+    }
+  }
+}
+
+/* item actions */
+function doAction(stack, label){
+  const id = stack.open; if (!id) return;
+  const it = stack.get(id), key = it.key, p = P[key], k = stack.cfg.kind;
+  if (label === 'Bought'){
+    const snaps = [];
+    for (const s of [A.check, A.home, A.items]){
+      const x = s.items.find(i => i.key === key || (P[i.key].name === p.name && s !== stack && s === A.items));
+      if (!x) continue;
+      const r = s.take(x.id, s === stack ? 'drop' : 'instant');
+      if (r) snaps.push([s, r]);
+    }
+    A.U.spent += p.price; refresh();
+    toast('Marked as bought.', {action:'Undo', onAction:() => { A.U.spent -= p.price; snaps.forEach(([s, r]) => s.insert(r.data, r.idx, s !== stack)); refresh(); }});
+  }
+  else if (label === 'Save to My items'){
+    const already = A.items.has(key) || A.items.hasName(p.name);
+    if (k === 'drafts') stack.take(id, 'fly'); else stack.take(id, 'clone-fly');
+    if (!already){ P[key].savedAt = Date.now(); A.items.insert({key}, A.items.items.length, true); }
+    later(520, () => bounceTab('items'));
+    const cyc = cycle(), v = verdictOf(key).v;
+    later(480, () => toast(v === 'wait' && cyc ? `Saved to My items. We’ll remind you on ${fmtShort(cyc.next)}.` : 'Saved to My items.'));
+    refresh();
+  }
+  else if (label === 'Dismiss'){ stack.take(id, 'drop'); }
+  else if (label === 'Re-check'){
+    const b = q('.btn', stack.acts); b.textContent = 'Checking…'; b.classList.add('dis');
+    later(1100, () => {
+      if (stack.open !== id) return;
+      if (p.found){ p.price = p.found; p.failed = false; }
+      stack.renderOpen(it, verdictOf(key, {saved:true})); stack.actsFor = undefined;
+      stack.layout({spring:{response:.62, damping:.8}});
+      for (const s2 of [A.home, A.items]) if (s2 !== stack) s2.refreshData();
+      refresh();
+      if (!p.price) toast('Still couldn’t get the price. Try again later.');
+    });
+  }
+  else if (label === 'Remove'){
+    let r;
+    if (k === 'items') r = stack.take(id, 'drop');
+    else { stack.close(); const x = A.items.items.find(i => i.key === key); if (x) r = A.items.take(x.id, 'instant'); }
+    refresh();
+    toast('Removed from My items.', {action:'Undo', onAction:() => { if (r) A.items.insert(r.data, r.idx, k !== 'items'); refresh(); }});
+  }
+  else if (label === 'Wait again'){
+    stack.close();
+    const cyc = cycle();
+    later(300, () => toast(cyc ? `Kept in My items. We’ll remind you on ${fmtShort(cyc.next)}.` : 'Kept in My items.'));
+  }
+}
+
+/* drafts (Check tab) */
+function draftBody(it){
+  const p = P[it.key], d = it.draft || {};
+  if (!p.price) return `<div class="dr" style="height:299px">
+    <div class="op-name">${p.name}</div><div class="op-price" style="color:var(--tx2);margin-top:8px">${p.site}</div>
+    <div class="dfield"><div class="fl">Price</div><input id="price-${it.id}" inputmode="decimal" placeholder="Enter price" autocomplete="off"></div>
+    <div class="hint" style="font:600 13px/18px var(--fb);color:var(--tx2);margin-top:8px">Couldn’t read the price. Add it yourself.</div>
+    <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'}</span><div class="calc dis">Calculate</div></div></div>`;
+  return `<div class="dr" style="height:199px">
+    <div class="op-name">${p.name}</div><div class="op-price" style="color:var(--tx2)">${p.site || 'Added manually'} · $${fmtN(p.price)}${d.justAdded ? ' · just added' : ''}</div>
+    <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'}</span><div class="calc ${A.offline ? 'dis' : ''}">Calculate</div></div></div>`;
+}
+function wireDraft(stack, it){
+  const btn = q('.f-body .calc', it.el);
+  if (!btn) return;
+  tap(btn, () => { if (!btn.classList.contains('dis')){ it.done = true; stack.calc(it); } }, {scale:.94});
+  const inp = q('input', it.el);
+  if (!inp) return;
+  const fld = inp.closest('.dfield');
+  const sync = () => {
+    const n = parseFloat(inp.value.replace(/[^\d.]/g, ''));
+    const ok = n > 0;
+    btn.classList.toggle('dis', !ok || A.offline);
+    P[it.key].price = ok ? n : null;
+    const s = q('.cl-site', it.el); if (s) s.textContent = `${P[it.key].site} · $${ok ? fmtN(n) : ''}`;
+    spring(q('.hint', it.el), {o:ok ? 0 : 1}, {response:.3});
+  };
+  inp.addEventListener('input', sync);
+  fld.addEventListener('pointerdown', e => e.stopPropagation());
+  fld.addEventListener('click', () => inp.focus({preventScroll:true}));
+}
+
+/* =====================================================================
+   App shell
+   ===================================================================== */
+const A = {};
+const TABS = [
+  {id:'home', label:'Home', ic:IC.home, cx:45},
+  {id:'check', label:'Check', ic:IC.check, cx:123},
+  {id:'items', label:'My items', ic:IC.items, cx:208},
+  {id:'money', label:'My money', ic:IC.money, cx:304.5},
+];
+class Nav{
+  constructor(root){ this.root = root; this.st = []; }
+  base(el){ this.root.appendChild(el); this.st.push(el); }
+  top(){ return this.st[this.st.length - 1]; }
+  push(el, inst){
+    const under = this.top(); this.root.appendChild(el); this.st.push(el);
+    el.classList.add('pushed');
+    if (inst){ setv(el, {x:0}); setv(under, {x:-110}); }
+    else { setv(el, {x:402}); spring(el, {x:0}, {response:.5}); spring(under, {x:-110}, {response:.5}); }
+    under.style.pointerEvents = 'none';
+    this.edge(el);
+    if (el._intro && !inst) el._intro();
+  }
+  pop(vx = 0){
+    if (this.st.length < 2) return;
+    const el = this.st.pop(), under = this.top();
+    under.style.pointerEvents = '';
+    if (document.activeElement && el.contains(document.activeElement)) document.activeElement.blur();
+    spring(el, {x:402}, {response:.46, velocity:{x:vx}, onDone:() => el.remove()});
+    spring(under, {x:0}, {response:.46, velocity:{x:vx*110/402}});
+    if (under._back) under._back();
+  }
+  popTo(n){ while (this.st.length > n + 2){ const x = this.st.splice(this.st.length - 2, 1)[0]; x.remove(); } const under = this.st[this.st.length - 2]; if (under) setv(under, {x:-110}); this.pop(); }
+  edge(el){
+    el.addEventListener('pointerdown', e => {
+      const p = pt(e);
+      if (p.x > 24 || this.top() !== el || this.st.length < 2) return;
+      e.stopPropagation();
+      const under = this.st[this.st.length - 2], vt = new VT();
+      try { el.setPointerCapture(e.pointerId); } catch(_){}
+      const mv = ev => { const q_ = pt(ev); vt.add(q_.x, q_.y); const dx = Math.max(0, q_.x - p.x); setv(el, {x:dx}); setv(under, {x:-110 + dx*110/402}); };
+      const up = ev => { el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+        const dx = Math.max(0, pt(ev).x - p.x), v = vt.v().x;
+        if (dx + project(v) > 150) this.pop(v); else { spring(el, {x:0}, {response:.4, velocity:{x:v}}); spring(under, {x:-110}, {response:.4}); } };
+      el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+    }, true);
+  }
+}
+/* appearance: System (follows the phone) by default, or Light / Dark */
+A.theme = (() => { try { return localStorage.getItem('decibuy-theme') || 'system'; } catch(_){ return 'system'; } })();
+A.sys = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+function applyTheme(anim){
+  const dark = A.theme === 'dark' || (A.theme === 'system' && A.sys === 'dark');
+  qa('.p-phone button').forEach(b => b.classList.toggle('on', b.dataset.m === A.sys));
+  if (D.classList.contains('dk') === dark) return;
+  if (anim && !RM){ D.classList.add('thx'); clearTimeout(A._thx); A._thx = setTimeout(() => D.classList.remove('thx'), 520); }
+  D.classList.toggle('dk', dark);
+}
+function setTheme(t){ A.theme = t; try { localStorage.setItem('decibuy-theme', t); } catch(_){} applyTheme(true); }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => { A.sys = e.matches ? 'dark' : 'light'; applyTheme(true); });
+function segmented(x, y){
+  const modes = ['system','light','dark'];
+  const el = h(`<div class="seg" style="left:${x}px;top:${y}px"><i class="seg-th"></i>${['System','Light','Dark'].map((o, i) => `<span data-i="${i}">${o}</span>`).join('')}</div>`);
+  const th = q('.seg-th', el);
+  const set = (i, inst) => { (inst ? setv : spring)(th, {x:2 + i*65.3}, {response:.35, damping:.8}); };
+  set(modes.indexOf(A.theme), true);
+  qa('span', el).forEach(sp => tap(sp, () => { const i = +sp.dataset.i; set(i); setTheme(modes[i]); }, {scale:.94}));
+  return el;
+}
+function statusBar(){
+  return h(`<div class="sb"><div class="tm">9:41</div><svg width="70" height="13" viewBox="0 0 70 13" fill="currentColor"><rect x="0" y="9" width="3" height="4" rx="1"/><rect x="5" y="7" width="3" height="6" rx="1"/><rect x="10" y="5" width="3" height="8" rx="1"/><rect x="15" y="3" width="3" height="10" rx="1"/><rect x="42" y="0" width="25" height="12" rx="3.5"/></svg></div>`);
+}
+function lightBars(on){ q('.sb', D).classList.toggle('lt', on); q('.hi', D).classList.toggle('lt', on); }
+function tabbar(){
+  const el = h(`<div class="tabbar">${TABS.map(t => `<div class="tab" data-t="${t.id}" style="left:${t.cx - 32}px"><span class="ti">${t.ic}</span><span class="tl">${t.label}</span></div>`).join('')}</div>`);
+  qa('.tab', el).forEach(t => tap(t, () => switchTab(t.dataset.t), {scale:.88}));
+  return el;
+}
+function showTabbar(on, inst, scr){ const tb = A.tabbar; if (!tb) return; if (scr && A.screens && A.screens[A.tab] !== scr) return; (inst ? setv : spring)(tb, {y:on ? 0 : 110, o:on ? 1 : 0}, {response:.42}); tb.style.pointerEvents = on ? '' : 'none'; }
+function bounceTab(id){ const t = q(`.tab[data-t="${id}"] .ti`, A.tabbar); if (!t) return; setv(t, {s:1.35}); spring(t, {s:1}, {response:.5, damping:.45}); }
+function switchTab(id, inst){
+  if (A.tab === id && !inst) return;
+  const prev = A.screens[A.tab], next = A.screens[id];
+  A.tab = id;
+  qa('.tab', A.tabbar).forEach(t => t.classList.toggle('on', t.dataset.t === id));
+  for (const [k, s] of Object.entries(A.screens)){ s.style.pointerEvents = k === id ? '' : 'none'; s.style.zIndex = k === id ? 2 : 1; }
+  if (inst){ for (const [k, s] of Object.entries(A.screens)) setv(s, {o:k === id ? 1 : 0, y:0}); }
+  else { if (prev) spring(prev, {o:0}, {response:.22}); setv(next, {o:0, y:10}); spring(next, {o:1, y:0}, {response:.42}); }
+  if (next._enter) next._enter(inst);
+}
+function hdrMode(hdr, mode, inst){ (inst ? setv : spring)(hdr, {o:mode === 'open' ? 0 : 1, y:mode === 'open' ? -8 : 0}, {response:mode === 'open' ? .3 : .45}); hdr.style.pointerEvents = mode === 'open' ? 'none' : ''; }
+function toast(txt, o = {}){
+  const host = A.ovl; if (!host) return;
+  qa('.toast', host).forEach(t => t.remove());
+  const el = h(`<div class="toast"><span style="flex:1">${txt}</span>${o.action ? `<b class="tact">${o.action}</b>` : ''}</div>`); host.appendChild(el);
+  setv(el, {y:44, o:0, s:.96}); spring(el, {y:0, o:1, s:1}, {response:.48, damping:.8});
+  const hide = (v = 0) => { if (el._gone) return; el._gone = 1; spring(el, {y:110, o:0}, {response:.4, velocity:{y:v}, onDone:() => el.remove()}); };
+  if (o.action) tap(q('.tact', el), () => { hide(); o.onAction(); }, {scale:.9});
+  gesture(el, {move:(c, dx, dy) => setv(el, {y:dy > 0 ? dy : -rubber(-dy, 80, .4)}), up:(c, dx, dy, v, t) => { if (t) return; if (dy + project(v.y) > 40) hide(v.y); else spring(el, {y:0}, {response:.4}); }});
+  setTimeout(() => hide(), o.ms || (o.action ? 5000 : 3200));
+}
+
+/* live values used across screens (data-b="…") */
+function vals(){
+  const u = A.U, m = money(), c = cycle();
+  const left = Math.max(0, m.mid - u.spent);
+  const drops = A.items ? A.items.items.filter(i => P[i.key].was > P[i.key].price).length : 0;
+  const spare = m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)} / month` : '$0 / month';
+  return {
+    hi: u.name ? `Hi ${u.name}` : 'Hi there',
+    spare, spareShort: m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)}` : '$0',
+    left: c ? `About $${fmtN(r10(left))} left until payday` : `About $${fmtN(r10(left))} left this month`,
+    payrow: c ? `Payday in ${c.days} ${c.days === 1 ? 'day' : 'days'} (${fmtShort(c.next)})` : 'Your pay varies, so no payday advice',
+    inc: u.incExact ? `$${fmtN(u.incExact)}` : INC[u.inc][0], incRhy: `${u.incExact ? `$${fmtN(u.incExact)}` : INC[u.inc][0]} · ${RHY[u.rhy]}`,
+    payday: c ? fmtShort(c.next) : 'Varies',
+    rent: `$${fmtN(u.rent || 0)}`, rentNeg: `− $${fmtN(u.rent || 0)}`,
+    bills: BILLS[u.bills][0], billsNeg: `− ${BILLS[u.bills][0]}`,
+    spareSentence: m.hi > 0 ? `So you usually have about $${fmtN(m.lo)}–${fmtN(m.hi)} free each month. Sounds right?` : 'Your rent and bills take everything right now. Check the numbers?',
+    changes: drops ? `${drops} price ${drops === 1 ? 'changed' : 'changed'} in My items` : 'No price changes in My items',
+    name: u.name || 'Not set',
+    usedFrac: m.mid > 0 ? clamp(u.spent/m.mid, 0, 1) : 1,
+  };
+}
+function refresh(){
+  const V = vals();
+  qa('[data-b]', D).forEach(el => { const t = V[el.dataset.b]; if (t !== undefined) el.textContent = t; });
+  qa('.spfill', D).forEach(f => spring(f, {w:Math.max(8, 306*V.usedFrac)}, {response:.7}));
+  qa('[data-goal]', D).forEach(renderGoal);
+  for (const s of [A.home, A.items]) if (s) s.refreshData();
+}
+function renderGoal(host){
+  const g = A.U.goal;
+  host.innerHTML = g ? `<div class="a goalcard" style="left:24px;top:0;width:354px;height:100px;border-radius:16px;background:var(--sf);padding:16px;cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:700 19px/23px var(--fd)">${g.name}</span><span style="font:500 13px/18px var(--fb);color:var(--tx2)">$${fmtN(g.per)} / month</span></div>
+      <div style="font:500 15px/21px var(--fb);margin-top:4px">$${fmtN(g.saved)} of $${fmtN(g.target)}</div>
+      <div class="bar" style="margin-top:10px;background:var(--sf2)"><i class="gfill" style="width:${Math.max(8, Math.round(314*clamp(g.saved/g.target, 0, 1)))}px;background:var(--blueS);transform-origin:0 0"></i></div></div>`
+    : `<div class="row goalcard" style="top:0;cursor:pointer;color:var(--blueS);font-weight:600">+ Add a savings goal</div>`;
+  tap(q('.goalcard', host), () => pushQ('goal'), {scale:.985});
+}
+
+/* ---------------- Home ---------------- */
+function buildHome(){
+  const el = h(`<div class="scr">
+    <div class="hdr L">
+      <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
+      <div class="eyebrow" data-b="hi" style="top:118px"></div>
+      <div class="ttl" style="top:147px">YOUR SPARE MONEY</div>
+      <div class="spare" style="top:197px;height:149px">
+        <div class="a" style="top:20px;width:306px;display:flex;justify-content:space-between;font:600 14px/19px var(--fb)"><span style="opacity:.8">This month</span><b class="edit" style="cursor:pointer;padding:6px;margin:-6px">Edit</b></div>
+        <div class="a" data-b="spare" style="top:49px;font:700 28px/34px var(--fd)"></div>
+        <div class="a" style="top:93px;width:306px;height:8px;border-radius:4px;background:rgba(255,255,255,.3)"><i class="spfill" style="position:absolute;left:0;top:0;height:8px;width:113px;border-radius:4px;background:#fff;transform-origin:0 0"></i></div>
+        <div class="a" data-b="left" style="top:111px;font:500 13px/18px var(--fb);opacity:.8"></div>
+      </div>
+      <div class="sec" style="top:366px">Coming up</div>
+      <div class="row" data-b="payrow" style="top:403px"></div>
+      <div class="row" style="top:459px">Black Friday is in 5 weeks</div>
+      <div class="row go-items" data-b="changes" style="top:515px;cursor:pointer"></div>
+      <div class="sec" style="top:583px">Recent checks</div>
+    </div>
+    <div class="fab" style="left:310px;top:707px">${IC.add}</div>
+  </div>`);
+  const hdr = q('.hdr', el), fab = q('.fab', el);
+  tap(q('.gear', el), () => pushSettings(), {scale:.85});
+  tap(q('.edit', el), () => pushQ('spare'), {scale:.9, op:.6});
+  tap(q('.go-items', el), () => switchTab('items'), {scale:.98});
+  tap(fab, () => pushAdd(), {scale:.9});
+  A.home = new Stack(el, {kind:'home', baseY:620, items:[{key:'sneaker'}, {key:'lamp'}, {key:'nike'}],
+    onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); (inst ? setv : spring)(fab, {s:m === 'open' ? .4 : 1, o:m === 'open' ? 0 : 1}, {response:.38}); fab.style.pointerEvents = m === 'open' ? 'none' : ''; }});
+  el._enter = inst => { const f = q('.spfill', el); if (inst) return setv(f, {sx:1}); setv(f, {sx:0}); spring(f, {sx:1}, {response:1, delay:.2}); };
+  return el;
+}
+
+/* ---------------- Check ---------------- */
+function draftSet(kind){
+  const sony = {key:'sony', detail:'Expires in 2 days', bodyH:199, draft:{expires:'Expires in 2 days'}};
+  const lamp = {key:'lampD', detail:'Expires in 3 days', bodyH:301, draft:{expires:'Expires in 3 days'}};
+  if (kind === 'empty') return [];
+  if (kind === 'one') return [sony];
+  if (kind === 'twoReady'){ P.lampD.price = 180; return [sony, Object.assign({}, lamp, {bodyH:199})]; }
+  if (kind === 'full'){
+    P.canonD = Object.assign({}, P.canon); P.nikeD = {name:'Nike Air Force 1 ’07', price:110, site:'nike.com'}; P.dysonD = {name:'Dyson V8', price:349, site:'dyson.com'};
+    return [Object.assign({}, sony, {detail:'$298'}), Object.assign({}, lamp, {detail:'Price missing'}),
+      {key:'canonD', detail:'$1,240', bodyH:199, draft:{expires:'Expires in 1 day'}}, {key:'nikeD', detail:'$110', bodyH:199, draft:{expires:'Expires in 2 days'}},
+      {key:'dysonD', detail:'', bodyH:199, draft:{expires:'Expires in 3 days', justAdded:true}}];
+  }
+  return [sony, lamp];
+}
+function buildCheck(kind, offline){
+  A.offline = !!offline;
+  if (offline) P.lampD.price = 180;
+  const base = offline ? 273 : 197;
+  const el = h(`<div class="scr">
+    <div class="hdr L">
+      <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
+      <div class="eyebrow ccount" style="top:118px">2 of 5 drafts</div>
+      <div class="ttl" style="top:147px">CHECK</div>
+      ${offline ? `<div class="a" style="left:24px;top:197px;width:354px;height:64px;border-radius:16px;background:var(--sf);display:flex;align-items:center;gap:12px;padding:0 16px;font:500 13px/18px var(--fb)">${IC.offline}<span>You’re offline. Your drafts are saved; calculate when you’re back online.</span></div>` : ''}
+      <div class="a addm" style="left:28px;top:574px;font:700 16px/22px var(--fb);cursor:pointer;z-index:5">+ Add manually</div>
+      <div class="empty L" style="pointer-events:none">
+        <div class="a" style="left:24px;top:197px;width:354px;height:200px;border-radius:24px;background:var(--tint);border:2px dashed var(--blue);padding:20px">
+          <div style="font:800 24px/1.1 var(--fd)">Share from any store to add items.</div>
+          <div style="font:500 15px/21px var(--fb);color:var(--tx2);margin-top:10px">Open a product in TikTok, a store app or a deals email and tap Share → DeciBuy. Drafts stack here.</div>
+        </div>
+        <div class="sec" style="top:421px">How drafts work</div>
+        <div class="row" style="top:457px">Up to 5 drafts</div>
+        <div class="row" style="top:513px">Drafts are removed after 3 days</div>
+        <div class="row" style="top:569px">You can also add one manually</div>
+        <div class="btn addm2" style="top:710px;pointer-events:auto">Add manually</div>
+      </div>
+    </div>
+  </div>`);
+  const hdr = q('.hdr', el), addm = q('.addm', el), empty = q('.empty', el);
+  tap(q('.gear', el), () => pushSettings(), {scale:.85});
+  tap(addm, () => pushAdd(), {scale:.95});
+  tap(q('.addm2', el), () => pushAdd());
+  A.check = new Stack(el, {kind:'drafts', baseY:base, items:offline ? [draftSet('one')[0], {key:'lampD', detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days'}}] : draftSet(kind),
+    onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
+    onChange:(st, inst) => {
+      const n = st.items.length;
+      q('.ccount', el).textContent = `${n} of 5 drafts`;
+      const front = st.items[n-1];
+      const y = n ? base + (n-1)*56 + st.bodyH(front) + 22 : 574;
+      (inst ? setv : spring)(addm, {y:y - 574, o:(n && n < 5) ? 1 : 0}, {response:.5, damping:.86});
+      addm.style.pointerEvents = (n && n < 5) ? '' : 'none';
+      (inst ? setv : spring)(empty, {o:n ? 0 : 1}, {response:.4});
+      q('.addm2', el).style.pointerEvents = n ? 'none' : 'auto';
+    }});
+  return el;
+}
+let manualN = 0;
+function addDraft(prod){
+  const key = 'm' + (++manualN);
+  P[key] = Object.assign({added:100 + manualN}, prod);
+  const st = A.check;
+  if (st.items.length >= 5){ const old = st.items[0]; const nm = P[old.key].name; st.take(old.id, 'drop'); later(500, () => toast(`Drafts are full. “${nm}” was removed to make room.`, {ms:4500})); }
+  st.insert({key, detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days', justAdded:true}});
+}
+
+/* ---------------- My items ---------------- */
+const vRank = k => ({buy:0, wait:1, notnow:2, neutral:3})[verdictOf(k, {saved:true}).v];
+const SORTS = [
+  ['Price: low → high', (a, b) => (P[a.key].price || 1e9) - (P[b.key].price || 1e9)],
+  ['Price: high → low', (a, b) => (P[b.key].price || 0) - (P[a.key].price || 0)],
+  ['Date added', (a, b) => (P[a.key].savedAt || P[a.key].added) - (P[b.key].savedAt || P[b.key].added)],
+  ['Price dropped since saved', (a, b) => ((P[b.key].was || P[b.key].price) - P[b.key].price) - ((P[a.key].was || P[a.key].price) - P[a.key].price)],
+  ['Fits now', (a, b) => vRank(a.key) - vRank(b.key)],
+  ['Waiting longest', (a, b) => (vRank(a.key) === 1 ? 0 : 1) - (vRank(b.key) === 1 ? 0 : 1) || P[a.key].added - P[b.key].added],
+];
+function buildItems(){
+  const el = h(`<div class="scr">
+    <div class="hdr L">
+      <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
+      <div class="eyebrow icount" style="top:118px">4 saved</div>
+      <div class="ttl" style="top:147px">MY ITEMS</div>
+      <div class="a" style="left:24px;top:197px;width:354px;display:flex;justify-content:space-between;font:500 14px/20px var(--fb);color:var(--tx2)"><span>Prices as of Oct 24</span><span style="display:flex;gap:18px;color:var(--tx);font-weight:700"><span class="sortb" style="cursor:pointer">Sort</span><span class="recheck" style="cursor:pointer">Re-check all</span></span></div>
+      <div class="iempty L" style="pointer-events:none"><div class="a" style="left:24px;top:240px;width:354px;font:500 15px/21px var(--fb);color:var(--tx2)">Nothing saved yet. Items you save from a verdict wait here.</div></div>
+    </div>
+  </div>`);
+  const hdr = q('.hdr', el);
+  tap(q('.gear', el), () => pushSettings(), {scale:.85});
+  tap(q('.sortb', el), () => sortSheet(), {scale:.92, op:.6});
+  tap(q('.recheck', el), () => recheckAll(), {scale:.92, op:.6});
+  A.items = new Stack(el, {kind:'items', baseY:228, items:[{key:'lamp'}, {key:'nike'}, {key:'canon'}, {key:'dyson'}],
+    onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
+    onChange:(st, inst) => { q('.icount', el).textContent = `${st.items.length} saved`; (inst ? setv : spring)(q('.iempty', el), {o:st.items.length ? 0 : 1}, {response:.3}); }});
+  A.sortIdx = 2;
+  return el;
+}
+function recheckAll(){
+  if (A.items.open) return;
+  A.items.wave();
+  later(900, () => {
+    let changed = 0;
+    for (const it of A.items.items){ const p = P[it.key];
+      if (!p.price && p.found){ p.price = p.found; p.failed = false; changed++; }
+      else if (p.failed){ p.failed = false; changed++; } }
+    refresh();
+  });
+}
+function sortSheet(inst){
+  const host = A.ovl;
+  const el = h(`<div class="L"><div class="dim"></div><div class="sheet" style="top:412px;height:470px">
+    <div class="grab"></div>
+    <div class="a" style="left:24px;top:30px;font:800 24px/1.1 var(--fd)">Sort by</div>
+    ${SORTS.map((s, i) => `<div class="opt bg" data-i="${i}" style="top:${79 + i*54}px"></div>`).join('')}
+    <div class="opt-hl" style="top:79px">${IC.tick('#206AED')}</div>
+    ${SORTS.map((s, i) => `<div class="opt lbl" data-l="${i}" style="top:${79 + i*54}px;background:transparent;pointer-events:none">${s[0]}</div>`).join('')}
+  </div></div>`);
+  host.appendChild(el);
+  const dim = q('.dim', el), sh = q('.sheet', el), hl = q('.opt-hl', el);
+  const mark = (i, inst2) => { (inst2 ? setv : spring)(hl, {y:i*54}, {response:.38, damping:.82}); qa('.lbl', el).forEach(o => o.classList.toggle('on', +o.dataset.l === i)); };
+  mark(A.sortIdx, true);
+  setv(dim, {o:0}); setv(sh, {y:470});
+  (inst ? setv : spring)(dim, {o:.45}, {response:.35}); (inst ? setv : spring)(sh, {y:0}, {response:.45, damping:.86});
+  const close = (v = 0) => { spring(dim, {o:0}, {response:.3}); spring(sh, {y:480}, {response:.4, velocity:{y:v}, onDone:() => el.remove()}); el.style.pointerEvents = 'none'; };
+  tap(dim, () => close(), {scale:1});
+  qa('.bg', el).forEach(o => tap(o, () => { const i = +o.dataset.i; if (i === A.sortIdx) return close(); A.sortIdx = i; mark(i); later(280, () => { close(); later(140, () => A.items.sortBy(SORTS[i][1])); }); }, {scale:.98}));
+  gesture(sh, {
+    move:(c, dx, dy) => { setv(sh, {y:dy > 0 ? dy : -rubber(-dy, 120, .35)}); setv(dim, {o:.45*clamp(1 - dy/470, 0, 1)}); },
+    up:(c, dx, dy, v, t) => { if (t) return; if (dy + project(v.y) > 130) close(v.y); else { spring(sh, {y:0}, {response:.42, damping:.8, velocity:{y:v.y}}); spring(dim, {o:.45}, {response:.3}); } }
+  });
+}
+
+/* ---------------- My money ---------------- */
+function buildMoney(){
+  const el = h(`<div class="scr">
+    <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
+    <div class="eyebrow" style="top:118px">Your numbers</div>
+    <div class="ttl" style="top:147px">MY MONEY</div>
+    <div class="spare" style="top:197px;height:107px">
+      <div class="a" style="top:20px;width:306px;display:flex;justify-content:space-between;font:600 14px/19px var(--fb)"><span style="opacity:.8">Spare money</span><b class="edit" style="cursor:pointer;padding:6px;margin:-6px">Edit</b></div>
+      <div class="a" data-b="spare" style="top:49px;font:700 28px/34px var(--fd)"></div>
+    </div>
+    <div class="sec" style="top:321px">Your basics</div>
+    <div class="row r-inc" style="top:357px;cursor:pointer">Take-home<span class="rv" data-b="incRhy"></span></div>
+    <div class="row r-pay" style="top:413px;cursor:pointer">Next payday<span class="rv" data-b="payday"></span></div>
+    <div class="row r-rent" style="top:469px;cursor:pointer">Rent<span class="rv" data-b="rent"></span></div>
+    <div class="row r-bills" style="top:525px;cursor:pointer">Other bills<span class="rv" data-b="bills"></span></div>
+    <div class="sec" style="top:593px">Saving for</div>
+    <div class="a" data-goal style="left:0;top:629px;width:402px;height:100px"></div>
+  </div>`);
+  tap(q('.gear', el), () => pushSettings(), {scale:.85});
+  tap(q('.edit', el), () => pushQ('spare'), {scale:.9, op:.6});
+  tap(q('.r-inc', el), () => pushQ('income'), {scale:.985});
+  tap(q('.r-pay', el), () => pushQ('rhythm'), {scale:.985});
+  tap(q('.r-rent', el), () => pushQ('rent'), {scale:.985});
+  tap(q('.r-bills', el), () => pushQ('bills'), {scale:.985});
+  el._enter = inst => { const f = q('.gfill', el); if (!f) return; if (inst) return setv(f, {sx:1}); setv(f, {sx:0}); spring(f, {sx:1}, {response:.9, delay:.2}); };
+  return el;
+}
+
+/* ---------------- Settings, Add item ---------------- */
+function toggle(on, x, y){
+  const t = h(`<div class="tgl ${on ? 'on' : ''}" style="left:${x}px;top:${y}px"><i></i></div>`);
+  const k = q('i', t); setv(k, {x:on ? 22 : 2});
+  tap(t, () => { on = !on; t.classList.toggle('on', on); spring(k, {x:on ? 22 : 2}, {response:.35, damping:.72}); t._on && t._on(on); }, {scale:.96});
+  return t;
+}
+function pushSettings(inst){
+  const el = h(`<div class="scr">
+    <div class="ico bk" style="left:24px;top:80px">${IC.back}</div>
+    <div class="a h36" style="left:24px;top:116px">Settings</div>
+    <div class="row r-name" style="top:193px;cursor:pointer">Name<span class="rv" data-b="name"></span></div>
+    <div class="row r-app" style="top:249px">Appearance</div>
+    <div class="row" style="top:305px">Notifications</div>
+    <div class="row" style="top:361px;height:63px;line-height:21px;padding-top:11px">Privacy and data<div style="font:500 13px/18px var(--fb);color:var(--tx2)">Export · Delete</div><span class="a" style="left:316px;top:20px">${IC.chev}</span></div>
+    <div class="row" style="top:432px">Region and currency<span class="rv">USD · $</span></div>
+    <div class="row" style="top:488px">About DeciBuy<span class="a" style="left:316px;top:12px">${IC.chev}</span></div>
+    <div class="a" style="left:24px;top:561px;font:500 13px/18px var(--fb);color:var(--tx2)">DeciBuy helps you decide. The final call is always yours.</div>
+  </div>`);
+  el.appendChild(toggle(true, 308, 313));
+  el.appendChild(segmented(170, 257));
+  qa('.row', el).forEach(r => { if (!r.classList.contains('r-app')) tap(r, () => { if (r.classList.contains('r-name')) pushQ('name'); }, {scale:.985}); });
+  tap(q('.bk', el), () => A.nav.pop(), {scale:.85});
+  A.nav.push(el, inst); refresh();
+  return el;
+}
+function fieldInput(label, ph, o = {}){
+  return `<div class="field fi ${o.cls || ''}" style="left:${o.x ?? 20}px;top:${o.y}px;${o.w ? `width:${o.w}px;` : ''}${o.bg ? `background:${o.bg};` : ''}cursor:text"><div class="fl">${label}</div><input ${o.id ? `data-k="${o.id}"` : ''} placeholder="${ph}" ${o.mode ? `inputmode="${o.mode}"` : ''} autocomplete="off" spellcheck="false" value="${o.value ?? ''}">${o.suffix ? `<span class="sfx"></span>` : ''}</div>`;
+}
+function moneyIn(inp, cb){
+  inp.addEventListener('input', () => { const d = inp.value.replace(/\D/g, '').slice(0, 6); inp.value = d ? '$' + (+d).toLocaleString('en-US') : ''; cb(d ? +d : null); });
+}
+function wireFields(el){ qa('.fi', el).forEach(f => { f.addEventListener('pointerdown', e => e.stopPropagation()); f.addEventListener('click', () => q('input', f).focus({preventScroll:true})); }); }
+function pushAdd(e1, inst){
+  const el = h(`<div class="scr">
+    <div class="ico bk" style="left:24px;top:80px">${IC.back}</div>
+    <div class="a h36" style="left:24px;top:116px">Add an item</div>
+    <div class="a card" style="left:24px;top:180px;width:354px;height:409px;border-radius:24px;background:var(--tint)">
+      ${fieldInput('Link', 'Paste a link', {y:20, id:'link', cls:'f-link'})}
+      <div class="a orl" style="left:20px;top:97px;width:314px;height:18px;display:flex;align-items:center;gap:12px;font:500 13px/18px var(--fb);color:var(--tx2)"><i style="flex:1;height:1px;background:var(--blue)"></i>or<i style="flex:1;height:1px;background:var(--blue)"></i></div>
+      <div class="a warn" style="left:20px;top:97px;width:314px;height:60px;border-radius:14px;background:var(--wait);color:#000;display:flex;align-items:center;gap:10px;padding:0 14px;font:600 13px/18px var(--fb)">${IC.alert}<span>Couldn’t read this page. Add the name and price yourself.</span></div>
+      <div class="mv L" style="pointer-events:none">
+        ${fieldInput('Name', 'What is it?', {y:127, id:'name'})}
+        ${fieldInput('Price', '$ 0.00', {y:204, id:'price', mode:'numeric'})}
+        <div class="a inst" style="left:20px;top:281px;width:314px;height:31px;pointer-events:auto"><span style="font:600 16px/31px var(--fb)">Pay in installments?</span></div>
+        ${fieldInput('Installments', 'Number of payments', {y:324, id:'inst', mode:'numeric', cls:'f-inst', suffix:true})}
+      </div>
+    </div>
+    <div class="btn add dis" style="top:609px">Add to drafts</div>
+    <div class="fd pk addpk" style="width:354px;height:201px;border-radius:16px;background:var(--tint)"><div class="face f-tab"><span class="nm"></span></div></div>
+  </div>`);
+  qa('.mv .field', el).forEach(f => f.style.pointerEvents = 'auto');
+  const card = q('.card', el), warn = q('.warn', el), orl = q('.orl', el), mv = q('.mv', el), finst = q('.f-inst', el), btn = q('.add', el);
+  const peek = q('.addpk', el); const pk = A.check.items[A.check.items.length - 1];
+  if (pk) q('.nm', peek).textContent = P[pk.key].name; else peek.style.display = 'none';
+  const tg = toggle(false, 263, 0); q('.inst', el).appendChild(tg);
+  const F = {link:'', name:'', price:null, inst:null};
+  const st = {e1:!!e1, inst:false};
+  const I = k => q(`input[data-k="${k}"]`, el);
+  const valid = () => F.name.trim() && F.price > 0 && (!st.inst || F.inst > 1);
+  const lay = instant => {
+    const sp = instant ? setv : spring, o = {response:.48, damping:.86};
+    sp(warn, {o:st.e1 ? 1 : 0, s:st.e1 ? 1 : .96}, o);
+    sp(orl, {o:st.e1 ? 0 : 1}, {response:.25});
+    const shift = st.e1 ? 42 : 0;
+    sp(mv, {y:shift}, o);
+    sp(finst, {o:st.inst ? 1 : 0, s:st.inst ? 1 : .97}, o); finst.style.pointerEvents = st.inst ? 'auto' : 'none';
+    const hh = (st.inst ? 409 : 332) + shift;
+    sp(card, {h:hh}, o); sp(btn, {y:hh - 409}, o);
+    btn.classList.toggle('dis', !valid());
+    const sfx = q('.sfx', el); if (sfx) sfx.textContent = F.inst > 1 && F.price ? ` × $${fmtN(Math.ceil(F.price/F.inst))}` : '';
+  };
+  tg._on = on => { st.inst = on; lay(); if (on) later(200, () => I('inst').focus({preventScroll:true})); };
+  I('link').addEventListener('input', () => { F.link = I('link').value.trim(); });
+  I('link').addEventListener('change', () => { if (F.link && !st.e1){ st.e1 = true; lay(); later(250, () => I('name').focus({preventScroll:true})); } if (!F.link && st.e1){ st.e1 = false; lay(); } });
+  I('name').addEventListener('input', () => { F.name = I('name').value; lay(); });
+  moneyIn(I('price'), v => { F.price = v; lay(); });
+  I('inst').addEventListener('input', () => { const d = I('inst').value.replace(/\D/g, '').slice(0, 2); I('inst').value = d; F.inst = d ? +d : null; lay(); });
+  wireFields(el);
+  if (e1){ I('link').value = F.link = 'ikea.com/p/mushroom-lamp…'; }
+  tap(q('.bk', el), () => A.nav.pop(), {scale:.85});
+  tap(peek, () => A.nav.pop(), {scale:.98});
+  tap(btn, () => {
+    if (!valid()) return;
+    let site = 'Added manually';
+    if (F.link){ const m = F.link.replace(/^https?:\/\//, '').replace(/^www\./, '').split(/[\/?#]/)[0]; if (m.includes('.')) site = m; }
+    const prod = {name:F.name.trim(), price:F.price, site, inst:st.inst ? F.inst : null};
+    A.nav.pop(); if (A.tab !== 'check') switchTab('check');
+    later(380, () => addDraft(prod));
+  });
+  setv(warn, {o:0}); setv(card, {h:409}); setv(btn, {y:0}); setv(mv, {y:0}); setv(peek, {x:24, y:792});
+  lay(true);
+  A.nav.push(el, inst);
+}
+
+/* =====================================================================
+   Question screens: used in onboarding (step N of 7) and later for editing
+   ===================================================================== */
+const STEPS = 7;
+function progress(step){ return `<div class="prog">${Array.from({length:STEPS}, (_, i) => `<span>${i + 1 <= step ? `<i data-i="${i + 1}"></i>` : ''}</span>`).join('')}</div>`; }
+function head(t, s, top = 132){ return `<div class="ohead" style="top:${top}px"><div class="h36">${t}</div>${s ? `<div class="sub16">${s}</div>` : ''}</div>`; }
+function picker(host, values, sel, cb, top = 338){
+  const Pk = h(`<div class="pick" style="top:${top}px"><div class="sel"></div>${values.map(v => `<div class="pi">${v}</div>`).join('')}</div>`);
+  host.appendChild(Pk);
+  const rows = qa('.pi', Pk), H = 53, C0 = 125 + 24 - 11.5;
+  const proxy = {}; S(proxy).y = -sel*H;
+  proxy._ap = s => rows.forEach((r, i) => { const d = (i*H + s.y)/H, ad = Math.abs(d);
+    r.style.transform = `translateY(${C0 + i*H + s.y}px) scale(${1 - Math.min(ad, 1)*0.17})`;
+    r.style.opacity = ad < .5 ? 1 : Math.max(.15, [1, .7, .4, .25][Math.min(3, Math.round(ad))]);
+    r.style.color = ad < .5 ? 'var(--tx)' : 'var(--tx2)';
+    r.style.fontWeight = ad < .5 ? 600 : 500; });
+  apply(proxy);
+  let y0 = 0;
+  gesture(Pk, {
+    down:() => { y0 = S(proxy).y; },
+    move:(c, dx, dy) => { let y = y0 + dy; const min = -(values.length - 1)*H; if (y > 0) y = rubber(y, 200, .5); if (y < min) y = min - rubber(min - y, 200, .5); setv(proxy, {y}); },
+    up:(c, dx, dy, v, t) => {
+      let idx;
+      if (t){ const local = c.p0.y - Pk.offsetTop; idx = Math.round((local - 11.5 - C0 - S(proxy).y)/H); }
+      else idx = Math.round(-(S(proxy).y + project(v.y, .992))/H);
+      idx = clamp(idx, 0, values.length - 1);
+      spring(proxy, {y:-idx*H}, {response:.45, damping:.9, velocity:t ? {} : {y:v.y}});
+      cb(idx);
+    }
+  });
+}
+function dayStrip(host, top, cur, cb){
+  const days = Array.from({length:35}, (_, i) => new Date(TODAY.getTime() + i*DAY));
+  const strip = h(`<div class="a strip" style="left:0;top:${top}px;width:402px;height:64px;overflow:hidden;touch-action:none"><div class="strk" style="position:absolute;left:24px;top:0;display:flex;gap:8px">${days.map((d, i) => `<div class="dchip" data-i="${i}"><span>${WD[d.getDay()].slice(0, 3)}</span><b>${d.getDate()}</b><span>${MO[d.getMonth()]}</span></div>`).join('')}</div></div>`);
+  host.appendChild(strip);
+  const trk = q('.strk', strip), W = 64, max = -(days.length*W - 354);
+  const mark = i => qa('.dchip', strip).forEach(c => c.classList.toggle('on', +c.dataset.i === i));
+  let si = days.findIndex(d => d.toDateString() === cur.toDateString()); if (si < 0) si = 4;
+  mark(si); setv(trk, {x:clamp(-si*W + 120, max, 0)});
+  let x0 = 0;
+  gesture(strip, {
+    down:() => { x0 = S(trk).x; },
+    move:(c, dx) => { let x = x0 + dx; if (x > 0) x = rubber(x, 200, .5); if (x < max) x = max - rubber(max - x, 200, .5); setv(trk, {x}); },
+    up:(c, dx, dy, v, t) => {
+      if (t){ const local = c.p0.x - 24 - S(trk).x; const i = clamp(Math.floor(local/W), 0, days.length - 1); mark(i); cb(days[i]); return; }
+      spring(trk, {x:clamp(S(trk).x + project(v.x, .993), max, 0)}, {response:.55, velocity:{x:v.x}});
+    }
+  });
+  return strip;
+}
+/* Q screens. mode: 'onb' | 'edit'. They write into T (a working copy of the user data). */
+function qScreen(kind, mode, T, done){
+  const onb = mode === 'onb';
+  const step = {income:1, rhythm:2, rent:3, bills:4, spare:5, goal:6, name:7}[kind];
+  const el = h(`<div class="scr">${(onb || kind !== 'ready') ? `<div class="ico bk" style="left:24px;top:76px">${IC.back}</div>` : ''}${onb && step ? progress(step) : ''}</div>`);
+  const bk = q('.bk', el); if (bk) tap(bk, () => (onb ? A.onb : A.nav).pop(), {scale:.85});
+  const add = html => el.insertAdjacentHTML('beforeend', html);
+  const btnLabel = onb ? 'Next' : 'Save';
+  let ok = () => true;
+  let mainAction = done;
+  const mainBtn = (label, top = 726) => { add(`<div class="btn main" style="top:${top}px">${label}</div>`); return q('.btn.main', el); };
+  const sync = () => { const b = q('.btn.main', el); if (b) b.classList.toggle('dis', !ok()); };
+  if (kind === 'income'){
+    add(head('What lands in your account each month?', 'After tax. A range is enough.'));
+    add(`<div class="lnk exl" style="top:662px"><span>Enter exact amount</span></div>`);
+    add(fieldInput('Your exact amount', '$4,500', {x:24, y:645, w:354, id:'iex', mode:'numeric', bg:'var(--sf)', cls:'exf', value:T.incExact ? '$' + fmtN(T.incExact) : ''}));
+    const exl = q('.exl', el), exf = q('.exf', el), iex = q('input[data-k="iex"]', el);
+    const showEx = (on, inst) => { (inst ? setv : spring)(exf, {o:on ? 1 : 0, y:on ? 0 : 10, s:on ? 1 : .97}, {response:.45, damping:.85}); exf.style.pointerEvents = on ? 'auto' : 'none'; (inst ? setv : spring)(exl, {o:on ? 0 : 1}, {response:.25}); exl.style.pointerEvents = on ? 'none' : ''; };
+    picker(el, INC.map(x => x[0]), T.inc, i => {
+      if (i !== T.inc && T.incExact){ T.incExact = null; iex.value = ''; }
+      T.inc = i; showEx(i === INC.length - 1 || !!T.incExact);
+    });
+    moneyIn(iex, v => { T.incExact = v; });
+    wireFields(el);
+    tap(q('span', exl), () => { showEx(true); later(250, () => iex.focus({preventScroll:true})); }, {scale:.94, op:.6});
+    showEx(T.inc === INC.length - 1 || !!T.incExact, true);
+    mainBtn(btnLabel);
+  }
+  if (kind === 'bills'){
+    add(head('Other regular bills you pay?', 'Phone, subscriptions, transport, loans. A guess is fine.'));
+    picker(el, BILLS.map(x => x[0]), T.bills, i => T.bills = i, 300);
+    mainBtn(btnLabel);
+  }
+  if (kind === 'rhythm'){
+    add(head(onb ? 'How often do you get paid?' : 'When do you get paid?'));
+    add(`${[0,1,2].map(i => `<div class="choice bgc" data-i="${i}" style="top:${229 + i*60}px"></div>`).join('')}
+      <div class="choice-hl" style="top:229px">${IC.tick('#fff')}</div>
+      ${['Monthly','Every 2 weeks','It varies'].map((t, i) => `<div class="choice lbl" data-l="${i}" style="top:${229 + i*60}px;background:transparent;pointer-events:none">${t}</div>`).join('')}
+      <div class="pd L" style="pointer-events:none"><div class="sec" style="left:24px;top:433px">When is your next payday?</div>
+      <div class="a pdf" style="left:24px;top:462px;width:354px;height:67px;border-radius:14px;background:var(--sf);padding:12px 16px 0;pointer-events:auto;cursor:pointer"><div style="font:600 12px/16px var(--fb);color:var(--tx2)">Next payday</div><div class="pdv" style="font:500 17px/23px var(--fb);margin-top:4px">${fmtLong(T.payday)}</div><span class="a chv" style="right:14px;top:21px"><span style="display:block;transform:rotate(90deg)">${IC.chev}</span></span></div></div>
+      <div class="foot pfoot" style="top:541px;text-align:left">If your pay varies, we skip payday-based advice.</div>`);
+    const hl = q('.choice-hl', el), pd = q('.pd', el), pdf = q('.pdf', el), foot = q('.pfoot', el);
+    const strip = dayStrip(el, 537, T.payday, d => { T.payday = d; q('.pdv', el).textContent = fmtLong(d); later(220, () => openStrip(false)); });
+    let stripOpen = false;
+    const openStrip = (on, inst) => { stripOpen = on; (inst ? setv : spring)(strip, {o:on ? 1 : 0, y:on ? 0 : -10}, {response:.4}); strip.style.pointerEvents = on ? 'auto' : 'none'; (inst ? setv : spring)(foot, {y:on ? 72 : 0}, {response:.45, damping:.86}); spring(q('.chv', pdf), {s:on ? -1 : 1}, {response:.3}); };
+    const sel = (i, inst) => { T.rhy = i; (inst ? setv : spring)(hl, {y:i*60}, {response:.4, damping:.8}); qa('.lbl', el).forEach(l => l.classList.toggle('on', +l.dataset.l === i)); (inst ? setv : spring)(pd, {o:i === 2 ? .3 : 1}, {response:.3}); pdf.style.pointerEvents = i === 2 ? 'none' : 'auto'; if (i === 2) openStrip(false); };
+    qa('.bgc', el).forEach(c => tap(c, () => sel(+c.dataset.i), {scale:.98}));
+    tap(pdf, () => openStrip(!stripOpen), {scale:.985});
+    sel(T.rhy, true); openStrip(false, true);
+    mainBtn(btnLabel);
+  }
+  if (kind === 'rent'){
+    add(head('Rent or mortgage per month?'));
+    add(`<div class="a" style="left:0;top:322px;width:402px;text-align:center"><input class="bigin" inputmode="numeric" placeholder="$0" autocomplete="off" value="${T.rent ? '$' + fmtN(T.rent) : ''}"></div>
+      <div class="a" style="left:90px;top:408px;width:222px;height:2px;background:var(--blueS)"></div>
+      <div class="foot" style="top:425px">per month</div>`);
+    const inp = q('.bigin', el);
+    inp.addEventListener('pointerdown', e => e.stopPropagation());
+    add(`<div class="a rhint" style="left:24px;top:462px;width:354px;border-radius:14px;background:var(--wait);color:#000;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font:600 13px/18px var(--fb)">${IC.alert}<span><span class="rtx"></span>${onb ? ' <b class="rchk" style="text-decoration:underline;cursor:pointer">Check income</b>' : ''}</span></div>`);
+    const rh = q('.rhint', el); setv(rh, {o:0, y:-6}); rh.style.pointerEvents = 'none';
+    if (onb) tap(q('.rchk', el), () => A.onb.popTo(1), {scale:.95});
+    const check = () => { const inc = T.incExact || INC[T.inc][1]; const r = T.rent || 0;
+      const on = r >= inc*.9; q('.rtx', rh).textContent = r > inc ? `That’s more than what lands in your account (about $${fmtN(inc)}).` : `That’s almost all of what lands in your account (about $${fmtN(inc)}).`;
+      spring(rh, {o:on ? 1 : 0, y:on ? 0 : -6}, {response:.4}); rh.style.pointerEvents = on ? 'auto' : 'none'; };
+    moneyIn(inp, v => { T.rent = v; sync(); check(); });
+    ok = () => T.rent > 0;
+    mainBtn(btnLabel);
+    add(`<div class="lnk norent" style="top:790px"><span>I don’t pay rent</span></div>`);
+    tap(q('.norent span', el), () => { T.rent = 0; done(); }, {scale:.94, op:.6});
+    el._intro = () => later(450, () => inp.focus({preventScroll:true}));
+  }
+  if (kind === 'spare'){
+    add(head(onb ? 'Here’s your spare money' : 'Your spare money', onb ? '<span data-b="spareSentence"></span>' : 'Tap a line to change it.'));
+    add(`<div class="spare sp6" style="top:316px;height:220px">
+        <div class="a" style="top:22px;font:600 13px/18px var(--fb)">About</div>
+        <div class="a amt" data-b="spare" style="top:52px;font:700 28px/34px var(--fd);font-variant-numeric:tabular-nums"></div>
+        <div class="a" style="top:98px;width:306px;height:1px;background:rgba(255,255,255,.3)"></div>
+        ${[['Take-home','inc','income'],['Rent','rentNeg','rent'],['Other bills','billsNeg','bills']].map((r, i) => `<div class="a r6" data-q="${r[2]}" style="top:${104 + i*33}px;left:12px;width:330px;height:33px;padding:6px 12px;border-radius:10px;display:flex;justify-content:space-between;align-items:baseline;${onb ? '' : 'cursor:pointer'}"><span style="font:500 15px/21px var(--fb)">${r[0]}</span><span style="font:600 13px/18px var(--fb)" data-b="${r[1]}"></span></div>`).join('')}
+      </div>`);
+    if (!onb) qa('.r6', el).forEach(r => tap(r, () => pushQ(r.dataset.q), {scale:.97}));
+    if (onb){
+      const zero = money().hi <= 0;
+      if (zero){
+        mainBtn('Adjust'); mainAction = () => A.onb.popTo(1);
+        add(`<div class="lnk adj" style="top:790px"><span>Continue anyway</span></div><div class="foot" style="top:822px">With no spare money, every check will say “Not now”.</div>`);
+        tap(q('.adj span', el), () => done(), {scale:.94, op:.6});
+      } else {
+        mainBtn('Sounds right');
+        add(`<div class="lnk adj" style="top:790px"><span>Adjust</span></div><div class="foot" style="top:822px">You can change this anytime in My money</div>`);
+        tap(q('.adj span', el), () => A.onb.popTo(1), {scale:.94, op:.6});
+      }
+      el._intro = () => { const c = q('.sp6', el); setv(c, {s:.96, o:0}); spring(c, {s:1, o:1}, {response:.55, damping:.8, delay:.15});
+        qa('.r6', el).forEach((r, i) => { setv(r, {o:0, y:8}); spring(r, {o:1, y:0}, {response:.45, delay:.35 + i*.08}); }); };
+    } else mainBtn('Done');
+    el._back = () => refresh();
+  }
+  if (kind === 'goal'){
+    const g = T.goal || {};
+    add(head(onb ? 'Saving for something special?' : 'Your savings goal', 'Optional. A goal shows how a purchase moves it.'));
+    const sug = r10(Math.max(10, money().mid*.2));
+    add(`<div class="a" style="left:24px;top:300px;width:354px;height:288px;border-radius:24px;background:var(--sf)">
+        ${fieldInput('Name', 'Trip to Japan', {y:20, id:'gname', value:g.name || ''})}
+        ${fieldInput('Target', '$3,000', {y:97, id:'gtarget', mode:'numeric', value:g.target ? '$' + fmtN(g.target) : ''})}
+        ${fieldInput('Per month', '$' + fmtN(sug), {y:174, id:'gper', mode:'numeric', value:'$' + fmtN(g.per || sug)})}
+        <div class="a" style="left:20px;top:251px;font:500 13px/18px var(--fb);color:var(--tx2)">Per month is suggested from your spare money.</div>
+      </div>`);
+    const W = {name:g.name || '', target:g.target || null, per:g.per || sug};
+    const I = k => q(`input[data-k="${k}"]`, el);
+    I('gname').addEventListener('input', () => { W.name = I('gname').value; sync(); });
+    moneyIn(I('gtarget'), v => { W.target = v; sync(); });
+    moneyIn(I('gper'), v => { W.per = v; sync(); });
+    wireFields(el);
+    ok = () => W.name.trim() && W.target > 0 && W.per > 0;
+    const b = mainBtn('Save goal');
+    tap(b, () => { if (!ok()) return; T.goal = {name:W.name.trim(), target:W.target, per:W.per, saved:(T.goal && T.goal.saved) || 0}; done(); });
+    if (onb || T.goal){ add(`<div class="lnk skip" style="top:790px"><span>${onb ? 'Skip for now' : 'Remove goal'}</span></div>`); tap(q('.skip span', el), () => { T.goal = null; done(); }, {scale:.94, op:.6}); }
+    sync();
+    return el;
+  }
+  if (kind === 'name'){
+    add(head('What should we call you?', 'We’ll use it on your Home screen.'));
+    add(fieldInput('Your name', 'Name', {x:24, y:250, w:354, id:'uname', bg:'var(--sf)', value:T.name || ''}));
+    const inp = q('input[data-k="uname"]', el);
+    inp.setAttribute('autocapitalize', 'words');
+    inp.addEventListener('input', () => { T.name = inp.value.trim().slice(0, 24); sync(); });
+    wireFields(el);
+    ok = () => !!(T.name || '').trim();
+    mainBtn(btnLabel);
+    if (onb){ add(`<div class="lnk skip" style="top:790px"><span>Skip</span></div>`); tap(q('.skip span', el), () => { T.name = ''; done(); }, {scale:.94, op:.6}); }
+    el._intro = () => later(450, () => inp.focus({preventScroll:true}));
+  }
+  const b = q('.btn.main', el);
+  if (b && kind !== 'goal') tap(b, () => { if (ok()) mainAction(); });
+  sync();
+  return el;
+}
+/* edit flow from Home / My money / Settings */
+function pushQ(kind){
+  const T = Object.assign({}, A.U, {goal:A.U.goal ? Object.assign({}, A.U.goal) : null});
+  if (kind === 'spare'){ const el = qScreen('spare', 'edit', T, () => A.nav.pop()); A.nav.push(el); refresh(); return; }
+  const el = qScreen(kind, 'edit', T, () => {
+    if (document.activeElement) document.activeElement.blur();
+    const keys = {income:['inc','incExact'], rhythm:['rhy','payday'], rent:['rent'], bills:['bills'], goal:['goal'], name:['name']}[kind];
+    keys.forEach(k => A.U[k] = T[k]);
+    refresh(); A.nav.pop();
+    later(350, () => toast('Saved. Your verdicts use the new numbers.'));
+  });
+  A.nav.push(el);
+}
+
+/* ---------------- Onboarding ---------------- */
+const ORDER = ['welcome','income','rhythm','rent','bills','spare','goal','name','ready'];
+function onbScreen(i){
+  const kind = ORDER[i], U = A.U;
+  const next = () => { if (document.activeElement) document.activeElement.blur(); refresh(); onbGo(i + 1); };
+  if (kind === 'welcome'){
+    const el = h(`<div class="scr">
+      <div class="a" style="left:24px;top:68px">${IC.app(48,10)}</div>
+      ${head('Know before you buy.', 'Share any product and get a straight answer: buy, wait for payday, or not now. Based on your money, not on a feeling.')}
+      <div class="a t1" style="left:24px;top:338px;width:140px;height:252px;border-radius:20px;background:var(--buy);overflow:hidden"><div class="a" style="left:-6px;top:194px;font:800 72px/72px var(--fd);color:var(--buyT)">BUY</div></div>
+      <div class="a t2" style="left:176px;top:338px;width:202px;height:120px;border-radius:20px;background:var(--no);overflow:hidden"><div class="a" style="left:-6px;top:-8px;font:800 46px/46px var(--fd);color:var(--noT);white-space:nowrap">NOT NOW</div></div>
+      <div class="a t3" style="left:176px;top:470px;width:202px;height:120px;border-radius:20px;background:var(--wait);overflow:hidden"><div class="a" style="left:-6px;top:62px;font:800 72px/72px var(--fd);color:var(--waitT)">WAIT</div></div>
+      <div class="foot" style="top:610px;text-align:left;font-weight:600">No bank login. Your numbers stay on your phone.</div>
+      <div class="btn main" style="top:726px">Get started</div></div>`);
+    q('.ohead .sub16', el).style.marginTop = '24px';
+    el._intro = () => ['.t1','.t2','.t3'].forEach((s, k) => { const t = q(s, el); setv(t, {y:36, s:.92, o:0}); spring(t, {y:0, s:1, o:1}, {response:.6, damping:.78, delay:.1 + k*.08}); });
+    tap(q('.main', el), next);
+    return el;
+  }
+  if (kind === 'ready'){
+    const el = h(`<div class="scr">
+      ${head('You’re good to go!', 'Next time you see something you want, tap Share → DeciBuy. You can also add it manually.')}
+      <div class="step" style="top:292px"><b>1</b>Open the product</div>
+      <div class="step" style="top:368px"><b>2</b>Tap “Share”</div>
+      <div class="step" style="top:444px"><b>3</b>Choose DeciBuy <span style="display:inline-flex;margin-left:6px">${IC.app(32,7)}</span></div>
+      <div class="btn main" style="top:726px">Let’s start!</div></div>`);
+    el._intro = () => qa('.step', el).forEach((s, k) => { setv(s, {o:0, x:24}); spring(s, {o:1, x:0}, {response:.5, damping:.85, delay:.15 + k*.09}); });
+    tap(q('.main', el), () => finishOnb());
+    return el;
+  }
+  return qScreen(kind, 'onb', U, next);
+}
+function onbGo(i, inst){
+  const el = onbScreen(i);
+  if (i === 0) A.onb.base(el); else A.onb.push(el, inst);
+  const f = q('.prog i:last-child', el) && qa('.prog i', el).pop();
+  if (f){ setv(f, {sx:inst ? 1 : 0}); if (!inst) spring(f, {sx:1}, {response:.6, delay:.2}); }
+  refresh();
+  return el;
+}
+function finishOnb(){
+  const root = A.onb.root;
+  spring(root, {o:0, s:1.04}, {response:.5, onDone:() => root.remove()});
+  root.style.pointerEvents = 'none';
+  refresh();
+  const main = A.main; setv(main, {s:.94, o:0}); spring(main, {s:1, o:1}, {response:.6, damping:.9, delay:.08});
+  switchTab('home', true);
+  const hdr = q('.hdr', A.screens.home);
+  [...hdr.children].forEach((c, i) => { setv(c, {o:0, y:14}); spring(c, {o:1, y:0}, {response:.55, delay:.15 + i*.035}); });
+  A.home.items.forEach(it => setv(it.el, {y:S(it.el).y + 160}));
+  A.home.layout({spring:{response:.7, damping:.8}});
+  setv(A.tabbar, {y:110}); spring(A.tabbar, {y:0}, {response:.6, damping:.85, delay:.3});
+  A.screens.home._enter();
+}
+
+/* ---------------- Share flow, notifications, lock screen ---------------- */
+function storeAndShare(){
+  const L = A.over;
+  const el = h(`<div class="L">
+    <div class="scr">
+      <div class="a" style="left:24px;top:70px;width:354px;height:260px;border-radius:20px;background:var(--sf2)"></div>
+      <div class="a" style="left:24px;top:346px;font:800 32px/35px var(--fd)">Mushroom table lamp</div>
+      <div class="a" style="left:24px;top:386px;font:600 16px/22px var(--fb);color:var(--tx2)">$180 · ikea.com</div>
+    </div>
+    <div class="dim"></div>
+    <div class="sheet" style="top:434px;height:440px;background:var(--sysSheet)">
+      <div class="grab"></div>
+      <div class="a" style="left:24px;top:28px;width:44px;height:44px;border-radius:10px;background:var(--sf2)"></div>
+      <div class="a" style="left:80px;top:30px;font:500 15px/21px var(--fb)">Mushroom table lamp<div style="font:500 13px/18px var(--fb);color:var(--tx2)">ikea.com</div></div>
+      ${[['Messages',24],['Mail',120],['DeciBuy',216],['Notes',312]].map(a => `<div class="a ${a[0] === 'DeciBuy' ? 'dbapp' : ''}" style="left:${a[1]}px;top:100px;width:64px;text-align:center;cursor:pointer">${a[0] === 'DeciBuy' ? IC.app(64,16) : '<div style="width:64px;height:64px;border-radius:16px;background:var(--sf2)"></div>'}<div style="font:${a[0] === 'DeciBuy' ? 700 : 400} 12px/16px var(--fb);margin-top:6px">${a[0]}</div></div>`).join('')}
+      <div class="a" style="left:24px;top:204px;width:354px;height:147px;border-radius:14px;background:var(--sysCard)">${['Copy','Add to Reading List','Save to Files'].map((t, i) => `<div style="height:49px;padding-left:16px;font:500 15px/49px var(--fb);${i ? 'border-top:1px solid var(--sf)' : ''}">${t}</div>`).join('')}</div>
+    </div>
+  </div>`);
+  L.appendChild(el); L.style.pointerEvents = 'auto';
+  const dim = q('.dim', el), sh = q('.sheet', el);
+  setv(dim, {o:0}); setv(sh, {y:450});
+  spring(dim, {o:.45}, {response:.4}); spring(sh, {y:0}, {response:.48, damping:.86, delay:.05});
+  tap(q('.dbapp', el), () => { spring(sh, {y:460}, {response:.4}); later(260, () => prePrompt(el)); }, {scale:.9});
+}
+function prePrompt(parent){
+  const host = parent || (() => { const L = A.over; const d = h('<div class="L"><div class="dim"></div></div>'); L.appendChild(d); L.style.pointerEvents = 'auto'; setv(q('.dim', d), {o:.45}); return d; })();
+  const dg = h(`<div class="dialog">
+    <div style="width:64px;height:64px;border-radius:50%;background:var(--tint);display:grid;place-items:center;margin:0 auto">${IC.bell}</div>
+    <div style="font:800 24px/1.1 var(--fd);margin-top:14px;text-wrap:balance">Want a nudge when it's ready?</div>
+    <div style="font:500 14px/20px var(--fb);color:var(--tx2);margin-top:10px">We’ll only notify you about items you add.</div>
+    <div class="btn ok" style="position:relative;left:0;width:290px;margin-top:20px">Allow</div>
+    <div class="nn" style="font:600 15px/18px var(--fb);margin-top:18px;cursor:pointer;display:inline-block">Not now</div>
+  </div>`);
+  host.appendChild(dg);
+  spring(q('.dim', host), {o:.6}, {response:.3});
+  setv(dg, {s:1.12, o:0}); spring(dg, {s:1, o:1}, {response:.38, damping:.82});
+  const done = () => { spring(dg, {s:.94, o:0}, {response:.25}); later(220, () => lockScreen('add', () => host.remove())); };
+  tap(q('.ok', dg), done); tap(q('.nn', dg), done, {scale:.94, op:.6});
+}
+function lockScreen(kind, onShown){
+  const L = A.over; L.style.pointerEvents = 'auto';
+  const date = kind === 'add' ? 'Friday, October 24' : 'Tuesday, October 28';
+  const t1 = kind === 'add' ? 'Added: Mushroom table lamp' : 'Payday is today.';
+  const t2 = kind === 'add' ? 'Tap to check' : 'Re-check your Mushroom table lamp?';
+  const el = h(`<div class="lock">
+    <div class="a" style="left:0;top:112px;width:402px;text-align:center;font:600 17px/22px var(--fb);opacity:.92">${date}</div>
+    <div class="a" style="left:0;top:136px;width:402px;text-align:center;font:800 104px/110px var(--fd)">9:41</div>
+    <div class="notif">
+      <div class="a" style="left:16px;top:22px">${IC.app(40,10)}</div>
+      <div class="a" style="left:68px;top:14px;font:700 13px/18px var(--fb)">DeciBuy</div>
+      <div class="a" style="right:16px;top:14px;font:500 13px/18px var(--fb);color:var(--tx2)">now</div>
+      <div class="a" style="left:68px;top:33px;font:500 15px/21px var(--fb)">${t1}</div>
+      <div class="a" style="left:68px;top:55px;font:500 14px/20px var(--fb);color:var(--tx2)">${t2}</div>
+    </div>
+  </div>`);
+  L.appendChild(el); lightBars(true);
+  setv(el, {o:0}); spring(el, {o:1}, {response:.35, onDone:() => onShown && onShown()});
+  const n = q('.notif', el);
+  setv(n, {y:-420, s:.9, o:0}); spring(n, {y:0, s:1, o:1}, {response:.62, damping:.74, delay:.55});
+  tap(n, () => {
+    spring(n, {s:1.03, o:0}, {response:.3});
+    spring(el, {y:-874}, {response:.55, damping:1, delay:.08, onDone:() => { el.remove(); L.style.pointerEvents = 'none'; L.innerHTML = ''; }});
+    lightBars(false);
+    if (kind === 'add'){ switchTab('check', true); while (A.nav.st.length > 1) A.nav.pop(); later(420, () => { if (!A.check.has('lampD')){ P.lampD.price = null; A.check.insert({key:'lampD', detail:'Expires in 3 days', bodyH:301, draft:{expires:'Expires in 3 days'}}); } }); }
+    else { switchTab('items', true); later(380, () => { const it = A.items.items.find(i => i.key === 'lamp'); if (it) A.items.openItem(it.id, 'open', Object.assign(LAMP_PAYDAY(), {reminder:true})); }); }
+  }, {scale:.97});
+}
+
+/* =====================================================================
+   Build + jump list
+   ===================================================================== */
+function build(p){
+  D.innerHTML = ''; ACT.clear(); manualN = 0;
+  seedProducts();
+  if (p.prep) p.prep();
+  A.U = p.onb !== undefined ? NEWU() : JSON.parse(JSON.stringify(EMMA), (k, v) => k === 'payday' ? new Date(v) : v);
+  A.nav = new Nav(D);
+  const main = h('<div class="scr" style="overflow:hidden"></div>');
+  A.main = main;
+  A.home = A.check = A.items = null;
+  const items = buildItems();
+  A.screens = {home:buildHome(), check:buildCheck(p.drafts || 'two', p.offline), items, money:buildMoney()};
+  for (const k of ['home','check','items','money']) main.appendChild(A.screens[k]);
+  A.tabbar = tabbar(); main.appendChild(A.tabbar);
+  A.ovl = h('<div class="ovl"></div>'); main.appendChild(A.ovl);
+  A.nav.base(main);
+  A.over = h('<div class="L" style="z-index:500;pointer-events:none"></div>'); D.appendChild(A.over);
+  A.tab = null; switchTab(p.tab || 'home', true);
+  if (p.onb !== undefined){
+    const root = h('<div class="L" style="z-index:400;background:var(--bg)"></div>'); D.appendChild(root);
+    A.onb = new Nav(root);
+    if (p.onb > 2) A.U.rent = 1200;
+    for (let i = 0; i <= p.onb; i++) onbGo(i, true);
+    const top = A.onb.top(); setv(top, {x:0});
+    if (top._intro) top._intro();
+    const f = qa('.prog i', top).pop(); if (f){ setv(f, {sx:0}); spring(f, {sx:1}, {response:.6, delay:.25}); }
+  }
+  D.appendChild(h('<div class="island"></div>'));
+  D.appendChild(statusBar()); D.appendChild(h('<div class="hi"></div>'));
+  refresh();
+  for (const s of [A.home, A.check, A.items]) s.layout({instant:true});
+}
+const openKey = (st, key) => { const it = st.items.find(i => i.key === key); if (it) st.openItem(it.id); };
+const FLOWS = [
+  ['Flow 1 · Onboarding', [['O1','Welcome',{onb:0}],['O2','Income',{onb:1}],['O3','Pay rhythm',{onb:2}],['O4','Rent',{onb:3}],['O5','Bills',{onb:4}],['O6','Spare money',{onb:5}],['O7','Savings goal',{onb:6}],['new','Your name',{onb:7}],['O8','Ready',{onb:8}]]],
+  ['Flow 2 · Check a purchase', [
+    ['S1','Share sheet',{tab:'check', drafts:'one', go:() => storeAndShare()}],
+    ['S2','Notification pre-prompt',{tab:'check', drafts:'one', go:() => prePrompt()}],
+    ['S2','Push: item added',{tab:'check', drafts:'one', go:() => lockScreen('add')}],
+    ['C1','Check, empty',{tab:'check', drafts:'empty'}],
+    ['C2','Check, 2 drafts',{tab:'check', drafts:'two'}],
+    ['C3','Add manually',{tab:'check', drafts:'two', go:() => pushAdd()}],
+    ['C4','Drafts full notice',{tab:'check', drafts:'full', go:() => toast('Drafts are full. “Phone case” was removed to make room.', {ms:5000})}],
+    ['C5','Calculating',{tab:'check', drafts:'twoReady', go:() => { const it = A.check.get('lampD'); it.done = true; A.check.calc(it); }}],
+    ['V1','Verdict: Buy',{tab:'home', go:() => openKey(A.home, 'sneaker')}],
+    ['V2','Verdict: Wait for payday',{tab:'check', drafts:'twoReady', go:() => { const it = A.check.get('lampD'); it.done = true; A.check.openItem('lampD'); }}],
+    ['V3','Verdict: Not now',{tab:'items', go:() => openKey(A.items, 'canon')}],
+    ['V4','Graph detail',{tab:'check', drafts:'twoReady', go:() => { const it = A.check.get('lampD'); it.done = true; A.check.openItem('lampD'); later(500, () => A.check.setPage(1)); }}],
+    ['V5','After action: Saved',{tab:'check', drafts:'one', go:() => toast('Saved to My items. We’ll remind you on Oct 28.')}],
+  ]],
+  ['Flow 3 · Re-check', [
+    ['R1','Reminder push',{tab:'items', go:() => lockScreen('remind')}],
+    ['M1','My items',{tab:'items'}],
+    ['M2','Sort sheet',{tab:'items', go:() => sortSheet()}],
+    ['M3','Re-check: Lamp',{tab:'items', go:() => openKey(A.items, 'lamp')}],
+    ['M3','Re-check: Price dropped',{tab:'items', go:() => openKey(A.items, 'nike')}],
+  ]],
+  ['Tabs', [['H','Home',{tab:'home'}],['MM1','My money',{tab:'money'}],['SET1','Settings',{tab:'home', go:() => pushSettings()}]]],
+  ['Edge states', [['E1','Link not readable',{tab:'check', drafts:'two', go:() => pushAdd(true)}],['E2','No internet',{tab:'check', offline:true}],['new','Price unknown',{tab:'items', prep:() => { Object.assign(P.dyson, {price:null, failed:false, found:349}); }, go:() => openKey(A.items, 'dyson')}]]],
+];
+function jump(p){
+  build(p);
+  if (p.go) later(60, p.go);
+  const e = A.screens[A.tab]; if (e && e._enter) e._enter();
+}
+(function panel(){
+  const host = document.getElementById('plist');
+  FLOWS.forEach(([title, list]) => {
+    const g = h(`<div><div class="p-gt">${title}</div><div class="p-list"></div></div>`);
+    list.forEach(([code, name, p]) => { const b = h(`<button type="button"><b>${code}</b>${name}</button>`); b.onclick = () => { qa('.p-list button').forEach(x => x.classList.remove('on')); b.classList.add('on'); jump(p); document.getElementById('panel').classList.remove('open'); }; q('.p-list', g).appendChild(b); });
+    host.appendChild(g);
+  });
+  document.getElementById('ptoggle').onclick = () => document.getElementById('panel').classList.toggle('open');
+  qa('.p-list button')[0].classList.add('on');
+})();
+function fit(){
+  const wide = innerWidth > 880;
+  const aw = wide ? innerWidth - 300 - 48 - 48 : innerWidth - 32, ah = innerHeight - 32;
+  SC = Math.min(1, aw/426, ah/898);
+  document.getElementById('stage').style.setProperty('--sc', SC);
+}
+addEventListener('resize', fit); fit();
+qa('.p-phone button').forEach(b => b.onclick = () => { A.sys = b.dataset.m; applyTheme(true); });
+applyTheme(false);
+jump({onb:0});
+document.fonts && document.fonts.ready.then(() => { for (const s of [A.home, A.check, A.items]) if (s) s.layout({instant:true}); });
+</script>
+</body>
+</html>
