@@ -21,7 +21,21 @@ Price facts, hours of work, installments and a savings goal are shown as referen
 
 The panel on the left jumps to any screen and simulates the phone's light / dark setting.
 
-**On a phone** the page opens as the app itself: full screen, no device frame and no panel. Bottom elements (tab bar, buttons, folders at the bottom) stick to the bottom of any screen height, and long screens scroll. In Safari, Share → Add to Home Screen opens it like an installed app.
+**On a phone** the page opens as the app itself: full screen, no device frame and no panel. Bottom elements (tab bar, buttons, folders at the bottom) stick to the bottom of any screen height, and long screens scroll.
+
+**Install it as an app (PWA).** Live at https://jazzfoxtrot.github.io/DeciBuy/. iPhone: open it in Safari → Share → Add to Home Screen. Android: Chrome → ⋮ → Install app. It opens from its own icon, full screen, and still loads offline.
+
+## What's in this repository
+
+Only the live site, following the course rule that *the repository is the site, not the working folder*:
+
+| File | What it is |
+|---|---|
+| `index.html` | The prototype (all screens, styles and scripts in one file) |
+| `manifest.webmanifest`, `sw.js`, `icon-*.png`, `apple-touch-icon.png` | What makes the site installable and work offline |
+| `.nojekyll` | Tells GitHub Pages to serve the files as they are |
+
+Research (interviews, survey answers), working documents and drafts stay in the private project folder, because everything in a public repository is public.
 
 ## Verdict logic (MVP)
 
