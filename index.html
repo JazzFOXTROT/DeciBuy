@@ -105,6 +105,8 @@ body{background:var(--page);color:var(--ink);font-family:var(--fb);overflow:hidd
 .field .fl{font:600 12px/16px var(--fb);color:var(--tx2)}
 .field .fv{font:500 15px/21px var(--fb);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .field .ph{color:var(--dis)}
+.maxh{position:absolute;right:16px;top:12px;font:700 12px/16px var(--fb);color:var(--blueS);pointer-events:none;white-space:nowrap}
+.maxh.big{left:0;right:0;top:-26px;text-align:center;font-size:13px}
 .tgl{position:absolute;width:51px;height:31px;border-radius:16px;background:var(--sf2);transition:background-color .25s;cursor:pointer}
 .tgl.on{background:var(--blueS)}
 .tgl i{position:absolute;left:0;top:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.04)}
@@ -169,7 +171,7 @@ body{background:var(--page);color:var(--ink);font-family:var(--fb);overflow:hidd
 .dr-bot{position:absolute;left:20px;right:20px;bottom:20px;display:flex;justify-content:space-between;align-items:center;font:500 13px/18px var(--fb);color:var(--tx2)}
 .calc{height:40px;padding:0 25px;border-radius:100px;background:var(--btn);color:var(--btnTx);font:700 15px/40px var(--fb);cursor:pointer;transition:background-color .35s}
 .calc.dis{background:var(--dis);color:var(--disTx)}
-.dfield{margin-top:8px;height:67px;border-radius:14px;background:var(--field);padding:12px 16px 0;cursor:text}
+.dfield{position:relative;margin-top:8px;height:67px;border-radius:14px;background:var(--field);padding:12px 16px 0;cursor:text}
 .dfield .fl{font:600 12px/16px var(--fb);color:var(--tx2)}
 .dfield input{all:unset;display:block;width:100%;font:500 17px/23px var(--fb);margin-top:4px;color:var(--tx)}
 .dfield input::placeholder{color:var(--dis)}
@@ -431,7 +433,7 @@ function seedProducts(){
   });
 }
 function money(){
-  const u = A.U, inc = u.incExact || INC[u.inc][1], bills = BILLS[u.bills][1], mid = inc - (u.rent || 0) - bills;
+  const u = A.U, inc = u.incExact || INC[u.inc][1], bills = u.billsExact || BILLS[u.bills][1], mid = inc - (u.rent || 0) - bills;
   return {inc, bills, mid, spare:Math.max(mid, 1), lo:Math.max(0, r10(mid - 50)), hi:Math.max(0, r10(mid + 50)), rate:inc/173.33};
 }
 function cycle(){
@@ -940,6 +942,8 @@ function wireDraft(stack, it){
   if (!inp) return;
   const fld = inp.closest('.dfield');
   const sync = () => {
+    const [ip, dp] = inp.value.replace(/[^\d.]/g, '').split('.');
+    if (ip.length > 6){ overMax(inp); inp.value = ip.slice(0, 6) + (dp !== undefined ? '.' + dp.slice(0, 2) : ''); }
     const n = parseFloat(inp.value.replace(/[^\d.]/g, ''));
     const ok = n > 0;
     btn.classList.toggle('dis', !ok || A.offline);
@@ -1076,7 +1080,7 @@ function vals(){
     inc: u.incExact ? `$${fmtN(u.incExact)}` : INC[u.inc][0], incRhy: `${u.incExact ? `$${fmtN(u.incExact)}` : INC[u.inc][0]} · ${RHY[u.rhy]}`,
     payday: c ? fmtShort(c.next) : 'Varies',
     rent: `$${fmtN(u.rent || 0)}`, rentNeg: `− $${fmtN(u.rent || 0)}`,
-    bills: BILLS[u.bills][0], billsNeg: `− ${BILLS[u.bills][0]}`,
+    bills: u.billsExact ? `$${fmtN(u.billsExact)}` : BILLS[u.bills][0], billsNeg: `− ${u.billsExact ? `$${fmtN(u.billsExact)}` : BILLS[u.bills][0]}`,
     spareSentence: m.hi > 0 ? `So you usually have about $${fmtN(m.lo)}–${fmtN(m.hi)} free each month. Sounds right?` : 'Your rent and bills take everything right now. Check the numbers?',
     changes: drops ? `${drops} price ${drops === 1 ? 'changed' : 'changed'} in My items` : 'No price changes in My items',
     name: u.name || 'Not set',
@@ -1347,8 +1351,15 @@ function pushSettings(inst){
 function fieldInput(label, ph, o = {}){
   return `<div class="field fi ${o.cls || ''}" style="left:${o.x ?? 20}px;top:${o.y}px;${o.w ? `width:${o.w}px;` : ''}${o.bg ? `background:${o.bg};` : ''}cursor:text"><div class="fl">${label}</div><input ${o.id ? `data-k="${o.id}"` : ''} placeholder="${ph}" ${o.mode ? `inputmode="${o.mode}"` : ''} autocomplete="off" spellcheck="false" value="${o.value ?? ''}">${o.suffix ? `<span class="sfx"></span>` : ''}</div>`;
 }
+/* amounts are capped at $999,999; trying a 7th digit shows "Up to $999,999" for a moment */
+function overMax(inp){
+  let m = inp._mh;
+  if (!m){ const host = inp.closest('.field,.dfield'); m = h('<span class="maxh">Up to $999,999</span>'); if (!host) m.classList.add('big'); (host || inp.parentElement).appendChild(m); inp._mh = m; setv(m, {o:0, y:2}); }
+  spring(m, {o:1, y:0}, {response:.25}); clearTimeout(inp._mt);
+  inp._mt = setTimeout(() => spring(m, {o:0, y:2}, {response:.4}), 2500);
+}
 function moneyIn(inp, cb){
-  inp.addEventListener('input', () => { const d = inp.value.replace(/\D/g, '').slice(0, 6); inp.value = d ? '$' + (+d).toLocaleString('en-US') : ''; cb(d ? +d : null); });
+  inp.addEventListener('input', () => { const raw = inp.value.replace(/\D/g, ''); if (raw.length > 6) overMax(inp); const d = raw.slice(0, 6); inp.value = d ? '$' + (+d).toLocaleString('en-US') : ''; cb(d ? +d : null); });
 }
 function wireFields(el){ qa('.fi', el).forEach(f => { f.addEventListener('pointerdown', e => e.stopPropagation()); f.addEventListener('click', () => q('input', f).focus({preventScroll:true})); }); }
 function pushAdd(e1, inst){
@@ -1495,7 +1506,19 @@ function qScreen(kind, mode, T, done){
   }
   if (kind === 'bills'){
     add(head('Other regular bills you pay?', 'Phone, subscriptions, transport, loans. A guess is fine.'));
-    picker(el, BILLS.map(x => x[0]), T.bills, i => T.bills = i, 300, clamp(DHn - 148 - 300 - 10, 160, 300));
+    const pH = clamp(DHn - 148 - 75 - 300 - 7, 160, 300);
+    add(`<div class="lnk exl" style="top:${300 + pH + 24}px"><span>Enter exact amount</span></div>`);
+    add(fieldInput('Your exact amount', '$800', {x:24, y:300 + pH + 7, w:354, id:'bex', mode:'numeric', bg:'var(--sf)', cls:'exf', value:T.billsExact ? '$' + fmtN(T.billsExact) : ''}));
+    const exl = q('.exl', el), exf = q('.exf', el), bex = q('input[data-k="bex"]', el);
+    const showEx = (on, inst) => { (inst ? setv : spring)(exf, {o:on ? 1 : 0, y:on ? 0 : 10, s:on ? 1 : .97}, {response:.45, damping:.85}); exf.style.pointerEvents = on ? 'auto' : 'none'; (inst ? setv : spring)(exl, {o:on ? 0 : 1}, {response:.25}); exl.style.pointerEvents = on ? 'none' : ''; };
+    picker(el, BILLS.map(x => x[0]), T.bills, i => {
+      if (i !== T.bills && T.billsExact){ T.billsExact = null; bex.value = ''; }
+      T.bills = i; showEx(i === BILLS.length - 1 || !!T.billsExact);
+    }, 300, pH);
+    moneyIn(bex, v => { T.billsExact = v; });
+    wireFields(el);
+    tap(q('span', exl), () => { showEx(true); later(250, () => bex.focus({preventScroll:true})); }, {scale:.94, op:.6});
+    showEx(T.bills === BILLS.length - 1 || !!T.billsExact, true);
     mainBtn(btnLabel);
   }
   if (kind === 'rhythm'){
@@ -1609,7 +1632,7 @@ function pushQ(kind){
   if (kind === 'spare'){ const el = qScreen('spare', 'edit', T, () => A.nav.pop()); A.nav.push(el); refresh(); return; }
   const el = qScreen(kind, 'edit', T, () => {
     if (document.activeElement) document.activeElement.blur();
-    const keys = {income:['inc','incExact'], rhythm:['rhy','payday'], rent:['rent'], bills:['bills'], goal:['goal'], name:['name']}[kind];
+    const keys = {income:['inc','incExact'], rhythm:['rhy','payday'], rent:['rent'], bills:['bills','billsExact'], goal:['goal'], name:['name']}[kind];
     keys.forEach(k => A.U[k] = T[k]);
     refresh(); A.nav.pop();
     later(350, () => toast('Saved. Your verdicts use the new numbers.'));
