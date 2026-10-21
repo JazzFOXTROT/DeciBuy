@@ -126,6 +126,13 @@ body{background:var(--page);color:var(--ink);font-family:var(--fb);overflow:hidd
 .stk > *{pointer-events:auto}
 .stk-dim{position:absolute;inset:0;background:#000;opacity:0;z-index:60}
 .fd{position:absolute;left:0;top:0;overflow:hidden;box-shadow:0 -2px 10px rgba(0,0,0,.08);transition:background-color .5s ease,box-shadow .35s;cursor:pointer;touch-action:none;will-change:transform}
+.fd.ls{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 -10px 22px -8px rgba(0,0,0,.32)}
+.device.dk .fd.ls{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 -10px 22px -6px rgba(0,0,0,.75)}
+.fd.ls.tintf{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 -10px 22px -8px rgba(0,0,0,.25)}
+.pv{position:relative;height:201px;overflow:hidden}
+.pv .st{font:600 13px/18px var(--fb);margin-top:8px;opacity:.75}
+.pv .wm{top:auto;bottom:-14px}
+.ded{cursor:pointer;font-weight:700;text-decoration:underline;padding:6px;margin:-6px}
 .fd.opened{box-shadow:0 0 0 rgba(0,0,0,0);cursor:default}
 .fd.pk{box-shadow:0 -4px 14px rgba(0,0,0,.12)}
 .fd.ov{box-shadow:0 -6px 22px rgba(0,0,0,.16)}
@@ -418,8 +425,8 @@ const fmtN = n => Math.round(n).toLocaleString('en-US');
 const fmtK = n => n >= 1e6 ? +(n/1e6).toFixed(n >= 1e7 ? 1 : 2) + 'M' : n >= 1e4 ? +(n/1e3).toFixed(1) + 'K' : fmtN(n);
 const rangeK = (lo, hi) => fmtK(lo) === fmtK(hi) ? `≈ $${fmtK(lo)}` : `$${fmtK(lo)}–${fmtK(hi)}`;
 const r10 = n => Math.round(n/10)*10;
-const EMMA = {name:'Emma', inc:2, rhy:0, payday:new Date(2026,9,28), rent:1200, bills:2, goal:{name:'Trip to Japan', target:3000, per:100, saved:600}, spent:160};
-const NEWU = () => ({name:'', inc:2, rhy:0, payday:new Date(2026,9,28), rent:null, bills:2, goal:null, spent:0});
+const EMMA = {name:'Emma', inc:2, rhy:0, payday:new Date(2026,9,28), rent:1200, bills:2, goal:{name:'Trip to Japan', target:3000, per:100, saved:600}, spent:160, bought:[{name:'Phone case', price:25}, {name:'Concert ticket', price:135}]};
+const NEWU = () => ({name:'', inc:2, rhy:0, payday:new Date(2026,9,28), rent:null, bills:2, goal:null, spent:0, bought:[]});
 const P = {}; // products by key
 function seedProducts(){
   Object.assign(P, {
@@ -432,9 +439,17 @@ function seedProducts(){
     lampD:{name:'Mushroom table lamp', price:null, site:'ikea.com', inst:4, added:6, hist:[181,178,183,164,149,155,174,180]},
   });
 }
+const INC_HI = [1500, 1900, 2300, 3000, 4000, 4500]; // top of each income range ("$4,000+" has no top: the exact field opens there)
+const BILLS_LO = [0, 150, 350, 450, 700];          // bottom of each bills range
 function money(){
   const u = A.U, inc = u.incExact || INC[u.inc][1], bills = u.billsExact || BILLS[u.bills][1], mid = inc - (u.rent || 0) - bills;
-  return {inc, bills, mid, spare:Math.max(mid, 1), lo:Math.max(0, r10(mid - 50)), hi:Math.max(0, r10(mid + 50)), rate:inc/173.33};
+  // honest range: when the middle of the ranges leaves nothing but the best case still leaves money, show "Up to $X"
+  const best = (u.incExact || INC_HI[u.inc]) - (u.rent || 0) - (u.billsExact ?? BILLS_LO[u.bills]);
+  const exact = !!u.incExact && u.billsExact != null;
+  const upTo = mid <= 0 && best > 0 && !exact;
+  const spare = upTo ? best : Math.max(mid, 1);
+  const left = (upTo ? best : mid) - (u.spent || 0); // can go below zero
+  return {inc, bills, mid, best, upTo, spare, left, lo:upTo ? 0 : Math.max(0, r10(mid - 50)), hi:upTo ? r10(best) : Math.max(0, r10(mid + 50)), rate:inc/173.33};
 }
 function cycle(){
   const u = A.U; if (u.rhy === 2) return null;
@@ -452,16 +467,21 @@ function monthsText(x){
   const h = Math.round(x*2)/2; if (h <= 1) return 'a month';
   const w = Math.floor(h); return `${w}${h - w ? '½' : ''} months`;
 }
+// installments: interest is a rough estimate (simple yearly %, monthly payments); the real terms depend on the store and the offer
+const costOf = p => p.inst && p.rate ? Math.round(p.price*(1 + p.rate/100*p.inst/12)) : p.price;
 function verdictOf(key, ctx = {}){
   const p = P[key], m = money(), c = cycle(), u = A.U;
   if (!p.price) return {key, name:p.name, price:'Price unknown', v:'neutral', verdict:'', reason:'We couldn’t get the price, so there’s no verdict yet.', changed:'Re-check to try again. Nothing is decided without a price.', hero:null, tiles:[], wm:'', graph:false, unknown:true};
-  const share = p.price / m.spare, pct = Math.round(share*100);
+  const cost = costOf(p), share = cost / m.spare, pct = Math.round(share*100);
   const comfy = c ? .25 : .15; // irregular income: Comfortable is 5–15%, Stretch from 15% (verdict logic v03)
   const level = share <= .05 ? 'Small' : share <= comfy ? 'Comfortable' : share <= 1 ? 'Stretch' : 'Over';
-  const hrs = hoursText(p.price);
-  const instT = p.inst ? [`${p.inst} × $${fmtN(Math.ceil(p.price/p.inst))}`, `full price $${fmtN(p.price)}`] : null;
+  const hrs = hoursText(costOf(p));
+  const instT = p.inst ? [`${p.inst} × $${fmtN(Math.ceil(cost/p.inst))}`, p.rate ? `≈ $${fmtN(cost)} total with ${p.rate}% interest` : `full price $${fmtN(p.price)} · interest may apply`] : null;
   let v, reason;
-  if (m.mid <= 0){ v = 'notnow'; reason = 'Your bills take all of your spare money right now.'; }
+  const overLeft = cost > m.left && !ctx.ignoreSpent;
+  if (m.mid <= 0 && !m.upTo){ v = 'notnow'; reason = 'Your bills take all of your spare money right now.'; }
+  else if (overLeft && share <= 1 && c){ v = 'wait'; reason = m.left <= 0 ? `You’ve used this month’s spare money. It fits after payday, in ${c.days} ${c.days === 1 ? 'day' : 'days'}.` : `Only about $${fmtN(r10(m.left))} is left until payday. It fits after payday.`; }
+  else if (overLeft && share <= 1){ v = 'notnow'; reason = m.left <= 0 ? 'You’ve used this month’s spare money.' : `Only about $${fmtN(r10(m.left))} is left this month.`; }
   else if (level === 'Small'){ v = 'buy'; reason = `Small buy, ${hrs.toLowerCase()} of work.`; }
   else if (level === 'Comfortable'){ v = 'buy'; reason = 'Fits your month.'; }
   else if (level === 'Stretch'){
@@ -472,6 +492,7 @@ function verdictOf(key, ctx = {}){
   const drop = p.was && p.was > p.price ? p.was - p.price : 0;
   if (ctx.saved && v === 'buy' && drop) reason = `Price dropped $${fmtN(drop)} since you saved it.`;
   let changed = null;
+  if (m.upTo) changed = `Based on the top of your ranges (up to $${fmtN(r10(m.best))} a month). Exact amounts in My money make this precise.`;
   if (ctx.saved) changed = p.failed ? 'Couldn’t check the price right now. This uses the last price we saw.' : drop ? `What changed: $${fmtN(p.was)} → $${fmtN(p.price)}.` : 'What changed: price is the same as when you saved it.';
   const hero = v === 'wait' ? [`${c.days} ${c.days === 1 ? 'day' : 'days'}`, `Next payday · ${fmtShort(c.next)}`, c.passed] : [level, `${pct}% of your spare money`, Math.min(1, share)];
   const hoursT = [hrs, 'of work'];
@@ -479,7 +500,7 @@ function verdictOf(key, ctx = {}){
   if (v === 'wait') tiles = [instT || hoursT, [`${pct}%`, 'of your spare money']];
   else if (v === 'buy') tiles = [hoursT, (ctx.saved && drop) ? [`$${fmtN(drop)} less`, 'than when you saved it', !!p.hist] : p.fact ? [...p.fact, !!p.hist] : (instT || (ctx.saved ? ['Black Friday', 'is in 5 weeks'] : ['Tracking', 'starts today']))];
   else tiles = [p.fact ? [...p.fact, !!p.hist] : hoursT, ['Black Friday', 'is in 5 weeks']];
-  const priceLine = p.inst ? `$${fmtN(p.price)} or ${p.inst} × $${fmtN(Math.ceil(p.price/p.inst))}` : drop ? `$${fmtN(p.price)} · was $${fmtN(p.was)}` : `$${fmtN(p.price)}`;
+  const priceLine = p.inst ? `$${fmtN(p.price)} or ${p.inst} × $${fmtN(Math.ceil(cost/p.inst))}${p.rate ? ' with interest' : ''}` : drop ? `$${fmtN(p.price)} · was $${fmtN(p.was)}` : `$${fmtN(p.price)}`;
   const word = {buy:'BUY', wait:'WAIT FOR PAYDAY', notnow:'NOT NOW'}[v];
   return {key, name:p.name, price:priceLine, v, verdict:word, reason, changed, hero, tiles, wm:{buy:'BUY', wait:'WAIT', notnow:'NOT NOW'}[v], graph:!!p.hist, level};
 }
@@ -559,14 +580,15 @@ class Stack{
   bodyHTML(it){
     const k = this.cfg.kind, p = P[it.key];
     if (k === 'items'){ const st = !p.price ? 'Couldn’t get the price' : p.failed ? 'Couldn’t check the price right now' : statusOf(it.key);
-      return `<div class="pv"><div class="op-name">${p.name}</div><div class="op-price" style="opacity:.65">${!p.price ? 'Price unknown' : p.was && p.was > p.price ? `$${fmtN(p.price)} · was $${fmtN(p.was)}` : `$${fmtN(p.price)}`}</div><div class="chip">${st}</div></div>`; }
+      const c = p.price ? verdictOf(it.key, {saved:true}) : null;
+      return `<div class="pv">${c && c.wm ? `<div class="wm" style="color:${VT_[c.v]}">${c.wm}</div>` : ''}<div class="op-name" style="position:relative">${p.name}</div><div class="op-price" style="opacity:.65;position:relative">${!p.price ? 'Price unknown' : p.was && p.was > p.price ? `$${fmtN(p.price)} · was $${fmtN(p.was)}` : `$${fmtN(p.price)}`}</div><div class="st" style="position:relative">${st}</div></div>`; }
     if (k === 'drafts') return draftBody(it);
     return '';
   }
   detail(it){
     const k = this.cfg.kind;
-    if (k === 'items') return statusOf(it.key);
-    if (k === 'drafts') return it.detail || '';
+    if (k === 'items') return P[it.key].price ? `$${fmtN(P[it.key].price)}` : 'Price unknown';
+    if (k === 'drafts') return it.calcd && P[it.key].price ? `${{buy:'Buy', wait:'Wait for payday', notnow:'Not now', neutral:''}[verdictOf(it.key).v]} · $${fmtN(P[it.key].price)}` : it.detail || '';
     return '';
   }
   make(d, idx){
@@ -609,6 +631,18 @@ class Stack{
     if (!this.open) this.layout();
   }
   bodyH(it){ return it.bodyH || 201; }
+  rerender(it){
+    const p = P[it.key];
+    q('.nm', it.el).textContent = p.name;
+    const dt = q('.dt', it.el); if (dt) dt.textContent = this.detail(it);
+    if (it.faces.body){ it.faces.body.innerHTML = this.bodyHTML(it); if (this.cfg.kind === 'drafts') wireDraft(this, it); }
+    if (it.faces.calc){ q('.cl .op-name', it.el).textContent = p.name; q('.cl-site', it.el).textContent = `${p.site || 'Added manually'}${p.price ? ' · $' + fmtN(p.price) : ''}`; }
+    if (this.open === it.id && this.phase === 'open'){
+      this.renderOpen(it, verdictOf(it.key, {saved:this.cfg.kind !== 'drafts' && (this.cfg.kind === 'items' || (A.items && A.items.has(it.key)))}));
+      this.actsFor = undefined;
+    }
+    this.layout({spring:{response:.55, damping:.86}});
+  }
   openH(it){
     if (this.phase === 'calc' && this.open === it.id) return 200;
     const f = it.faces.open;
@@ -619,6 +653,7 @@ class Stack{
   color(it, role){
     if (this.cfg.kind === 'drafts'){
       if (role === 'open') return VC[this.content ? this.content.v : 'neutral'];
+      if (it.calcd && P[it.key].price) return VC[verdictOf(it.key).v];
       if (role === 'back') return 'var(--tint2)';
       return 'var(--tint)';
     }
@@ -632,7 +667,7 @@ class Stack{
       this.items.forEach((it, i) => {
         const front = k !== 'home' && i === n - 1;
         const y = this.cfg.baseY - d + i*(56 + 0.22*d);
-        G[it.id] = {x:24, y, w:354, h:front ? this.bodyH(it) : 201, r:front ? 24 : 16, o:1, s:1, z:10+i, face:front ? 'body' : 'tab', role:front ? 'front' : 'back', cls:''};
+        G[it.id] = {x:24, y, w:354, h:front ? this.bodyH(it) : 201, r:front ? 24 : 16, o:1, s:1, z:10+i, face:front ? 'body' : 'tab', role:front ? 'front' : 'back', cls:'ls', dim:n - 1 - i};
       });
     } else {
       const oit = this.get(this.open);
@@ -658,6 +693,7 @@ class Stack{
       const col = this.color(it, g.role), onV = isVerdictColor(col);
       el.style.zIndex = g.z; el.className = 'fd ' + g.cls + (onV ? '' : ' tintf');
       el.style.backgroundColor = col; el.style.color = onV ? '#000' : 'var(--tx)';
+      el.style.filter = g.dim ? `brightness(${Math.max(.86, 1 - g.dim*.035)})` : ''; // folders further back sit a little deeper
       it.more.textContent = g.more || '';
       const vals = {x:g.x, y:g.y, w:g.w, h:g.h, r:g.r, o:g.o, s:g.s};
       if (o.instant) setv(el, vals);
@@ -694,9 +730,9 @@ class Stack{
     const saved = this.cfg.kind === 'items' || (this.cfg.kind === 'home' && A.items && A.items.has(c.key));
     if (c.unknown) return {primary:'Re-check', links:['Remove']};
     if (c.reminder) return {primary:'Bought', links:['Wait again','Remove']};
-    if (saved) return {primary:'Bought', links:['Wait again','Remove']};
-    if (c.v === 'buy') return {primary:'Bought', links:['Save to My items','Dismiss']};
-    return {primary:'Save to My items', note, links:['Bought','Dismiss']};
+    if (saved) return {primary:'Bought', links:['Wait again','Remove','Edit']};
+    if (c.v === 'buy') return {primary:'Bought', links:['Save to My items','Dismiss','Edit']};
+    return {primary:'Save to My items', note, links:['Bought','Dismiss','Edit']};
   }
   chrome(inst){
     const open = this.open != null;
@@ -805,6 +841,7 @@ class Stack{
       if (this.open !== it.id || this.phase !== 'calc') return;
       this.phase = 'open';
       const c = verdictOf(it.key);
+      if (this.cfg.kind === 'drafts' && it.faces.body){ it.calcd = true; it.faces.body.innerHTML = draftBody(it); wireDraft(this, it); const dt = q('.dt', it.el); if (dt) dt.textContent = this.detail(it); }
       this.renderOpen(it, c); this.actsFor = undefined;
       this.layout({spring:{response:.62, damping:.8}});
       if (A.home) A.home.addRecent(it.key);
@@ -860,7 +897,7 @@ class Stack{
     const r = this.role(it), k = this.cfg.kind;
     const front = this.items[this.items.length - 1] === it;
     if (r === 'list'){
-      if (k === 'drafts'){ if (!front) this.bringFront(it); return; }
+      if (k === 'drafts'){ if (!front) this.bringFront(it); else if (it.calcd && P[it.key].price){ it.done = true; this.openItem(it.id); } return; }
       this.openItem(it.id);
     }
     else if (r === 'peek') this.setRaised(true);
@@ -883,8 +920,9 @@ function doAction(stack, label){
       const r = s.take(x.id, s === stack ? 'drop' : 'instant');
       if (r) snaps.push([s, r]);
     }
-    A.U.spent += p.price; refresh();
-    toast('Marked as bought.', {action:'Undo', onAction:() => { A.U.spent -= p.price; snaps.forEach(([s, r]) => s.insert(r.data, r.idx, s !== stack)); refresh(); }});
+    const rec = {name:p.name, price:p.price, at:Date.now()};
+    A.U.spent += p.price; A.U.bought.push(rec); refresh();
+    toast('Marked as bought.', {action:'Undo', onAction:() => { A.U.spent -= p.price; A.U.bought = A.U.bought.filter(b => b !== rec); snaps.forEach(([s, r]) => s.insert(r.data, r.idx, s !== stack)); refresh(); }});
   }
   else if (label === 'Save to My items'){
     const already = A.items.has(key) || A.items.hasName(p.name);
@@ -896,6 +934,7 @@ function doAction(stack, label){
     refresh();
   }
   else if (label === 'Dismiss'){ stack.take(id, 'drop'); }
+  else if (label === 'Edit'){ pushAdd(false, false, key); }
   else if (label === 'Re-check'){
     const b = q('.btn', stack.acts); b.textContent = 'Checking…'; b.classList.add('dis');
     later(1100, () => {
@@ -925,6 +964,10 @@ function doAction(stack, label){
 /* drafts (Check tab) */
 function draftBody(it){
   const p = P[it.key], d = it.draft || {};
+  if (it.calcd && p.price){ const c = verdictOf(it.key); return `<div class="dr" style="height:199px">
+    <div class="op-name">${p.name}</div><div class="op-price" style="opacity:.65">$${fmtN(p.price)}</div>
+    <div style="font:800 32px/1 var(--fd);margin-top:10px">${c.verdict}</div>
+    <div class="dr-bot" style="color:inherit"><span><span style="opacity:.65">${d.expires || 'Expires in 3 days'} · </span><b class="ded">Edit</b></span><div class="calc see" style="background:#000;color:#fff">See why</div></div></div>`; }
   if (!p.price) return `<div class="dr" style="height:299px">
     <div class="op-name">${p.name}</div><div class="op-price" style="color:var(--tx2);margin-top:8px">${p.site}</div>
     <div class="dfield"><div class="fl">Price</div><input id="price-${it.id}" inputmode="decimal" placeholder="Enter price" autocomplete="off"></div>
@@ -932,11 +975,13 @@ function draftBody(it){
     <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'}</span><div class="calc dis">Calculate</div></div></div>`;
   return `<div class="dr" style="height:199px">
     <div class="op-name">${p.name}</div><div class="op-price" style="color:var(--tx2)">${p.site || 'Added manually'} · $${fmtN(p.price)}${d.justAdded ? ' · just added' : ''}</div>
-    <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'}</span><div class="calc ${A.offline ? 'dis' : ''}">Calculate</div></div></div>`;
+    <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'} · <b class="ded">Edit</b></span><div class="calc ${A.offline ? 'dis' : ''}">Calculate</div></div></div>`;
 }
 function wireDraft(stack, it){
   const btn = q('.f-body .calc', it.el);
   if (!btn) return;
+  const ed = q('.f-body .ded', it.el); if (ed) tap(ed, () => pushAdd(false, false, it.key), {scale:.92, op:.6});
+  if (btn.classList.contains('see')){ tap(btn, () => { it.done = true; stack.openItem(it.id); }, {scale:.94}); return; }
   tap(btn, () => { if (!btn.classList.contains('dis')){ it.done = true; stack.calc(it); } }, {scale:.94});
   const inp = q('input', it.el);
   if (!inp) return;
@@ -1069,22 +1114,24 @@ function toast(txt, o = {}){
 /* live values used across screens (data-b="…") */
 function vals(){
   const u = A.U, m = money(), c = cycle();
-  const left = Math.max(0, m.mid - u.spent);
+  const left = m.left;
   const drops = A.items ? A.items.items.filter(i => P[i.key].was > P[i.key].price).length : 0;
-  const spare = m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)} / month` : '$0 / month';
+  const spare = m.upTo ? `Up to $${fmtN(m.hi)} / month` : m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)} / month` : '$0 / month';
   return {
     hi: u.name ? `Hi ${u.name}` : 'Hi there',
-    spare, spareC: m.hi > 0 ? `${rangeK(m.lo, m.hi)} / month` : '$0 / month', spareShort: m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)}` : '$0',
-    left: c ? `About $${fmtN(r10(left))} left until payday` : `About $${fmtN(r10(left))} left this month`,
+    spare, spareC: m.upTo ? `Up to $${fmtK(m.hi)} / month` : m.hi > 0 ? `${rangeK(m.lo, m.hi)} / month` : '$0 / month', spareShort: m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)}` : '$0',
+    left: left < 0 ? `$${fmtN(r10(-left))} over ${c ? 'until payday' : 'this month'}` : c ? `About $${fmtN(r10(left))} left until payday` : `About $${fmtN(r10(left))} left this month`,
+    over: left < 0,
     payrow: c ? `Payday in ${c.days} ${c.days === 1 ? 'day' : 'days'} (${fmtShort(c.next)})` : 'Your pay varies, so no payday advice',
     inc: u.incExact ? `$${fmtN(u.incExact)}` : INC[u.inc][0], incRhy: `${u.incExact ? `$${fmtN(u.incExact)}` : INC[u.inc][0]} · ${RHY[u.rhy]}`,
     payday: c ? fmtShort(c.next) : 'Varies',
     rent: `$${fmtN(u.rent || 0)}`, rentNeg: `− $${fmtN(u.rent || 0)}`,
     bills: u.billsExact ? `$${fmtN(u.billsExact)}` : BILLS[u.bills][0], billsNeg: `− ${u.billsExact ? `$${fmtN(u.billsExact)}` : BILLS[u.bills][0]}`,
-    spareSentence: m.hi > 0 ? `So you usually have about $${fmtN(m.lo)}–${fmtN(m.hi)} free each month. Sounds right?` : 'Your rent and bills take everything right now. Check the numbers?',
+    spareSentence: m.upTo ? `Your ranges leave somewhere between $0 and $${fmtN(m.hi)} a month. Exact amounts give a precise number.` : m.hi > 0 ? `So you usually have about $${fmtN(m.lo)}–${fmtN(m.hi)} free each month. Sounds right?` : 'Your rent and bills take everything right now. Check the numbers?',
     changes: drops ? `${drops} price ${drops === 1 ? 'changed' : 'changed'} in My items` : 'No price changes in My items',
     name: u.name || 'Not set',
-    usedFrac: m.mid > 0 ? clamp(u.spent/m.mid, 0, 1) : 1,
+    spareLbl: m.upTo ? 'Your ranges leave' : 'About',
+    usedFrac: m.spare > 1 ? clamp(u.spent/m.spare, 0, 1) : 1,
   };
 }
 /* shrink-to-fit for big numbers (like iOS minimumScaleFactor): one line, smaller type, then compact "K" form */
@@ -1109,9 +1156,24 @@ function refresh(){
   scheduleSave();
   if (!refresh._f && document.fonts){ refresh._f = 1; document.fonts.ready.then(() => refresh()); }
   qa('[data-b]', D).forEach(el => { const t = V[el.dataset.b]; if (t !== undefined) el.textContent = t; if (FIT[el.dataset.b]) fitText(el, V[FIT[el.dataset.b]]); });
-  qa('.spfill', D).forEach(f => spring(f, {w:Math.max(8, 306*V.usedFrac)}, {response:.7}));
+  qa('.spfill', D).forEach(f => { spring(f, {w:Math.max(8, 306*V.usedFrac)}, {response:.7}); f.style.background = V.over ? 'var(--no)' : '#fff'; });
   qa('[data-goal]', D).forEach(renderGoal);
+  qa('[data-bought]', D).forEach(renderBought);
   for (const s of [A.home, A.items]) if (s) s.refreshData();
+}
+/* purchases marked "Bought" in DeciBuy this pay cycle (PRD v02 #5); only these count, no other spending is tracked */
+function renderBought(host){
+  const b = A.U.bought || [], c = cycle(), tot = b.reduce((a, x) => a + x.price, 0);
+  host.innerHTML = `<div class="sec" style="left:28px;top:0;width:350px;display:flex;justify-content:space-between"><span>Bought ${c ? 'since payday' : 'this month'}</span>${b.length ? `<span style="font:600 14px/23px var(--fb);color:var(--tx2)">$${fmtN(tot)}</span>` : ''}</div>`
+    + (b.length ? b.slice().reverse().map((x, i) => `<div class="row brow" data-i="${b.length - 1 - i}" style="top:${36 + i*56}px;cursor:pointer">${x.name}<span class="rv">$${fmtN(x.price)}</span></div>`).join('')
+      : `<div class="a" style="left:24px;top:36px;width:354px;font:500 15px/21px var(--fb);color:var(--tx2)">Items you mark as Bought show up here. Nothing else is tracked.</div>`);
+  const hh = 36 + Math.max(1, b.length)*56;
+  host.style.height = hh + 'px';
+  const scr = host.closest('.scr'); const sent = scr && scr.firstElementChild; if (sent) sent.style.top = (749 + hh + 100) + 'px';
+  qa('.brow', host).forEach(r => tap(r, () => {
+    const x = b[+r.dataset.i]; if (!x) return;
+    toast(`Bought “${x.name}”, $${fmtN(x.price)}.`, {action:'Not bought', onAction:() => { A.U.bought = A.U.bought.filter(y => y !== x); A.U.spent = Math.max(0, A.U.spent - x.price); refresh(); later(300, () => toast('Removed. It’s back in your spare money.')); }});
+  }, {scale:.985}));
 }
 function renderGoal(host){
   const g = A.U.goal;
@@ -1186,6 +1248,7 @@ function buildCheck(kind, offline, list){
     <div class="hdr L">
       <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
       <div class="eyebrow ccount" style="top:118px">2 of 5 drafts</div>
+      <div class="a calcall" style="right:24px;top:124px;font:700 14px/20px var(--fb);cursor:pointer;padding:6px;margin:-6px">Calculate all</div>
       <div class="ttl" style="top:147px">CHECK</div>
       ${offline ? `<div class="a" style="left:24px;top:197px;width:354px;height:64px;border-radius:16px;background:var(--sf);display:flex;align-items:center;gap:12px;padding:0 16px;font:500 13px/18px var(--fb)">${IC.offline}<span>You’re offline. Your drafts are saved; calculate when you’re back online.</span></div>` : ''}
       <div class="a addm" style="left:28px;top:574px;font:700 16px/22px var(--fb);cursor:pointer;z-index:5">+ Add manually</div>
@@ -1206,11 +1269,14 @@ function buildCheck(kind, offline, list){
   tap(q('.gear', el), () => pushSettings(), {scale:.85});
   tap(addm, () => pushAdd(), {scale:.95});
   tap(q('.addm2', el), () => pushAdd());
+  tap(q('.calcall', el), () => calcAll(), {scale:.92, op:.6});
   A.check = new Stack(el, {kind:'drafts', baseY:base, items:list ? list : offline ? [draftSet('one')[0], {key:'lampD', detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days'}}] : draftSet(kind),
     onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
     onChange:(st, inst) => {
       const n = st.items.length;
       q('.ccount', el).textContent = `${n} of 5 drafts`;
+      const ca = q('.calcall', el), todo = st.items.filter(i => P[i.key].price && !i.calcd).length >= 2;
+      (inst ? setv : spring)(ca, {o:todo ? 1 : 0}, {response:.3}); ca.style.pointerEvents = todo ? 'auto' : 'none';
       const front = st.items[n-1];
       const y = n ? base + (n-1)*56 + st.bodyH(front) + 22 : 574;
       (inst ? setv : spring)(addm, {y:y - 574, o:(n && n < 5) ? 1 : 0}, {response:.5, damping:.86});
@@ -1226,7 +1292,14 @@ function addDraft(prod){
   P[key] = Object.assign({added:100 + manualN}, prod);
   const st = A.check;
   if (st.items.length >= 5){ const old = st.items[0]; const nm = P[old.key].name; st.take(old.id, 'drop'); later(500, () => toast(`Drafts are full. “${nm}” was removed to make room.`, {ms:4500})); }
-  st.insert({key, detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days', justAdded:true}});
+  return st.insert({key, detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days', justAdded:true}});
+}
+function calcAll(){
+  const st = A.check, todo = st.items.filter(i => P[i.key].price && !i.calcd);
+  if (!todo.length) return;
+  if (st.open) st.close();
+  todo.forEach((it, i) => later(160*i, () => { it.calcd = true; st.rerender(it); spring(it.el, {s:1.02}, {response:.18, onDone:() => spring(it.el, {s:1}, {response:.4, damping:.6})}); if (A.home) A.home.addRecent(it.key); }));
+  later(160*todo.length + 300, () => toast(`${todo.length} ${todo.length === 1 ? 'item' : 'items'} checked. Tap a folder to see why.`));
 }
 
 /* ---------------- My items ---------------- */
@@ -1312,6 +1385,7 @@ function buildMoney(){
     <div class="row r-bills" style="top:525px;cursor:pointer">Other bills<span class="rv" data-b="bills"></span></div>
     <div class="sec" style="top:593px">Saving for</div>
     <div class="a" data-goal style="left:0;top:629px;width:402px;height:100px"></div>
+    <div class="a" data-bought style="left:0;top:749px;width:402px"></div>
   </div>`);
   tap(q('.gear', el), () => pushSettings(), {scale:.85});
   tap(q('.edit', el), () => pushQ('spare'), {scale:.9, op:.6});
@@ -1377,10 +1451,11 @@ function moneyIn(inp, cb){
   inp.addEventListener('input', () => { const raw = inp.value.replace(/\D/g, ''); if (raw.length > 6) overMax(inp); const d = raw.slice(0, 6); inp.value = d ? '$' + (+d).toLocaleString('en-US') : ''; cb(d ? +d : null); });
 }
 function wireFields(el){ qa('.fi', el).forEach(f => { f.addEventListener('pointerdown', e => e.stopPropagation()); f.addEventListener('click', () => q('input', f).focus({preventScroll:true})); }); }
-function pushAdd(e1, inst){
+function pushAdd(e1, inst, editKey){
+  const E = editKey ? P[editKey] : null;
   const el = h(`<div class="scr">
     <div class="ico bk" style="left:24px;top:80px">${IC.back}</div>
-    <div class="a h36" style="left:24px;top:116px">Add an item</div>
+    <div class="a h36" style="left:24px;top:116px">${E ? 'Edit item' : 'Add an item'}</div>
     <div class="a card" style="left:24px;top:180px;width:354px;height:409px;border-radius:24px;background:var(--tint)">
       ${fieldInput('Link', 'Paste a link', {y:20, id:'link', cls:'f-link'})}
       <div class="a orl" style="left:20px;top:97px;width:314px;height:18px;display:flex;align-items:center;gap:12px;font:500 13px/18px var(--fb);color:var(--tx2)"><i style="flex:1;height:1px;background:var(--blue)"></i>or<i style="flex:1;height:1px;background:var(--blue)"></i></div>
@@ -1390,18 +1465,23 @@ function pushAdd(e1, inst){
         ${fieldInput('Price', '$ 0.00', {y:204, id:'price', mode:'numeric'})}
         <div class="a inst" style="left:20px;top:281px;width:314px;height:31px;pointer-events:auto"><span style="font:600 16px/31px var(--fb)">Pay in installments?</span></div>
         ${fieldInput('Installments', 'Number of payments', {y:324, id:'inst', mode:'numeric', cls:'f-inst', suffix:true})}
+        ${fieldInput('Interest, % a year (if any)', '0 if interest-free', {y:401, id:'rate', mode:'decimal', cls:'f-rate', suffix:true})}
+        <div class="a rnote" style="left:20px;top:476px;width:314px;font:500 12px/16px var(--fb);color:var(--tx2)">Not sure? Check the store’s terms. The total here is an estimate.</div>
       </div>
     </div>
-    <div class="btn add dis" style="top:609px">Add to drafts</div>
+    <div class="a addb" style="left:0;top:609px;width:402px;height:100px">
+      <div class="btn add dis" style="top:0">${E ? 'Save' : 'Check'}</div>
+      ${E ? '' : '<div class="lnk sdraft" style="top:70px"><span>Save as draft</span></div>'}
+    </div>
     <div class="fd pk addpk" style="width:354px;height:201px;border-radius:16px;background:var(--tint)"><div class="face f-tab"><span class="nm"></span></div></div>
   </div>`);
   qa('.mv .field', el).forEach(f => f.style.pointerEvents = 'auto');
-  const card = q('.card', el), warn = q('.warn', el), orl = q('.orl', el), mv = q('.mv', el), finst = q('.f-inst', el), btn = q('.add', el);
+  const card = q('.card', el), warn = q('.warn', el), orl = q('.orl', el), mv = q('.mv', el), finst = q('.f-inst', el), frate = q('.f-rate', el), rnote = q('.rnote', el), btn = q('.add', el), addb = q('.addb', el), sdraft = q('.sdraft', el);
   const peek = q('.addpk', el); const pk = A.check.items[A.check.items.length - 1];
   if (pk) q('.nm', peek).textContent = P[pk.key].name; else peek.style.display = 'none';
   const tg = toggle(false, 263, 0); q('.inst', el).appendChild(tg);
-  const F = {link:'', name:'', price:null, inst:null};
-  const st = {e1:!!e1, inst:false};
+  const F = {link:'', name:E ? E.name : '', price:E ? E.price : null, inst:E ? E.inst || null : null, rate:E ? E.rate || null : null};
+  const st = {e1:!!e1, inst:!!(E && E.inst)};
   const I = k => q(`input[data-k="${k}"]`, el);
   const valid = () => F.name.trim() && F.price > 0 && (!st.inst || F.inst > 1);
   const lay = instant => {
@@ -1410,11 +1490,16 @@ function pushAdd(e1, inst){
     sp(orl, {o:st.e1 ? 0 : 1}, {response:.25});
     const shift = st.e1 ? 42 : 0;
     sp(mv, {y:shift}, o);
-    sp(finst, {o:st.inst ? 1 : 0, s:st.inst ? 1 : .97}, o); finst.style.pointerEvents = st.inst ? 'auto' : 'none';
-    const hh = (st.inst ? 409 : 332) + shift;
-    sp(card, {h:hh}, o); sp(btn, {y:hh - 409}, o);
+    for (const f of [finst, frate, rnote]){ sp(f, {o:st.inst ? 1 : 0, s:st.inst ? 1 : .97}, o); f.style.pointerEvents = st.inst ? 'auto' : 'none'; }
+    const hh = (st.inst ? 512 : 332) + shift;
+    sp(card, {h:hh}, o); sp(addb, {y:hh - 409}, o);
+    sp(peek, {o:st.inst || st.e1 ? 0 : 1}, {response:.3}); peek.style.pointerEvents = st.inst || st.e1 ? 'none' : '';
     btn.classList.toggle('dis', !valid());
-    const sfx = q('.sfx', el); if (sfx) sfx.textContent = F.inst > 1 && F.price ? ` × $${fmtN(Math.ceil(F.price/F.inst))}` : '';
+    if (sdraft){ sdraft.style.opacity = valid() ? 1 : .35; sdraft.style.pointerEvents = valid() ? '' : 'none'; }
+    const cost = costOf({price:F.price || 0, inst:F.inst, rate:F.rate});
+    const sx = qa('.sfx', el);
+    sx[0].textContent = F.inst > 1 && F.price ? ` × $${fmtN(Math.ceil(cost/F.inst))}` : '';
+    sx[1].textContent = F.rate && F.inst > 1 && F.price ? `% · ≈ $${fmtN(cost)} total` : F.rate ? '%' : '';
   };
   tg._on = on => { st.inst = on; lay(); if (on) later(200, () => I('inst').focus({preventScroll:true})); };
   I('link').addEventListener('input', () => { F.link = I('link').value.trim(); });
@@ -1422,19 +1507,29 @@ function pushAdd(e1, inst){
   I('name').addEventListener('input', () => { F.name = I('name').value; lay(); });
   moneyIn(I('price'), v => { F.price = v; lay(); });
   I('inst').addEventListener('input', () => { const d = I('inst').value.replace(/\D/g, '').slice(0, 2); I('inst').value = d; F.inst = d ? +d : null; lay(); });
+  I('rate').addEventListener('input', () => { let v = I('rate').value.replace(',', '.').replace(/[^\d.]/g, ''); const [a, b] = v.split('.'); v = a.slice(0, 2) + (b !== undefined ? '.' + b.slice(0, 1) : ''); I('rate').value = v; F.rate = parseFloat(v) || null; lay(); });
+  if (E){ I('name').value = E.name; I('price').value = '$' + fmtN(E.price || 0); if (!E.price) I('price').value = ''; if (E.inst){ I('inst').value = E.inst; } if (E.rate) I('rate').value = E.rate; if (E.inst){ tg.classList.add('on'); setv(q('i', tg), {x:22}); } }
   wireFields(el);
   if (e1){ I('link').value = F.link = 'ikea.com/p/mushroom-lamp…'; }
   tap(q('.bk', el), () => A.nav.pop(), {scale:.85});
   tap(peek, () => A.nav.pop(), {scale:.98});
-  tap(btn, () => {
-    if (!valid()) return;
+  const build_ = () => {
     let site = 'Added manually';
     if (F.link){ const m = F.link.replace(/^https?:\/\//, '').replace(/^www\./, '').split(/[\/?#]/)[0]; if (m.includes('.')) site = m; }
-    const prod = {name:F.name.trim(), price:F.price, site, inst:st.inst ? F.inst : null};
+    return {name:F.name.trim(), price:F.price, site, inst:st.inst ? F.inst : null, rate:st.inst ? F.rate : null};
+  };
+  const submit = draftOnly => {
+    if (!valid()) return;
+    if (document.activeElement) document.activeElement.blur();
+    if (E){ const pr = build_(); Object.assign(E, {name:pr.name, price:pr.price, inst:pr.inst, rate:pr.rate, failed:false}); if (pr.site !== 'Added manually') E.site = pr.site;
+      A.nav.pop(); later(300, () => { for (const s2 of [A.check, A.home, A.items]) for (const it of s2.items) if (it.key === editKey) s2.rerender(it); refresh(); toast('Saved. The verdict uses the new numbers.'); }); return; }
+    const prod = build_();
     A.nav.pop(); if (A.tab !== 'check') switchTab('check');
-    later(380, () => addDraft(prod));
-  });
-  setv(warn, {o:0}); setv(card, {h:409}); setv(btn, {y:0}); setv(mv, {y:0}); setv(peek, {x:24, y:DHn-82});
+    later(380, () => { const it = addDraft(prod); if (!draftOnly && it) later(450, () => { it.done = true; A.check.calc(it); }); });
+  };
+  tap(btn, () => submit(false));
+  if (sdraft) tap(q('span', sdraft), () => submit(true), {scale:.94, op:.6});
+  setv(warn, {o:0}); setv(card, {h:409}); setv(addb, {y:0}); setv(mv, {y:0}); setv(peek, {x:24, y:DHn-82});
   lay(true);
   A.nav.push(el, inst);
 }
@@ -1516,7 +1611,7 @@ function qScreen(kind, mode, T, done){
     moneyIn(iex, v => { T.incExact = v; });
     wireFields(el);
     tap(q('span', exl), () => { showEx(true); later(250, () => iex.focus({preventScroll:true})); }, {scale:.94, op:.6});
-    showEx(T.inc === INC.length - 1 || !!T.incExact, true);
+    showEx(T.inc === INC.length - 1 || !!T.incExact || !!T._exact, true);
     mainBtn(btnLabel);
   }
   if (kind === 'bills'){
@@ -1533,7 +1628,7 @@ function qScreen(kind, mode, T, done){
     moneyIn(bex, v => { T.billsExact = v; });
     wireFields(el);
     tap(q('span', exl), () => { showEx(true); later(250, () => bex.focus({preventScroll:true})); }, {scale:.94, op:.6});
-    showEx(T.bills === BILLS.length - 1 || !!T.billsExact, true);
+    showEx(T.bills === BILLS.length - 1 || !!T.billsExact || !!T._exact, true);
     mainBtn(btnLabel);
   }
   if (kind === 'rhythm'){
@@ -1577,7 +1672,7 @@ function qScreen(kind, mode, T, done){
   if (kind === 'spare'){
     add(head(onb ? 'Here’s your spare money' : 'Your spare money', onb ? '<span data-b="spareSentence"></span>' : 'Tap a line to change it.'));
     add(`<div class="spare sp6" style="top:316px;height:220px">
-        <div class="a" style="top:22px;font:600 13px/18px var(--fb)">About</div>
+        <div class="a" data-b="spareLbl" style="top:22px;font:600 13px/18px var(--fb)">About</div>
         <div class="a amt" data-b="spare" style="top:52px;font:700 28px/34px var(--fd);font-variant-numeric:tabular-nums"></div>
         <div class="a" style="top:98px;width:306px;height:1px;background:rgba(255,255,255,.3)"></div>
         ${[['Take-home','inc','income'],['Rent','rentNeg','rent'],['Other bills','billsNeg','bills']].map((r, i) => `<div class="a r6" data-q="${r[2]}" style="top:${104 + i*33}px;left:12px;width:330px;height:33px;padding:6px 12px;border-radius:10px;display:flex;justify-content:space-between;align-items:baseline;${onb ? '' : 'cursor:pointer'}"><span style="font:500 15px/21px var(--fb)">${r[0]}</span><span style="font:600 13px/18px var(--fb)" data-b="${r[1]}"></span></div>`).join('')}
@@ -1585,7 +1680,11 @@ function qScreen(kind, mode, T, done){
     if (!onb) qa('.r6', el).forEach(r => tap(r, () => pushQ(r.dataset.q), {scale:.97}));
     if (onb){
       const zero = money().hi <= 0;
-      if (zero){
+      if (money().upTo){
+        mainBtn('Enter exact amounts'); mainAction = () => { A.U._exact = true; A.onb.popTo(1); };
+        add(`<div class="lnk adj" style="top:${B(790)}"><span>Keep the range</span></div><div class="foot" style="top:${B(822)}">Checks use the top of your range.</div>`);
+        tap(q('.adj span', el), () => done(), {scale:.94, op:.6});
+      } else if (zero){
         mainBtn('Adjust'); mainAction = () => A.onb.popTo(1);
         add(`<div class="lnk adj" style="top:${B(790)}"><span>Continue anyway</span></div><div class="foot" style="top:${B(822)}">With no spare money, every check will say “Not now”.</div>`);
         tap(q('.adj span', el), () => done(), {scale:.94, op:.6});
@@ -1596,7 +1695,10 @@ function qScreen(kind, mode, T, done){
       }
       el._intro = () => { const c = q('.sp6', el); setv(c, {s:.96, o:0}); spring(c, {s:1, o:1}, {response:.55, damping:.8, delay:.15});
         qa('.r6', el).forEach((r, i) => { setv(r, {o:0, y:8}); spring(r, {o:1, y:0}, {response:.45, delay:.35 + i*.08}); }); };
-    } else mainBtn('Done');
+    } else {
+      mainBtn('Done');
+      if (money().upTo) add(`<div class="foot" style="top:552px;text-align:left">Tap Take-home or Other bills to enter exact amounts.</div>`);
+    }
     el._back = () => refresh();
   }
   if (kind === 'goal'){
@@ -1644,6 +1746,7 @@ function qScreen(kind, mode, T, done){
 /* edit flow from Home / My money / Settings */
 function pushQ(kind){
   const T = Object.assign({}, A.U, {goal:A.U.goal ? Object.assign({}, A.U.goal) : null});
+  if ((kind === 'income' || kind === 'bills') && money().upTo) T._exact = true;
   if (kind === 'spare'){ const el = qScreen('spare', 'edit', T, () => A.nav.pop()); A.nav.push(el); refresh(); return; }
   const el = qScreen(kind, 'edit', T, () => {
     if (document.activeElement) document.activeElement.blur();
@@ -1697,6 +1800,7 @@ function onbGo(i, inst){
   return el;
 }
 function finishOnb(){
+  delete A.U._exact;
   A.onbDone = true; saveState();
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(_){}
   const root = A.onb.root;
@@ -1796,7 +1900,7 @@ function saveState(){
   if (!A.live || !A.onbDone || !A.home) return;
   try {
     const keys = new Set();
-    const list = st => st.items.map(i => { keys.add(i.key); return {key:i.key, detail:i.detail, bodyH:i.bodyH, draft:i.draft ? Object.assign({}, i.draft, {justAdded:false}) : undefined}; });
+    const list = st => st.items.map(i => { keys.add(i.key); return {key:i.key, detail:i.detail, bodyH:i.bodyH, draft:i.draft ? Object.assign({}, i.draft, {justAdded:false}) : undefined, calcd:i.calcd || undefined}; });
     const data = {v:1, U:A.U, manualN, home:list(A.home), items:list(A.items), check:list(A.check), P:{}};
     keys.forEach(k => data.P[k] = P[k]);
     localStorage.setItem(SKEY, JSON.stringify(data));
@@ -1822,7 +1926,8 @@ function build(p){
   if (R_){ Object.assign(P, R_.P); manualN = R_.manualN || 0; }
   // a new user (after onboarding) starts with nothing; demo items only for the screen jumps
   const fresh = p.onb !== undefined || !!p.fresh || !!R_;
-  if (p.fresh){ A.U.goal = null; A.U.spent = 0; }
+  if (p.fresh){ A.U.goal = null; A.U.spent = 0; A.U.bought = []; }
+  A.U.bought = A.U.bought || [];
   A.nav = new Nav(D);
   const main = h('<div class="scr" style="overflow:hidden"></div>');
   A.main = main;
