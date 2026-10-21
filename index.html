@@ -1106,6 +1106,7 @@ function fitText(el, alt){
 }
 function refresh(){
   const V = vals();
+  scheduleSave();
   if (!refresh._f && document.fonts){ refresh._f = 1; document.fonts.ready.then(() => refresh()); }
   qa('[data-b]', D).forEach(el => { const t = V[el.dataset.b]; if (t !== undefined) el.textContent = t; if (FIT[el.dataset.b]) fitText(el, V[FIT[el.dataset.b]]); });
   qa('.spfill', D).forEach(f => spring(f, {w:Math.max(8, 306*V.usedFrac)}, {response:.7}));
@@ -1123,7 +1124,7 @@ function renderGoal(host){
 }
 
 /* ---------------- Home ---------------- */
-function buildHome(fresh){
+function buildHome(fresh, list){
   const el = h(`<div class="scr scroll">
     <div class="a" style="left:0;top:873px;width:1px;height:1px"></div>
     <div class="hdr L">
@@ -1154,7 +1155,7 @@ function buildHome(fresh){
   tap(q('.go-items', el), () => switchTab('items'), {scale:.98});
   tap(fab, () => pushAdd(), {scale:.9});
   tap(q('.hadd', el), () => pushAdd(), {scale:.95});
-  A.home = new Stack(el, {kind:'home', baseY:620, items:fresh ? [] : [{key:'sneaker'}, {key:'lamp'}, {key:'nike'}],
+  A.home = new Stack(el, {kind:'home', baseY:620, items:list || (fresh ? [] : [{key:'sneaker'}, {key:'lamp'}, {key:'nike'}]),
     onChange:(st, inst) => { const e = q('.hempty', el), n = st.items.length; (inst ? setv : spring)(e, {o:n ? 0 : 1}, {response:.35}); q('.hadd', el).style.pointerEvents = n ? 'none' : 'auto'; },
     onMode:(m, inst) => { if (m === 'open' && el.scrollTop) el.scrollTo({top:0, behavior:inst ? 'auto' : 'smooth'}); el.style.overflowY = m === 'open' ? 'hidden' : ''; hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); fabMode(); }});
   A.fab = fab;
@@ -1177,7 +1178,7 @@ function draftSet(kind){
   }
   return [sony, lamp];
 }
-function buildCheck(kind, offline){
+function buildCheck(kind, offline, list){
   A.offline = !!offline;
   if (offline) P.lampD.price = 180;
   const base = offline ? 273 : 197;
@@ -1205,7 +1206,7 @@ function buildCheck(kind, offline){
   tap(q('.gear', el), () => pushSettings(), {scale:.85});
   tap(addm, () => pushAdd(), {scale:.95});
   tap(q('.addm2', el), () => pushAdd());
-  A.check = new Stack(el, {kind:'drafts', baseY:base, items:offline ? [draftSet('one')[0], {key:'lampD', detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days'}}] : draftSet(kind),
+  A.check = new Stack(el, {kind:'drafts', baseY:base, items:list ? list : offline ? [draftSet('one')[0], {key:'lampD', detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days'}}] : draftSet(kind),
     onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
     onChange:(st, inst) => {
       const n = st.items.length;
@@ -1238,7 +1239,7 @@ const SORTS = [
   ['Fits now', (a, b) => vRank(a.key) - vRank(b.key)],
   ['Waiting longest', (a, b) => (vRank(a.key) === 1 ? 0 : 1) - (vRank(b.key) === 1 ? 0 : 1) || P[a.key].added - P[b.key].added],
 ];
-function buildItems(fresh){
+function buildItems(fresh, list){
   const el = h(`<div class="scr">
     <div class="hdr L">
       <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
@@ -1252,7 +1253,7 @@ function buildItems(fresh){
   tap(q('.gear', el), () => pushSettings(), {scale:.85});
   tap(q('.sortb', el), () => sortSheet(), {scale:.92, op:.6});
   tap(q('.recheck', el), () => recheckAll(), {scale:.92, op:.6});
-  A.items = new Stack(el, {kind:'items', baseY:228, items:fresh ? [] : [{key:'lamp'}, {key:'nike'}, {key:'canon'}, {key:'dyson'}],
+  A.items = new Stack(el, {kind:'items', baseY:228, items:list || (fresh ? [] : [{key:'lamp'}, {key:'nike'}, {key:'canon'}, {key:'dyson'}]),
     onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
     onChange:(st, inst) => { q('.icount', el).textContent = `${st.items.length} saved`; (inst ? setv : spring)(q('.iempty', el), {o:st.items.length ? 0 : 1}, {response:.3}); }});
   A.sortIdx = 2;
@@ -1336,17 +1337,31 @@ function pushSettings(inst){
     <div class="row r-name" style="top:193px;cursor:pointer">Name<span class="rv" data-b="name"></span></div>
     <div class="row r-app" style="top:249px">Appearance</div>
     <div class="row" style="top:305px">Notifications</div>
-    <div class="row" style="top:361px;height:63px;line-height:21px;padding-top:11px">Privacy and data<div style="font:500 13px/18px var(--fb);color:var(--tx2)">Export · Delete</div><span class="a" style="left:316px;top:20px">${IC.chev}</span></div>
+    <div class="row r-priv" style="top:361px;height:63px;line-height:21px;padding-top:11px;cursor:pointer">Privacy and data<div style="font:500 13px/18px var(--fb);color:var(--tx2)">Export · Delete</div><span class="a" style="left:316px;top:20px">${IC.chev}</span></div>
     <div class="row" style="top:432px">Region and currency<span class="rv">USD · $</span></div>
     <div class="row" style="top:488px">About DeciBuy<span class="a" style="left:316px;top:12px">${IC.chev}</span></div>
     <div class="a" style="left:24px;top:561px;font:500 13px/18px var(--fb);color:var(--tx2)">DeciBuy helps you decide. The final call is always yours.</div>
   </div>`);
   el.appendChild(toggle(true, 308, 313));
   el.appendChild(segmented(170, 257));
-  qa('.row', el).forEach(r => { if (!r.classList.contains('r-app')) tap(r, () => { if (r.classList.contains('r-name')) pushQ('name'); }, {scale:.985}); });
+  qa('.row', el).forEach(r => { if (!r.classList.contains('r-app')) tap(r, () => { if (r.classList.contains('r-name')) pushQ('name'); if (r.classList.contains('r-priv')) privacySheet(); }, {scale:.985}); });
   tap(q('.bk', el), () => A.nav.pop(), {scale:.85});
   A.nav.push(el, inst); refresh();
   return el;
+}
+function privacySheet(){
+  const L = A.over; L.style.pointerEvents = 'auto';
+  const host = h('<div class="L"><div class="dim"></div></div>'); L.appendChild(host);
+  const dim = q('.dim', host); setv(dim, {o:0}); spring(dim, {o:.45}, {response:.3});
+  const dg = h(`<div class="dialog">
+    <div style="font:800 24px/1.1 var(--fd);text-wrap:balance">Delete all your data?</div>
+    <div style="font:500 14px/20px var(--fb);color:var(--tx2);margin-top:10px">Your numbers, drafts and saved items are stored only on this phone. This removes them and starts setup again.</div>
+    <div class="btn ok" style="position:relative;left:0;width:290px;margin-top:20px;background:var(--no);color:#000">Delete my data</div>
+    <div class="nn" style="font:600 15px/18px var(--fb);margin-top:18px;cursor:pointer;display:inline-block">Cancel</div>
+  </div>`);
+  host.appendChild(dg); setv(dg, {s:1.12, o:0}); spring(dg, {s:1, o:1}, {response:.38, damping:.82});
+  const close = fn => { spring(dg, {s:.94, o:0}, {response:.25}); spring(dim, {o:0}, {response:.3}); later(260, () => { host.remove(); L.style.pointerEvents = 'none'; if (fn) fn(); }); };
+  tap(q('.ok', dg), () => close(deleteData)); tap(q('.nn', dg), () => close(), {scale:.94, op:.6}); tap(dim, () => close(), {scale:1});
 }
 function fieldInput(label, ph, o = {}){
   return `<div class="field fi ${o.cls || ''}" style="left:${o.x ?? 20}px;top:${o.y}px;${o.w ? `width:${o.w}px;` : ''}${o.bg ? `background:${o.bg};` : ''}cursor:text"><div class="fl">${label}</div><input ${o.id ? `data-k="${o.id}"` : ''} placeholder="${ph}" ${o.mode ? `inputmode="${o.mode}"` : ''} autocomplete="off" spellcheck="false" value="${o.value ?? ''}">${o.suffix ? `<span class="sfx"></span>` : ''}</div>`;
@@ -1682,6 +1697,8 @@ function onbGo(i, inst){
   return el;
 }
 function finishOnb(){
+  A.onbDone = true; saveState();
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(_){}
   const root = A.onb.root;
   spring(root, {o:0, s:1.04}, {response:.5, onDone:() => root.remove()});
   root.style.pointerEvents = 'none';
@@ -1767,20 +1784,51 @@ function lockScreen(kind, onShown){
 /* =====================================================================
    Build + jump list
    ===================================================================== */
+/* =====================================================================
+   Saved on this phone (local-first, as in the real app): money profile,
+   drafts, recent checks, My items. Only for a real session (onboarding from
+   the start, or restored data). Demo screen jumps from the panel never save.
+   ===================================================================== */
+const SKEY = 'decibuy-data-v1';
+A.live = false; A.onbDone = false;
+const reviveU = u => Object.assign({}, u, {payday:new Date(u.payday)});
+function saveState(){
+  if (!A.live || !A.onbDone || !A.home) return;
+  try {
+    const keys = new Set();
+    const list = st => st.items.map(i => { keys.add(i.key); return {key:i.key, detail:i.detail, bodyH:i.bodyH, draft:i.draft ? Object.assign({}, i.draft, {justAdded:false}) : undefined}; });
+    const data = {v:1, U:A.U, manualN, home:list(A.home), items:list(A.items), check:list(A.check), P:{}};
+    keys.forEach(k => data.P[k] = P[k]);
+    localStorage.setItem(SKEY, JSON.stringify(data));
+  } catch(_){}
+}
+let _svT;
+function scheduleSave(){ clearTimeout(_svT); _svT = setTimeout(saveState, 250); }
+function loadState(){ try { const d = JSON.parse(localStorage.getItem(SKEY)); return d && d.v === 1 && d.U ? d : null; } catch(_){ return null; } }
+function deleteData(){
+  try { localStorage.removeItem(SKEY); } catch(_){}
+  A.onbDone = false; A.live = true; jump({onb:0});
+}
+addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveState(); });
+addEventListener('pagehide', saveState);
+document.addEventListener('input', scheduleSave, true);
+
 function build(p){
   D.innerHTML = ''; ACT.clear(); manualN = 0;
   seedProducts();
   if (p.prep) p.prep();
-  A.U = p.onb !== undefined ? NEWU() : JSON.parse(JSON.stringify(EMMA), (k, v) => k === 'payday' ? new Date(v) : v);
+  const R_ = p.restore;
+  A.U = R_ ? reviveU(R_.U) : p.onb !== undefined ? NEWU() : JSON.parse(JSON.stringify(EMMA), (k, v) => k === 'payday' ? new Date(v) : v);
+  if (R_){ Object.assign(P, R_.P); manualN = R_.manualN || 0; }
   // a new user (after onboarding) starts with nothing; demo items only for the screen jumps
-  const fresh = p.onb !== undefined || !!p.fresh;
+  const fresh = p.onb !== undefined || !!p.fresh || !!R_;
   if (p.fresh){ A.U.goal = null; A.U.spent = 0; }
   A.nav = new Nav(D);
   const main = h('<div class="scr" style="overflow:hidden"></div>');
   A.main = main;
   A.home = A.check = A.items = null;
-  const items = buildItems(fresh);
-  A.screens = {home:buildHome(fresh), check:buildCheck(fresh ? 'empty' : (p.drafts || 'two'), p.offline), items, money:buildMoney()};
+  const items = buildItems(fresh, R_ && R_.items);
+  A.screens = {home:buildHome(fresh, R_ && R_.home), check:buildCheck(fresh ? 'empty' : (p.drafts || 'two'), p.offline, R_ && R_.check), items, money:buildMoney()};
   for (const k of ['home','check','items','money']) main.appendChild(A.screens[k]);
   main.appendChild(A.fab); A.fab.style.zIndex = 150;
   A.tabbar = tabbar(); main.appendChild(A.tabbar);
@@ -1802,6 +1850,7 @@ function build(p){
   refresh();
   for (const s of [A.home, A.check, A.items]) s.layout({instant:true});
 }
+for (const m of ['take','insert','sortBy','bringFront']){ const f = Stack.prototype[m]; Stack.prototype[m] = function(...a){ const r = f.apply(this, a); scheduleSave(); return r; }; }
 const openKey = (st, key) => { const it = st.items.find(i => i.key === key); if (it) st.openItem(it.id); };
 const FLOWS = [
   ['Flow 1 · Onboarding', [['O1','Welcome',{onb:0}],['O2','Income',{onb:1}],['O3','Pay rhythm',{onb:2}],['O4','Rent',{onb:3}],['O5','Bills',{onb:4}],['O6','Spare money',{onb:5}],['O7','Savings goal',{onb:6}],['new','Your name',{onb:7}],['O8','Ready',{onb:8}]]],
@@ -1839,7 +1888,7 @@ function jump(p){
   const host = document.getElementById('plist');
   FLOWS.forEach(([title, list]) => {
     const g = h(`<div><div class="p-gt">${title}</div><div class="p-list"></div></div>`);
-    list.forEach(([code, name, p]) => { const b = h(`<button type="button"><b>${code}</b>${name}</button>`); b.onclick = () => { qa('.p-list button').forEach(x => x.classList.remove('on')); b.classList.add('on'); jump(p); document.getElementById('panel').classList.remove('open'); }; q('.p-list', g).appendChild(b); });
+    list.forEach(([code, name, p]) => { const b = h(`<button type="button"><b>${code}</b>${name}</button>`); b.onclick = () => { qa('.p-list button').forEach(x => x.classList.remove('on')); b.classList.add('on'); saveState(); A.live = p.onb === 0; A.onbDone = false; jump(p); document.getElementById('panel').classList.remove('open'); }; q('.p-list', g).appendChild(b); });
     host.appendChild(g);
   });
   document.getElementById('ptoggle').onclick = () => document.getElementById('panel').classList.toggle('open');
@@ -1868,7 +1917,9 @@ function fit(){
 addEventListener('resize', fit); fit();
 qa('.p-phone button').forEach(b => b.onclick = () => { A.sys = b.dataset.m; applyTheme(true); });
 applyTheme(false);
-jump({onb:0});
+{ const saved = loadState(); A.live = true;
+  if (saved){ A.onbDone = true; jump({tab:'home', restore:saved}); qa('.p-list button').forEach(x => x.classList.remove('on')); }
+  else jump({onb:0}); }
 document.fonts && document.fonts.ready.then(() => { for (const s of [A.home, A.check, A.items]) if (s) s.layout({instant:true}); });
 </script>
 <script>
