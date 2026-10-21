@@ -474,9 +474,11 @@ function money(){
   const base = exact ? inc - rent - bills : best <= 0 ? best : (Math.max(worst, 0) + best)/2;
   const zero = base <= 0;
   const spare = Math.max(base, 1);
-  const left = Math.max(base, 0) - (u.spent || 0); // can go below zero once Bought items pass spare money
+  const perCycle = u.rhy === 1 ? .5 : 1; // paid every 2 weeks: each pay cycle gets about half of the monthly spare money
+  const cycleSpare = Math.max(base, 0)*perCycle;
+  const left = cycleSpare - (u.spent || 0); // can go below zero once Bought items pass spare money
   const lo = exact ? r10(base) : upTo ? 0 : Math.max(0, r10(base - 50)), hi = exact ? r10(base) : upTo ? r10(best) : Math.max(0, r10(base + 50));
-  return {inc, bills, mid:base, best, worst, upTo, exact, zero, spare, left, lo, hi, rate:inc/173.33};
+  return {inc, bills, mid:base, best, worst, upTo, exact, zero, spare, cycleSpare, left, lo, hi, rate:inc/173.33};
 }
 function cycle(){
   const u = A.U; if (u.rhy === 2) return null;
@@ -522,7 +524,8 @@ function verdictOf(key, ctx = {}){
   let v, reason;
   const overLeft = cost > m.left && !ctx.ignoreSpent;
   if (m.zero){ v = 'notnow'; reason = 'Your rent and bills take all of your spare money right now.'; }
-  else if (overLeft && share <= 1 && c){ v = 'wait'; reason = m.left <= 0 ? `You’ve used this pay cycle’s spare money. It fits after payday, in ${c.days} ${c.days === 1 ? 'day' : 'days'}.` : `Only about $${fmtN(m.left)} is left until payday. It fits after payday.`; }
+  else if (overLeft && cost <= m.cycleSpare && c){ v = 'wait'; reason = m.left <= 0 ? `You’ve used this pay cycle’s spare money. It fits after payday, in ${c.days} ${c.days === 1 ? 'day' : 'days'}.` : `Only about $${fmtN(m.left)} is left until payday. It fits after payday.`; }
+  else if (overLeft && c && cost > m.cycleSpare && share <= 1){ v = 'notnow'; reason = `That’s more than one pay cycle’s spare money (about $${fmtN(r10(m.cycleSpare))}).`; }
   else if (overLeft && share <= 1){ v = 'notnow'; reason = m.left <= 0 ? 'You’ve used this month’s spare money.' : `Only about $${fmtN(m.left)} is left this month.`; }
   else if (level === 'Small'){ v = 'buy'; reason = `Small buy, ${hrs.toLowerCase()} of work.`; }
   else if (level === 'Comfortable'){ v = 'buy'; reason = 'Fits your month.'; }
@@ -1021,10 +1024,10 @@ function draftBody(it){
     <div class="op-name">${esc(p.name)}</div><div class="op-price" style="color:var(--tx2);margin-top:8px">${esc(p.site)}</div>
     <div class="dfield"><div class="fl">Price</div><input id="price-${it.id}" inputmode="numeric" placeholder="$0.00" autocomplete="off"></div>
     <div class="hint" style="font:600 13px/18px var(--fb);color:var(--tx2);margin-top:8px">Couldn’t read the price. Add it yourself.</div>
-    <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'}</span><div class="calc dis">Calculate</div></div></div>`;
+    <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'}</span><div class="calc dis">Check</div></div></div>`;
   return `<div class="dr" style="height:199px">
     <div class="op-name">${esc(p.name)}</div><div class="op-price" style="color:var(--tx2)">${esc(p.site || 'Added manually')} · $${fmtP(p.price)}${d.justAdded ? ' · just added' : ''}</div>
-    <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'} · <b class="ded">Edit</b></span><div class="calc ${A.offline ? 'dis' : ''}">Calculate</div></div></div>`;
+    <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'} · <b class="ded">Edit</b></span><div class="calc ${A.offline ? 'dis' : ''}">Check</div></div></div>`;
 }
 function wireDraft(stack, it){
   const btn = q('.f-body .calc', it.el);
@@ -1178,7 +1181,7 @@ function vals(){
     changes: drops ? `${drops} ${drops === 1 ? 'price' : 'prices'} changed in My items` : 'No price changes in My items',
     name: u.name || 'Not set',
     spareLbl: m.upTo ? 'Your ranges leave' : 'About',
-    usedFrac: m.spare > 1 ? clamp(u.spent/m.spare, 0, 1) : 1,
+    usedFrac: m.cycleSpare > 1 ? clamp(u.spent/m.cycleSpare, 0, 1) : 1,
   };
 }
 /* shrink-to-fit for big numbers (like iOS minimumScaleFactor): one line, smaller type, then compact "K" form */
@@ -1326,9 +1329,9 @@ function buildCheck(kind, offline, list){
     <div class="hdr L">
       <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
       <div class="eyebrow ccount" style="top:118px">2 of 5 drafts</div>
-      <div class="a calcall" style="right:24px;top:124px;font:700 14px/20px var(--fb);cursor:pointer;padding:6px;margin:-6px">Calculate all</div>
+      <div class="a calcall" style="right:24px;top:124px;font:700 14px/20px var(--fb);cursor:pointer;padding:6px;margin:-6px">Check all</div>
       <div class="ttl" style="top:147px">CHECK</div>
-      ${offline ? `<div class="a" style="left:24px;top:197px;width:354px;height:64px;border-radius:16px;background:var(--sf);display:flex;align-items:center;gap:12px;padding:0 16px;font:500 13px/18px var(--fb)">${IC.offline}<span>You’re offline. Your drafts are saved; calculate when you’re back online.</span></div>` : ''}
+      ${offline ? `<div class="a" style="left:24px;top:197px;width:354px;height:64px;border-radius:16px;background:var(--sf);display:flex;align-items:center;gap:12px;padding:0 16px;font:500 13px/18px var(--fb)">${IC.offline}<span>You’re offline. Your drafts are saved; check them when you’re back online.</span></div>` : ''}
       <div class="a addm" style="left:28px;top:574px;font:700 16px/22px var(--fb);cursor:pointer;z-index:5">+ Add manually</div>
       <div class="empty L" style="pointer-events:none">
         <div class="a" style="left:24px;top:197px;width:354px;height:200px;border-radius:24px;background:var(--tint);border:2px dashed var(--blue);padding:20px">
@@ -1354,7 +1357,7 @@ function buildCheck(kind, offline, list){
       const n = st.items.length;
       q('.ccount', el).textContent = `${n} of 5 drafts`;
       const ca = q('.calcall', el), todo = st.items.filter(i => P[i.key].price && !i.calcd).length >= 2, done2 = st.items.filter(i => P[i.key].price && i.calcd).length >= 2;
-      ca.textContent = todo ? 'Calculate all' : 'Save all'; ca.dataset.m = todo ? 'calc' : 'save';
+      ca.textContent = todo ? 'Check all' : 'Save all'; ca.dataset.m = todo ? 'calc' : 'save';
       const on = todo || done2;
       (inst ? setv : spring)(ca, {o:on ? 1 : 0}, {response:.3}); ca.style.pointerEvents = on ? 'auto' : 'none';
       const front = st.items[n-1];
@@ -2136,7 +2139,7 @@ const FLOWS = [
     ['C2','Check, 2 drafts',{tab:'check', drafts:'two'}],
     ['C3','Add manually',{tab:'check', drafts:'two', go:() => pushAdd()}],
     ['C4','Drafts full notice',{tab:'check', drafts:'full', go:() => toast('Drafts are full. “Phone case” was removed to make room.', {ms:5000})}],
-    ['C5','Calculating',{tab:'check', drafts:'twoReady', go:() => { const it = A.check.get('lampD'); it.done = true; A.check.calc(it); }}],
+    ['C5','Checking',{tab:'check', drafts:'twoReady', go:() => { const it = A.check.get('lampD'); it.done = true; A.check.calc(it); }}],
     ['V1','Verdict: Buy',{tab:'home', go:() => openKey(A.home, 'sneaker')}],
     ['V2','Verdict: Wait for payday',{tab:'check', drafts:'twoReady', go:() => { const it = A.check.get('lampD'); it.done = true; A.check.openItem('lampD'); }}],
     ['V3','Verdict: Not now',{tab:'items', go:() => openKey(A.items, 'canon')}],
