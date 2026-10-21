@@ -131,7 +131,7 @@ body{background:var(--page);color:var(--ink);font-family:var(--fb);overflow:hidd
 .fd.ls.tintf{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 -10px 22px -8px rgba(0,0,0,.25)}
 .pv{position:relative;height:201px;overflow:hidden}
 .pv .st{font:600 13px/18px var(--fb);margin-top:8px;opacity:.75}
-.pv .wm{top:auto;bottom:-14px}
+.pv .wm{top:auto;bottom:-30px;left:-10px}
 .ded{cursor:pointer;font-weight:700;text-decoration:underline;padding:6px;margin:-6px}
 .fd.opened{box-shadow:0 0 0 rgba(0,0,0,0);cursor:default}
 .fd.pk{box-shadow:0 -4px 14px rgba(0,0,0,.12)}
@@ -920,7 +920,7 @@ function doAction(stack, label){
       const r = s.take(x.id, s === stack ? 'drop' : 'instant');
       if (r) snaps.push([s, r]);
     }
-    const rec = {name:p.name, price:p.price, at:Date.now()};
+    const rec = {key, name:p.name, price:p.price, at:TODAY.getTime()}; // the prototype's "today"
     A.U.spent += p.price; A.U.bought.push(rec); refresh();
     toast('Marked as bought.', {action:'Undo', onAction:() => { A.U.spent -= p.price; A.U.bought = A.U.bought.filter(b => b !== rec); snaps.forEach(([s, r]) => s.insert(r.data, r.idx, s !== stack)); refresh(); }});
   }
@@ -1170,10 +1170,30 @@ function renderBought(host){
   const hh = 36 + Math.max(1, b.length)*56;
   host.style.height = hh + 'px';
   const scr = host.closest('.scr'); const sent = scr && scr.firstElementChild; if (sent) sent.style.top = (749 + hh + 100) + 'px';
-  qa('.brow', host).forEach(r => tap(r, () => {
-    const x = b[+r.dataset.i]; if (!x) return;
-    toast(`Bought “${x.name}”, $${fmtN(x.price)}.`, {action:'Not bought', onAction:() => { A.U.bought = A.U.bought.filter(y => y !== x); A.U.spent = Math.max(0, A.U.spent - x.price); refresh(); later(300, () => toast('Removed. It’s back in your spare money.')); }});
-  }, {scale:.985}));
+  qa('.brow', host).forEach(r => tap(r, () => { const x = b[+r.dataset.i]; if (x) boughtSheet(x); }, {scale:.985}));
+}
+function boughtSheet(x){
+  const L = A.over; L.style.pointerEvents = 'auto';
+  const host = h('<div class="L"><div class="dim"></div></div>'); L.appendChild(host);
+  const dim = q('.dim', host); setv(dim, {o:0}); spring(dim, {o:.45}, {response:.3});
+  const when = x.at ? new Date(x.at) : null;
+  const sh = h(`<div class="sheet" style="top:calc(var(--dh) - 330px);height:330px">
+    <div class="grab"></div>
+    <div class="a" style="left:24px;top:34px;font:600 13px/18px var(--fb);color:var(--tx2)">Bought${when ? ' · ' + fmtShort(when) : ''}</div>
+    <div class="a" style="left:24px;top:56px;width:354px;font:800 28px/1.1 var(--fd)">${x.name}</div>
+    <div class="a" style="left:24px;top:94px;font:600 17px/23px var(--fb)">$${fmtN(x.price)}</div>
+    <div class="a" style="left:24px;top:126px;width:354px;font:500 14px/20px var(--fb);color:var(--tx2)">Didn’t buy it after all? It goes back to My items and the money returns to this month.</div>
+    <div class="btn nb" style="top:190px">Not bought</div>
+    <div class="lnk cl" style="top:262px"><span>Close</span></div>
+  </div>`);
+  host.appendChild(sh); setv(sh, {y:340}); spring(sh, {y:0}, {response:.45, damping:.86});
+  const close = fn => { spring(sh, {y:340}, {response:.35}); spring(dim, {o:0}, {response:.3}); later(300, () => { host.remove(); L.style.pointerEvents = 'none'; if (fn) fn(); }); };
+  tap(q('.nb', sh), () => close(() => {
+    A.U.bought = A.U.bought.filter(y => y !== x); A.U.spent = Math.max(0, A.U.spent - x.price);
+    if (x.key && P[x.key] && !A.items.has(x.key)) A.items.insert({key:x.key}, A.items.items.length, true);
+    refresh(); later(200, () => toast(x.key && P[x.key] ? 'Back in My items.' : 'Removed from Bought.'));
+  }));
+  tap(q('.cl span', sh), () => close(), {scale:.94, op:.6}); tap(dim, () => close(), {scale:1});
 }
 function renderGoal(host){
   const g = A.U.goal;
@@ -1902,7 +1922,8 @@ function saveState(){
     const keys = new Set();
     const list = st => st.items.map(i => { keys.add(i.key); return {key:i.key, detail:i.detail, bodyH:i.bodyH, draft:i.draft ? Object.assign({}, i.draft, {justAdded:false}) : undefined, calcd:i.calcd || undefined}; });
     const data = {v:1, U:A.U, manualN, home:list(A.home), items:list(A.items), check:list(A.check), P:{}};
-    keys.forEach(k => data.P[k] = P[k]);
+    (A.U.bought || []).forEach(b => b.key && keys.add(b.key));
+    keys.forEach(k => { if (P[k]) data.P[k] = P[k]; });
     localStorage.setItem(SKEY, JSON.stringify(data));
   } catch(_){}
 }
