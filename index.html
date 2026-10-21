@@ -137,7 +137,14 @@ body{background:var(--page);color:var(--ink);font-family:var(--fb);overflow:hidd
 .fd.pk{box-shadow:0 -4px 14px rgba(0,0,0,.12)}
 .fd.ov{box-shadow:0 -6px 22px rgba(0,0,0,.16)}
 .face{position:absolute;left:0;right:0;top:0}
-.f-tab .nm{position:absolute;left:16px;top:16px;font:600 17px/22px var(--fb);white-space:nowrap;transition:font-size .3s,top .3s}
+.f-tab .nm{position:absolute;left:16px;top:16px;max-width:calc(100% - 132px);overflow:hidden;text-overflow:ellipsis;font:600 17px/22px var(--fb);white-space:nowrap;transition:font-size .3s,top .3s}
+.fd.pk .nm{max-width:calc(100% - 110px)}
+/* bigger tap areas for small text links (44 pt) */
+.lnk span,.ded,.sortb,.recheck,.edit,.guse,.guse2,.tact,.acts .lnks span{position:relative}
+.lnk span::after,.ded::after,.sortb::after,.recheck::after,.edit::after,.guse::after,.guse2::after,.tact::after,.acts .lnks span::after,.calcall::after{content:"";position:absolute;inset:-12px -8px}
+/* phones held sideways: ask to turn back */
+.rot{display:none}
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse){ .rot{display:grid;position:fixed;inset:0;z-index:9999;place-items:center;background:#000;color:#fff;font:700 18px/1.4 Manrope,system-ui,sans-serif;text-align:center;padding:24px} }
 .f-tab .dt{position:absolute;right:16px;top:19px;font:600 13px/18px var(--fb);white-space:nowrap;transition:opacity .2s}
 .f-tab .more{position:absolute;right:16px;top:14px;font:600 13px/18px var(--fb);opacity:0;transition:opacity .25s}
 .fd.pk .nm{font-size:15px;top:12px;line-height:18px}
@@ -266,7 +273,7 @@ body.mob .sb, body.mob .island, body.mob .hi{display:none}
 
 <div class="app">
   <aside class="panel" id="panel" aria-label="Screens">
-    <div class="p-head"><div class="p-logo" aria-hidden="true"></div><div><div class="p-name">DeciBuy</div><div class="p-sub">Hi-fi prototype · Light + Dark · 33 screens</div></div></div>
+    <div class="p-head"><div class="p-logo" aria-hidden="true"></div><div><div class="p-name">DeciBuy</div><div class="p-sub">Hi-fi prototype · Light + Dark · <span id="pcount"></span> screens</div></div></div>
     <p class="p-hint">Use it like a phone. Pick any screen below to jump straight to it. Light / Dark: Settings → Appearance.</p>
     <div class="p-gest">
       <div><b>Tap a folder</b> to open it. The others slide down and wait at the bottom.</div>
@@ -281,6 +288,7 @@ body.mob .sb, body.mob .island, body.mob .hi{display:none}
     <div class="p-foot">Springs follow Apple's fluid-interface model: every motion can be grabbed mid-flight, and a flick keeps its speed.</div>
   </aside>
   <button class="p-toggle" id="ptoggle">Screens</button>
+  <div class="rot">Turn your phone upright to use DeciBuy.</div>
   <div class="stage" id="stage">
     <div class="phone"><div class="device" id="D"></div></div>
   </div>
@@ -371,8 +379,15 @@ function gesture(el, H){
     el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
   });
 }
+const A11Y = {gear:'Settings', bk:'Back', fab:'Add an item'};
 function tap(el, fn, o = {}){
   if (!el) return;
+  if (el.tagName !== 'BUTTON' && el.tagName !== 'INPUT' && !el.hasAttribute('role') && !el.classList.contains('dim') && !el.classList.contains('stk-dim')){
+    el.setAttribute('role', 'button'); el.tabIndex = 0;
+    for (const k in A11Y) if (el.classList.contains(k)) el.setAttribute('aria-label', A11Y[k]);
+    if (!el.hasAttribute('aria-label') && el.innerHTML === IC.back) el.setAttribute('aria-label', 'Back');
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fn(e); } });
+  }
   const sc = o.scale ?? 0.97; let down = false, p0;
   el.addEventListener('pointerdown', e => { if (o.pass !== true) e.stopPropagation(); down = true; p0 = pt(e); spring(el, {s:sc}, {response:.16}); if (o.op) spring(el,{o:o.op},{response:.12}); });
   const end = go => e => { if (!down) return; down = false; spring(el, Object.assign({s:1}, o.op?{o:1}:{}), {response:.38, damping:.72});
@@ -413,20 +428,24 @@ const VT_ = {buy:'#C5FDD5', wait:'#FAE991', notnow:'#FEA699', neutral:'#F3F4F6'}
    User data + verdict engine (docs/prd/2026-10-13_verdict-logic_v03.md)
    ===================================================================== */
 const INC = [['Under $1,500',1250],['$1,500–1,900',1700],['$1,900–2,300',2100],['$2,300–3,000',2650],['$3,000–4,000',3500],['$4,000+',4500]];
-const BILLS = [['Under $150',100],['$150–350',250],['$350–450',400],['$450–700',575],['$700+',800]];
+const BILLS = [['Under $300',150],['$300–600',450],['$600–900',750],['$900–1,300',1100],['$1,300+',1500]];
 const RHY = ['Monthly','Every 2 weeks','Varies'];
-const TODAY = new Date(2026, 9, 24); // the prototype's "today": Fri, Oct 24 (as on the hi-fi screens)
+const TODAY = new Date(2026, 9, 24); // the prototype's "today": Sat, Oct 24, 2026
 const DAY = 864e5;
 const WD = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmtShort = d => `${MO[d.getMonth()]} ${d.getDate()}`;
 const fmtLong = d => `${WD[d.getDay()]}, ${fmtShort(d)}`;
 const fmtN = n => Math.round(n).toLocaleString('en-US');
+// prices can have cents: $7.99 stays $7.99, $120 stays $120
+const fmtP = n => (n == null ? '' : Math.round(n*100) % 100 ? (+n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : fmtN(n));
+// user text (item, goal and your names) is always shown as text, never run as HTML
+const esc = t => String(t ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);
 const fmtK = n => n >= 1e6 ? +(n/1e6).toFixed(n >= 1e7 ? 1 : 2) + 'M' : n >= 1e4 ? +(n/1e3).toFixed(1) + 'K' : fmtN(n);
 const rangeK = (lo, hi) => fmtK(lo) === fmtK(hi) ? `≈ $${fmtK(lo)}` : `$${fmtK(lo)}–${fmtK(hi)}`;
 const r10 = n => Math.round(n/10)*10;
-const EMMA = {name:'Emma', inc:2, rhy:0, payday:new Date(2026,9,28), rent:1200, bills:2, goal:{name:'Trip to Japan', target:3000, per:100, saved:600}, spent:160, bought:[{name:'Phone case', price:25}, {name:'Concert ticket', price:135}]};
-const NEWU = () => ({name:'', inc:2, rhy:0, payday:new Date(2026,9,28), rent:null, bills:2, goal:null, spent:0, bought:[]});
+const EMMA = {name:'Emma', bv2:true, inc:2, rhy:0, payday:new Date(2026,9,28), rent:1200, bills:1, billsExact:400, goal:{name:'Trip to Japan', target:3000, per:100, saved:600}, spent:160, bought:[{name:'Phone case', price:25}, {name:'Concert ticket', price:135}]};
+const NEWU = () => ({name:'', inc:2, rhy:0, payday:new Date(2026,9,28), rent:null, bills:1, goal:null, spent:0, bought:[], bv2:true});
 const P = {}; // products by key
 function seedProducts(){
   Object.assign(P, {
@@ -439,70 +458,95 @@ function seedProducts(){
     lampD:{name:'Mushroom table lamp', price:null, site:'ikea.com', inst:4, added:6, hist:[181,178,183,164,149,155,174,180]},
   });
 }
-const INC_HI = [1500, 1900, 2300, 3000, 4000, 4500]; // top of each income range ("$4,000+" has no top: the exact field opens there)
-const BILLS_LO = [0, 150, 350, 450, 700];          // bottom of each bills range
+// range bounds. Each range's middle (INC / BILLS) is exactly halfway between its bounds, so the honest range below is continuous.
+const INC_LO = [1000, 1500, 1900, 2300, 3000, 4000], INC_HI = [1500, 1900, 2300, 3000, 4000, 5000];
+const BILLS_LO = [0, 300, 600, 900, 1300], BILLS_HI = [300, 600, 900, 1300, 1700];
 function money(){
-  const u = A.U, inc = u.incExact || INC[u.inc][1], bills = u.billsExact || BILLS[u.bills][1], mid = inc - (u.rent || 0) - bills;
-  // honest range: when the middle of the ranges leaves nothing but the best case still leaves money, show "Up to $X"
-  const best = (u.incExact || INC_HI[u.inc]) - (u.rent || 0) - (u.billsExact ?? BILLS_LO[u.bills]);
-  const exact = !!u.incExact && u.billsExact != null;
-  const upTo = mid <= 0 && best > 0 && !exact;
-  const spare = upTo ? best : Math.max(mid, 1);
-  const left = (upTo ? best : mid) - (u.spent || 0); // can go below zero
-  return {inc, bills, mid, best, upTo, spare, left, lo:upTo ? 0 : Math.max(0, r10(mid - 50)), hi:upTo ? r10(best) : Math.max(0, r10(mid + 50)), rate:inc/173.33};
+  const u = A.U, rent = u.rent || 0;
+  const ie = u.incExact || null, be = u.billsExact != null ? u.billsExact : null;
+  const inc = ie || INC[u.inc][1], bills = be != null ? be : BILLS[u.bills][1];
+  const worst = (ie || INC_LO[u.inc]) - rent - (be != null ? be : BILLS_HI[u.bills]);
+  const best = (ie || INC_HI[u.inc]) - rent - (be != null ? be : BILLS_LO[u.bills]);
+  const exact = !!ie && be != null;
+  // honest range: if the worst case leaves nothing but the best case leaves money, show "Up to $best".
+  // Checks use the middle of what's really possible: (max(worst, 0) + best) / 2. Without the zero cut this is the plain middle, so nothing jumps.
+  const upTo = !exact && worst < 0 && best > 0;
+  const base = exact ? inc - rent - bills : best <= 0 ? best : (Math.max(worst, 0) + best)/2;
+  const zero = base <= 0;
+  const spare = Math.max(base, 1);
+  const left = Math.max(base, 0) - (u.spent || 0); // can go below zero once Bought items pass spare money
+  const lo = exact ? r10(base) : upTo ? 0 : Math.max(0, r10(base - 50)), hi = exact ? r10(base) : upTo ? r10(best) : Math.max(0, r10(base + 50));
+  return {inc, bills, mid:base, best, worst, upTo, exact, zero, spare, left, lo, hi, rate:inc/173.33};
 }
 function cycle(){
   const u = A.U; if (u.rhy === 2) return null;
   const len = u.rhy === 0 ? 30 : 14;
-  const days = Math.max(0, Math.round((u.payday - TODAY)/DAY));
-  return {next:u.payday, days, len, passed:clamp(1 - days/len, 0, 1)};
+  // payday today (or past) means a new cycle has started: count to the next one
+  let next = new Date(u.payday.getFullYear(), u.payday.getMonth(), u.payday.getDate());
+  let guard = 0;
+  while (Math.round((next - TODAY)/DAY) <= 0 && guard++ < 60) next = u.rhy === 0 ? new Date(next.getFullYear(), next.getMonth() + 1, next.getDate()) : new Date(next.getFullYear(), next.getMonth(), next.getDate() + 14);
+  const days = Math.round((next - TODAY)/DAY);
+  return {next, days, len, passed:clamp(1 - days/len, 0, 1)};
+}
+function monthsText(x){
+  const h = Math.round(x*2)/2;
+  if (h <= 1) return x > 1 ? 'more than a month' : 'a month';
+  if (h > 24) return `${Math.round(h/12)} years`;
+  const w = Math.floor(h); return `${w}${h - w ? '½' : ''} months`;
 }
 function hoursText(price){
   const hrs = price / money().rate;
   if (hrs < 1) return `About ${Math.max(5, Math.round(hrs*60/5)*5)} minutes`;
   if (hrs < 1.5) return 'About 1 hour';
-  return `About ${Math.round(hrs)} hours`;
+  if (hrs >= 260) return `About ${monthsText(hrs/173.33)}`;
+  return `About ${fmtN(hrs)} hours`;
 }
-function monthsText(x){
-  const h = Math.round(x*2)/2; if (h <= 1) return 'a month';
-  const w = Math.floor(h); return `${w}${h - w ? '½' : ''} months`;
-}
+const pctText = share => share < .01 ? 'Under 1%' : share < .1 ? `${Math.round(share*1000)/10}%` : share >= 3 ? `${Math.round(share)}× your monthly` : `${fmtN(share*100)}%`;
 // installments: interest is a rough estimate (simple yearly %, monthly payments); the real terms depend on the store and the offer
 const costOf = p => p.inst && p.rate ? Math.round(p.price*(1 + p.rate/100*p.inst/12)) : p.price;
+function goalLine(cost){
+  const g = A.U.goal; if (!g || !g.per) return null;
+  const weeks = cost / (g.per*12/52);
+  if (weeks < 2/7) return null; // under 2 days of savings: not worth a line (PRD)
+  const t = weeks < 1 ? 'a few days' : weeks < 1.5 ? 'a week' : weeks < 9 ? `${Math.round(weeks)} weeks` : monthsText(weeks/4.33);
+  return `That’s about ${t} of your ${g.name} savings.`;
+}
 function verdictOf(key, ctx = {}){
   const p = P[key], m = money(), c = cycle(), u = A.U;
   if (!p.price) return {key, name:p.name, price:'Price unknown', v:'neutral', verdict:'', reason:'We couldn’t get the price, so there’s no verdict yet.', changed:'Re-check to try again. Nothing is decided without a price.', hero:null, tiles:[], wm:'', graph:false, unknown:true};
-  const cost = costOf(p), share = cost / m.spare, pct = Math.round(share*100);
+  const cost = costOf(p), share = cost / m.spare, pct = pctText(share);
   const comfy = c ? .25 : .15; // irregular income: Comfortable is 5–15%, Stretch from 15% (verdict logic v03)
   const level = share <= .05 ? 'Small' : share <= comfy ? 'Comfortable' : share <= 1 ? 'Stretch' : 'Over';
-  const hrs = hoursText(costOf(p));
-  const instT = p.inst ? [`${p.inst} × $${fmtN(Math.ceil(cost/p.inst))}`, p.rate ? `≈ $${fmtN(cost)} total with ${p.rate}% interest` : `full price $${fmtN(p.price)} · interest may apply`] : null;
+  const hrs = hoursText(cost);
+  const instT = p.inst ? [`${p.inst} × $${fmtN(Math.ceil(cost/p.inst))}`, p.rate ? `≈ $${fmtN(cost)} total with ${p.rate}% interest` : p.rate === 0 ? `full price $${fmtP(p.price)} · no interest` : `full price $${fmtP(p.price)} · interest may apply`] : null;
   let v, reason;
   const overLeft = cost > m.left && !ctx.ignoreSpent;
-  if (m.mid <= 0 && !m.upTo){ v = 'notnow'; reason = 'Your bills take all of your spare money right now.'; }
-  else if (overLeft && share <= 1 && c){ v = 'wait'; reason = m.left <= 0 ? `You’ve used this month’s spare money. It fits after payday, in ${c.days} ${c.days === 1 ? 'day' : 'days'}.` : `Only about $${fmtN(r10(m.left))} is left until payday. It fits after payday.`; }
-  else if (overLeft && share <= 1){ v = 'notnow'; reason = m.left <= 0 ? 'You’ve used this month’s spare money.' : `Only about $${fmtN(r10(m.left))} is left this month.`; }
+  if (m.zero){ v = 'notnow'; reason = 'Your rent and bills take all of your spare money right now.'; }
+  else if (overLeft && share <= 1 && c){ v = 'wait'; reason = m.left <= 0 ? `You’ve used this pay cycle’s spare money. It fits after payday, in ${c.days} ${c.days === 1 ? 'day' : 'days'}.` : `Only about $${fmtN(m.left)} is left until payday. It fits after payday.`; }
+  else if (overLeft && share <= 1){ v = 'notnow'; reason = m.left <= 0 ? 'You’ve used this month’s spare money.' : `Only about $${fmtN(m.left)} is left this month.`; }
   else if (level === 'Small'){ v = 'buy'; reason = `Small buy, ${hrs.toLowerCase()} of work.`; }
   else if (level === 'Comfortable'){ v = 'buy'; reason = 'Fits your month.'; }
   else if (level === 'Stretch'){
-    if (!c){ if (share < .5){ v = 'buy'; reason = `Takes about ${share < .3 ? 'a quarter' : share < .42 ? 'a third' : 'half'} of a typical month.`; } else { v = 'notnow'; reason = 'That’s more than half of a typical month.'; } }
-    else if (c.passed > .5){ v = 'wait'; reason = c.days === 0 ? 'Payday is today.' : `Payday is in ${c.days} ${c.days === 1 ? 'day' : 'days'}. Buying now leaves you short.`; }
+    if (!c){ if (share < .5){ v = 'buy'; reason = `Takes about ${pct} of a typical month.`; } else { v = 'notnow'; reason = 'That’s half or more of a typical month.'; } }
+    else if (c.passed > .5){ v = 'wait'; reason = `Payday is in ${c.days} ${c.days === 1 ? 'day' : 'days'}. Buy it now and you’ll have only about $${fmtN(Math.max(0, m.left - cost))} until then.`; }
     else { v = 'buy'; reason = 'Fits your month.'; }
   } else { v = 'notnow'; reason = `That’s about ${monthsText(share)} of your spare money.`; }
+  if (p.inst && v !== 'buy') reason += ' We judge the full price, not the monthly payments.';
   const drop = p.was && p.was > p.price ? p.was - p.price : 0;
-  if (ctx.saved && v === 'buy' && drop) reason = `Price dropped $${fmtN(drop)} since you saved it.`;
+  if (ctx.saved && v === 'buy' && drop) reason = `Price dropped $${fmtP(drop)} since you saved it.`;
   let changed = null;
-  if (m.upTo) changed = `Based on the top of your ranges (up to $${fmtN(r10(m.best))} a month). Exact amounts in My money make this precise.`;
-  if (ctx.saved) changed = p.failed ? 'Couldn’t check the price right now. This uses the last price we saw.' : drop ? `What changed: $${fmtN(p.was)} → $${fmtN(p.price)}.` : 'What changed: price is the same as when you saved it.';
-  const hero = v === 'wait' ? [`${c.days} ${c.days === 1 ? 'day' : 'days'}`, `Next payday · ${fmtShort(c.next)}`, c.passed] : [level, `${pct}% of your spare money`, Math.min(1, share)];
+  if (m.upTo) changed = `Your ranges leave $0–${fmtN(r10(m.best))} a month, so checks use the middle, about $${fmtN(r10(m.mid))}. Exact amounts in My money make this precise.`;
+  if (ctx.saved) changed = p.failed ? 'Couldn’t check the price right now. This uses the last price we saw.' : drop ? `What changed: $${fmtP(p.was)} → $${fmtP(p.price)}.` : 'What changed: price is the same as when you saved it.';
+  let hero = v === 'wait' ? [`${c.days} ${c.days === 1 ? 'day' : 'days'}`, `Next payday · ${fmtShort(c.next)}`, c.passed] : [level, share >= 3 ? `${pct} spare money` : `${pct} of your spare money`, Math.min(1, share)];
   const hoursT = [hrs, 'of work'];
   let tiles;
-  if (v === 'wait') tiles = [instT || hoursT, [`${pct}%`, 'of your spare money']];
-  else if (v === 'buy') tiles = [hoursT, (ctx.saved && drop) ? [`$${fmtN(drop)} less`, 'than when you saved it', !!p.hist] : p.fact ? [...p.fact, !!p.hist] : (instT || (ctx.saved ? ['Black Friday', 'is in 5 weeks'] : ['Tracking', 'starts today']))];
-  else tiles = [p.fact ? [...p.fact, !!p.hist] : hoursT, ['Black Friday', 'is in 5 weeks']];
-  const priceLine = p.inst ? `$${fmtN(p.price)} or ${p.inst} × $${fmtN(Math.ceil(cost/p.inst))}${p.rate ? ' with interest' : ''}` : drop ? `$${fmtN(p.price)} · was $${fmtN(p.was)}` : `$${fmtN(p.price)}`;
+  if (v === 'wait') tiles = [instT || hoursT, share >= 3 ? [pct, 'spare money'] : [pct, 'of your spare money']];
+  else if (v === 'buy') tiles = [hoursT, (ctx.saved && drop) ? [`$${fmtP(drop)} less`, 'than when you saved it', !!p.hist] : p.fact ? [...p.fact, !!p.hist] : (instT || (ctx.saved ? ['Black Friday', 'is in 5 weeks'] : ['Price tracking', 'starts today']))];
+  else tiles = [p.fact ? [...p.fact, !!p.hist] : (instT || hoursT), ['Black Friday', 'is in 5 weeks']];
+  if (m.zero){ hero = ['No spare money', 'Rent and bills take everything', 1]; tiles = [instT || hoursT, ['$0', 'spare money this month']]; }
+  const priceLine = p.inst ? `$${fmtP(p.price)} or ${p.inst} × $${fmtN(Math.ceil(cost/p.inst))}${p.rate ? ' with interest' : ''}` : drop ? `$${fmtP(p.price)} · was $${fmtP(p.was)}` : `$${fmtP(p.price)}`;
   const word = {buy:'BUY', wait:'WAIT FOR PAYDAY', notnow:'NOT NOW'}[v];
-  return {key, name:p.name, price:priceLine, v, verdict:word, reason, changed, hero, tiles, wm:{buy:'BUY', wait:'WAIT', notnow:'NOT NOW'}[v], graph:!!p.hist, level};
+  return {key, name:p.name, price:priceLine, v, verdict:word, reason, changed, goal:goalLine(cost), hero, tiles, wm:{buy:'BUY', wait:'WAIT', notnow:'NOT NOW'}[v], graph:!!p.hist, level};
 }
 const LAMP_PAYDAY = () => ({key:'lamp', name:'Mushroom table lamp', price:'$180', v:'buy', verdict:'BUY', reason:'Payday came. It fits your month now.', changed:'What changed: price is the same as when you saved it.', hero:['Payday came','New month · Oct 28',.03], tiles:[['4 × $45','full price $180'],[hoursText(180),'of work']], wm:'BUY', graph:true});
 function statusOf(key){
@@ -516,10 +560,11 @@ function statusOf(key){
 function opPage1(c){
   return `<div class="op p1">
     <div class="wm" style="color:${VT_[c.v]}">${c.wm}</div>
-    <div class="op-name">${c.name}</div>
+    <div class="op-name">${esc(c.name)}</div>
     <div class="op-price">${c.price}</div>
     ${c.verdict ? `<div class="op-verdict">${c.verdict}</div>` : ''}
     <div class="op-reason">${c.reason}</div>
+    ${c.goal ? `<div class="op-goal" style="font:600 13px/18px var(--fb);margin-top:6px;opacity:.75;position:relative;z-index:1">${esc(c.goal)}</div>` : ''}
     ${c.changed ? `<div class="op-changed">${c.changed}</div>` : ''}
     ${c.hero ? `<div class="tile hero"><div class="n">${c.hero[0]}</div><div class="s">${c.hero[1]}</div><div class="bar"><i style="width:${Math.round(c.hero[2]*282)}px"></i></div></div>` : ''}
     <div class="tiles">${c.tiles.map(t => `<div class="tile ${t[2] && c.graph ? 'hist' : ''}"><div class="n">${t[0]}</div><div class="s">${t[1]}</div>${t[2] && c.graph ? `<span class="go">${IC.graph}</span>` : ''}</div>`).join('')}</div>
@@ -540,7 +585,7 @@ function opGraph(c){
   const cyc = cycle(), sub = {buy:'Buy', wait:'Wait for payday', notnow:'Not now'}[c.v] + (cyc && c.v === 'wait' ? ` · Payday in ${cyc.days} ${cyc.days === 1 ? 'day' : 'days'}` : '');
   const nowLbl = p.failed ? `$${fmtN(now)} last seen` : `$${fmtN(now)} now`;
   return `<div class="op p2" style="padding-bottom:22px">
-    <div class="op-name">${c.name}</div>
+    <div class="op-name">${esc(c.name)}</div>
     <div class="op-sub">${sub}</div>
     <div class="pager"><div class="dots"><span>2 of 2</span><i></i><i class="k"></i></div><div class="chip sf">${A.graphFirst ? 'Shown first ✓' : 'Show this first'}</div></div>
     <div style="font:800 32px/35px var(--fd);margin-top:8px">Price in 90 days</div>
@@ -581,14 +626,14 @@ class Stack{
     const k = this.cfg.kind, p = P[it.key];
     if (k === 'items'){ const st = !p.price ? 'Couldn’t get the price' : p.failed ? 'Couldn’t check the price right now' : statusOf(it.key);
       const c = p.price ? verdictOf(it.key, {saved:true}) : null;
-      return `<div class="pv">${c && c.wm ? `<div class="wm" style="color:${VT_[c.v]}">${c.wm}</div>` : ''}<div class="op-name" style="position:relative">${p.name}</div><div class="op-price" style="opacity:.65;position:relative">${!p.price ? 'Price unknown' : p.was && p.was > p.price ? `$${fmtN(p.price)} · was $${fmtN(p.was)}` : `$${fmtN(p.price)}`}</div><div class="st" style="position:relative">${st}</div></div>`; }
+      return `<div class="pv">${c && c.wm ? `<div class="wm" style="color:${VT_[c.v]}">${c.wm}</div>` : ''}<div class="op-name" style="position:relative">${esc(p.name)}</div><div class="op-price" style="opacity:.65;position:relative">${!p.price ? 'Price unknown' : p.was && p.was > p.price ? `$${fmtP(p.price)} · was $${fmtP(p.was)}` : `$${fmtP(p.price)}`}</div><div class="st" style="position:relative">${st}</div></div>`; }
     if (k === 'drafts') return draftBody(it);
     return '';
   }
   detail(it){
     const k = this.cfg.kind;
-    if (k === 'items') return P[it.key].price ? `$${fmtN(P[it.key].price)}` : 'Price unknown';
-    if (k === 'drafts') return it.calcd && P[it.key].price ? `${{buy:'Buy', wait:'Wait for payday', notnow:'Not now', neutral:''}[verdictOf(it.key).v]} · $${fmtN(P[it.key].price)}` : it.detail || '';
+    if (k === 'items' || k === 'home') return P[it.key].price ? `$${fmtP(P[it.key].price)}` : (k === 'items' ? 'Price unknown' : '');
+    if (k === 'drafts') return it.calcd && P[it.key].price ? `${{buy:'Buy', wait:'Wait for payday', notnow:'Not now', neutral:''}[verdictOf(it.key).v]} · $${fmtP(P[it.key].price)}` : it.detail || '';
     return '';
   }
   make(d, idx){
@@ -596,9 +641,9 @@ class Stack{
     it.id = it.id || it.key;
     const body = this.bodyHTML(it);
     const el = h(`<div class="fd" data-id="${it.id}">
-      <div class="face f-tab"><span class="nm">${p.name}</span><span class="dt">${this.detail(it)}</span><span class="more"></span></div>
+      <div class="face f-tab"><span class="nm">${esc(p.name)}</span><span class="dt">${this.detail(it)}</span><span class="more"></span></div>
       ${body ? `<div class="face f-body">${body}</div>` : ''}
-      ${k === 'drafts' ? `<div class="face f-calc"><div class="cl"><div class="op-name">${p.name}</div><div class="op-price cl-site" style="color:var(--tx2)">${p.site || 'Added manually'}${p.price ? ' · $' + fmtN(p.price) : ''}</div><div class="track"><i></i></div><div class="msg">Checking your month and the price…</div></div></div>` : ''}
+      ${k === 'drafts' ? `<div class="face f-calc"><div class="cl"><div class="op-name">${esc(p.name)}</div><div class="op-price cl-site" style="color:var(--tx2)">${esc(p.site || 'Added manually')}${p.price ? ' · $' + fmtP(p.price) : ''}</div><div class="track"><i></i></div><div class="msg">Checking your month and the price…</div></div></div>` : ''}
       <div class="face f-open"></div>
     </div>`);
     it.el = el; it.more = q('.more', el); it.faces = {};
@@ -627,6 +672,7 @@ class Stack{
     for (const it of this.items){
       const dt = q('.dt', it.el); if (dt) dt.textContent = this.detail(it);
       if (this.cfg.kind === 'items' && it.faces.body) it.faces.body.innerHTML = this.bodyHTML(it);
+      if (this.cfg.kind === 'drafts' && it.calcd && it.faces.body){ it.faces.body.innerHTML = this.bodyHTML(it); wireDraft(this, it); }
     }
     if (!this.open) this.layout();
   }
@@ -636,7 +682,7 @@ class Stack{
     q('.nm', it.el).textContent = p.name;
     const dt = q('.dt', it.el); if (dt) dt.textContent = this.detail(it);
     if (it.faces.body){ it.faces.body.innerHTML = this.bodyHTML(it); if (this.cfg.kind === 'drafts') wireDraft(this, it); }
-    if (it.faces.calc){ q('.cl .op-name', it.el).textContent = p.name; q('.cl-site', it.el).textContent = `${p.site || 'Added manually'}${p.price ? ' · $' + fmtN(p.price) : ''}`; }
+    if (it.faces.calc){ q('.cl .op-name', it.el).textContent = p.name; q('.cl-site', it.el).textContent = `${p.site || 'Added manually'}${p.price ? ' · $' + fmtP(p.price) : ''}`; }
     if (this.open === it.id && this.phase === 'open'){
       this.renderOpen(it, verdictOf(it.key, {saved:this.cfg.kind !== 'drafts' && (this.cfg.kind === 'items' || (A.items && A.items.has(it.key)))}));
       this.actsFor = undefined;
@@ -676,7 +722,8 @@ class Stack{
       const rem = this.items.filter(i => i.id !== this.open);
       rem.forEach((it, j) => {
         if (!raised){
-          const py = DHn - 82;
+          const tight = 116 - (this.sy || 0) + this.openH(oit) + 16 + (this.actsH || 82) > DHn - 90;
+          const py = tight ? DHn - 30 : DHn - 82;
           const Pp = [[24,py,354,1],[36,py-10,330,.75],[48,py-20,306,0]][Math.min(j,2)];
           G[it.id] = {x:Pp[0], y:Pp[1], w:Pp[2], h:201, r:16, o:Pp[3], s:1, z:58-j, face:'tab', role:'peek', cls:j === 0 ? 'pk pkf' : 'pk', more:j === 0 && rem.length > 1 ? `+${rem.length-1} more` : ''};
         } else {
@@ -797,7 +844,7 @@ class Stack{
   take(id, mode = 'drop'){
     const it = this.get(id); if (!it) return null;
     const idx = this.items.indexOf(it), el = it.el;
-    const data = {id:it.id, key:it.key, detail:it.detail, bodyH:it.bodyH};
+    const data = {id:it.id, key:it.key, detail:it.detail, bodyH:it.bodyH, draft:it.draft, calcd:it.calcd || it.done || undefined};
     if (mode === 'clone-fly'){
       const cl = el.cloneNode(true); cl._s = Object.assign({}, S(el)); this.layer.appendChild(cl); cl.style.zIndex = 90; apply(cl);
       const hh = cl._s.h || 400;
@@ -911,6 +958,7 @@ class Stack{
 /* item actions */
 function doAction(stack, label){
   const id = stack.open; if (!id) return;
+  const now = performance.now(); if (A._act && A._act.id === id && now - A._act.t < 700) return; A._act = {id, t:now}; // one action per tap burst
   const it = stack.get(id), key = it.key, p = P[key], k = stack.cfg.kind;
   if (label === 'Bought'){
     const snaps = [];
@@ -920,9 +968,10 @@ function doAction(stack, label){
       const r = s.take(x.id, s === stack ? 'drop' : 'instant');
       if (r) snaps.push([s, r]);
     }
-    const rec = {key, name:p.name, price:p.price, at:TODAY.getTime()}; // the prototype's "today"
-    A.U.spent += p.price; A.U.bought.push(rec); refresh();
-    toast('Marked as bought.', {action:'Undo', onAction:() => { A.U.spent -= p.price; A.U.bought = A.U.bought.filter(b => b !== rec); snaps.forEach(([s, r]) => s.insert(r.data, r.idx, s !== stack)); refresh(); }});
+    const amt = costOf(p); // with installments + interest: the estimated total, the same number the verdict used
+    const rec = {key, name:p.name, price:amt, at:TODAY.getTime()}; // the prototype's "today"
+    A.U.spent += amt; A.U.bought.push(rec); refresh();
+    toast('Marked as bought.', {action:'Undo', onAction:() => { A.U.spent -= amt; A.U.bought = A.U.bought.filter(b => b !== rec); snaps.forEach(([s, r]) => s.insert(r.data, r.idx, s !== stack)); refresh(); }});
   }
   else if (label === 'Save to My items'){
     const already = A.items.has(key) || A.items.hasName(p.name);
@@ -965,16 +1014,16 @@ function doAction(stack, label){
 function draftBody(it){
   const p = P[it.key], d = it.draft || {};
   if (it.calcd && p.price){ const c = verdictOf(it.key); return `<div class="dr" style="height:199px">
-    <div class="op-name">${p.name}</div><div class="op-price" style="opacity:.65">$${fmtN(p.price)}</div>
+    <div class="op-name">${esc(p.name)}</div><div class="op-price" style="opacity:.65">$${fmtP(p.price)}</div>
     <div style="font:800 32px/1 var(--fd);margin-top:10px">${c.verdict}</div>
     <div class="dr-bot" style="color:inherit"><span><span style="opacity:.65">${d.expires || 'Expires in 3 days'} · </span><b class="ded">Edit</b></span><div class="calc see" style="background:#000;color:#fff">See why</div></div></div>`; }
   if (!p.price) return `<div class="dr" style="height:299px">
-    <div class="op-name">${p.name}</div><div class="op-price" style="color:var(--tx2);margin-top:8px">${p.site}</div>
-    <div class="dfield"><div class="fl">Price</div><input id="price-${it.id}" inputmode="decimal" placeholder="Enter price" autocomplete="off"></div>
+    <div class="op-name">${esc(p.name)}</div><div class="op-price" style="color:var(--tx2);margin-top:8px">${esc(p.site)}</div>
+    <div class="dfield"><div class="fl">Price</div><input id="price-${it.id}" inputmode="numeric" placeholder="$0.00" autocomplete="off"></div>
     <div class="hint" style="font:600 13px/18px var(--fb);color:var(--tx2);margin-top:8px">Couldn’t read the price. Add it yourself.</div>
     <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'}</span><div class="calc dis">Calculate</div></div></div>`;
   return `<div class="dr" style="height:199px">
-    <div class="op-name">${p.name}</div><div class="op-price" style="color:var(--tx2)">${p.site || 'Added manually'} · $${fmtN(p.price)}${d.justAdded ? ' · just added' : ''}</div>
+    <div class="op-name">${esc(p.name)}</div><div class="op-price" style="color:var(--tx2)">${esc(p.site || 'Added manually')} · $${fmtP(p.price)}${d.justAdded ? ' · just added' : ''}</div>
     <div class="dr-bot"><span>${d.expires || 'Expires in 3 days'} · <b class="ded">Edit</b></span><div class="calc ${A.offline ? 'dis' : ''}">Calculate</div></div></div>`;
 }
 function wireDraft(stack, it){
@@ -982,21 +1031,18 @@ function wireDraft(stack, it){
   if (!btn) return;
   const ed = q('.f-body .ded', it.el); if (ed) tap(ed, () => pushAdd(false, false, it.key), {scale:.92, op:.6});
   if (btn.classList.contains('see')){ tap(btn, () => { it.done = true; stack.openItem(it.id); }, {scale:.94}); return; }
-  tap(btn, () => { if (!btn.classList.contains('dis')){ it.done = true; stack.calc(it); } }, {scale:.94});
+  tap(btn, () => { if (!btn.classList.contains('dis') && !(stack.open === it.id && stack.phase === 'calc')){ it.done = true; stack.calc(it); } }, {scale:.94});
   const inp = q('input', it.el);
   if (!inp) return;
   const fld = inp.closest('.dfield');
-  const sync = () => {
-    const [ip, dp] = inp.value.replace(/[^\d.]/g, '').split('.');
-    if (ip.length > 6){ overMax(inp); inp.value = ip.slice(0, 6) + (dp !== undefined ? '.' + dp.slice(0, 2) : ''); }
-    const n = parseFloat(inp.value.replace(/[^\d.]/g, ''));
+  const sync = n => {
     const ok = n > 0;
     btn.classList.toggle('dis', !ok || A.offline);
     P[it.key].price = ok ? n : null;
-    const s = q('.cl-site', it.el); if (s) s.textContent = `${P[it.key].site} · $${ok ? fmtN(n) : ''}`;
+    const s = q('.cl-site', it.el); if (s) s.textContent = `${P[it.key].site} · $${ok ? fmtP(n) : ''}`;
     spring(q('.hint', it.el), {o:ok ? 0 : 1}, {response:.3});
   };
-  inp.addEventListener('input', sync);
+  priceIn(inp, sync);
   fld.addEventListener('pointerdown', e => e.stopPropagation());
   fld.addEventListener('click', () => inp.focus({preventScroll:true}));
 }
@@ -1103,9 +1149,10 @@ function hdrMode(hdr, mode, inst){ (inst ? setv : spring)(hdr, {o:mode === 'open
 function toast(txt, o = {}){
   const host = A.ovl; if (!host) return;
   qa('.toast', host).forEach(t => t.remove());
-  const el = h(`<div class="toast"><span style="flex:1">${txt}</span>${o.action ? `<b class="tact">${o.action}</b>` : ''}</div>`); host.appendChild(el);
+  const el = h(`<div class="toast" role="status" aria-live="polite"><span style="flex:1"></span>${o.action ? `<b class="tact">${o.action}</b>` : ''}</div>`); host.appendChild(el);
+  q('span', el).textContent = txt;
   setv(el, {y:44, o:0, s:.96}); spring(el, {y:0, o:1, s:1}, {response:.48, damping:.8});
-  const hide = (v = 0) => { if (el._gone) return; el._gone = 1; spring(el, {y:110, o:0}, {response:.4, velocity:{y:v}, onDone:() => el.remove()}); };
+  const hide = (v = 0) => { if (el._gone) return; el._gone = 1; el.style.pointerEvents = 'none'; spring(el, {y:110, o:0}, {response:.4, velocity:{y:v}, onDone:() => el.remove()}); };
   if (o.action) tap(q('.tact', el), () => { hide(); o.onAction(); }, {scale:.9});
   gesture(el, {move:(c, dx, dy) => setv(el, {y:dy > 0 ? dy : -rubber(-dy, 80, .4)}), up:(c, dx, dy, v, t) => { if (t) return; if (dy + project(v.y) > 40) hide(v.y); else spring(el, {y:0}, {response:.4}); }});
   setTimeout(() => hide(), o.ms || (o.action ? 5000 : 3200));
@@ -1116,10 +1163,10 @@ function vals(){
   const u = A.U, m = money(), c = cycle();
   const left = m.left;
   const drops = A.items ? A.items.items.filter(i => P[i.key].was > P[i.key].price).length : 0;
-  const spare = m.upTo ? `Up to $${fmtN(m.hi)} / month` : m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)} / month` : '$0 / month';
+  const spare = m.exact ? `$${fmtN(Math.max(0, m.hi))} / month` : m.upTo ? `Up to $${fmtN(m.hi)} / month` : m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)} / month` : '$0 / month';
   return {
     hi: u.name ? `Hi ${u.name}` : 'Hi there',
-    spare, spareC: m.upTo ? `Up to $${fmtK(m.hi)} / month` : m.hi > 0 ? `${rangeK(m.lo, m.hi)} / month` : '$0 / month', spareShort: m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)}` : '$0',
+    spare, spareC: m.exact ? `$${fmtK(Math.max(0, m.hi))} / month` : m.upTo ? `Up to $${fmtK(m.hi)} / month` : m.hi > 0 ? `${rangeK(m.lo, m.hi)} / month` : '$0 / month', spareShort: m.exact ? `$${fmtN(Math.max(0, m.hi))}` : m.hi > 0 ? `$${fmtN(m.lo)}–${fmtN(m.hi)}` : '$0',
     left: left < 0 ? `$${fmtN(r10(-left))} over ${c ? 'until payday' : 'this month'}` : c ? `About $${fmtN(r10(left))} left until payday` : `About $${fmtN(r10(left))} left this month`,
     over: left < 0,
     payrow: c ? `Payday in ${c.days} ${c.days === 1 ? 'day' : 'days'} (${fmtShort(c.next)})` : 'Your pay varies, so no payday advice',
@@ -1127,8 +1174,8 @@ function vals(){
     payday: c ? fmtShort(c.next) : 'Varies',
     rent: `$${fmtN(u.rent || 0)}`, rentNeg: `− $${fmtN(u.rent || 0)}`,
     bills: u.billsExact ? `$${fmtN(u.billsExact)}` : BILLS[u.bills][0], billsNeg: `− ${u.billsExact ? `$${fmtN(u.billsExact)}` : BILLS[u.bills][0]}`,
-    spareSentence: m.upTo ? `Your ranges leave somewhere between $0 and $${fmtN(m.hi)} a month. Exact amounts give a precise number.` : m.hi > 0 ? `So you usually have about $${fmtN(m.lo)}–${fmtN(m.hi)} free each month. Sounds right?` : 'Your rent and bills take everything right now. Check the numbers?',
-    changes: drops ? `${drops} price ${drops === 1 ? 'changed' : 'changed'} in My items` : 'No price changes in My items',
+    spareSentence: m.exact && m.hi > 0 ? `So you have about $${fmtN(m.hi)} spare each month. Sounds right?` : m.upTo ? `Your ranges leave between $0 and $${fmtN(m.hi)} a month. Checks use the middle, about $${fmtN(r10(m.mid))}. Exact amounts give a precise number.` : m.hi > 0 ? `So you usually have about $${fmtN(m.lo)}–${fmtN(m.hi)} free each month. Sounds right?` : 'Your rent and bills take everything right now. Check the numbers?',
+    changes: drops ? `${drops} ${drops === 1 ? 'price' : 'prices'} changed in My items` : 'No price changes in My items',
     name: u.name || 'Not set',
     spareLbl: m.upTo ? 'Your ranges leave' : 'About',
     usedFrac: m.spare > 1 ? clamp(u.spent/m.spare, 0, 1) : 1,
@@ -1159,13 +1206,13 @@ function refresh(){
   qa('.spfill', D).forEach(f => { spring(f, {w:Math.max(8, 306*V.usedFrac)}, {response:.7}); f.style.background = V.over ? 'var(--no)' : '#fff'; });
   qa('[data-goal]', D).forEach(renderGoal);
   qa('[data-bought]', D).forEach(renderBought);
-  for (const s of [A.home, A.items]) if (s) s.refreshData();
+  for (const s of [A.home, A.items, A.check]) if (s) s.refreshData();
 }
 /* purchases marked "Bought" in DeciBuy this pay cycle (PRD v02 #5); only these count, no other spending is tracked */
 function renderBought(host){
   const b = A.U.bought || [], c = cycle(), tot = b.reduce((a, x) => a + x.price, 0);
   host.innerHTML = `<div class="sec" style="left:28px;top:0;width:350px;display:flex;justify-content:space-between"><span>Bought ${c ? 'since payday' : 'this month'}</span>${b.length ? `<span style="font:600 14px/23px var(--fb);color:var(--tx2)">$${fmtN(tot)}</span>` : ''}</div>`
-    + (b.length ? b.slice().reverse().map((x, i) => `<div class="row brow" data-i="${b.length - 1 - i}" style="top:${36 + i*56}px;cursor:pointer">${x.name}<span class="rv">$${fmtN(x.price)}</span></div>`).join('')
+    + (b.length ? b.slice().reverse().map((x, i) => `<div class="row brow" data-i="${b.length - 1 - i}" style="top:${36 + i*56}px;cursor:pointer">${esc(x.name)}<span class="rv">$${fmtP(x.price)}</span></div>`).join('')
       : `<div class="a" style="left:24px;top:36px;width:354px;font:500 15px/21px var(--fb);color:var(--tx2)">Items you mark as Bought show up here. Nothing else is tracked.</div>`);
   const hh = 36 + Math.max(1, b.length)*56;
   host.style.height = hh + 'px';
@@ -1180,8 +1227,8 @@ function boughtSheet(x){
   const sh = h(`<div class="sheet" style="top:calc(var(--dh) - 330px);height:330px">
     <div class="grab"></div>
     <div class="a" style="left:24px;top:34px;font:600 13px/18px var(--fb);color:var(--tx2)">Bought${when ? ' · ' + fmtShort(when) : ''}</div>
-    <div class="a" style="left:24px;top:56px;width:354px;font:800 28px/1.1 var(--fd)">${x.name}</div>
-    <div class="a" style="left:24px;top:94px;font:600 17px/23px var(--fb)">$${fmtN(x.price)}</div>
+    <div class="a" style="left:24px;top:56px;width:354px;font:800 28px/1.1 var(--fd)">${esc(x.name)}</div>
+    <div class="a" style="left:24px;top:94px;font:600 17px/23px var(--fb)">$${fmtP(x.price)}</div>
     <div class="a" style="left:24px;top:126px;width:354px;font:500 14px/20px var(--fb);color:var(--tx2)">Didn’t buy it after all? It goes back to My items and the money returns to this month.</div>
     <div class="btn nb" style="top:190px">Not bought</div>
     <div class="lnk cl" style="top:262px"><span>Close</span></div>
@@ -1196,7 +1243,7 @@ function boughtSheet(x){
   tap(q('.cl span', sh), () => close(), {scale:.94, op:.6}); tap(dim, () => close(), {scale:1});
 }
 /* goal: suggested monthly amount = 20% of spare money (design assumption), follows the money unless the user set their own */
-function goalSug(target){ const m = money(); const base = m.upTo ? m.best : m.mid; return Math.min(target || 1e9, r10(Math.max(10, base*.2))); }
+function goalSug(target){ const m = money(); const base = m.mid; return Math.min(target || 1e9, r10(Math.max(10, base*.2))); }
 function goalTime(g, per){ const left = Math.max(0, g.target - (g.saved || 0)); if (!per || !left) return left ? '' : 'Reached'; const n = Math.ceil(left/per); if (n <= 1) return 'about 1 month'; if (n < 24) return `about ${n} months`; return `about ${Math.round(n/12)} years`; }
 function syncGoal(){ const g = A.U.goal; if (g && g.auto) g.per = goalSug(g.target); }
 function renderGoal(host){
@@ -1206,10 +1253,10 @@ function renderGoal(host){
   const hh = g ? (offer ? 140 : 100) : 48;
   host.style.height = hh + 'px';
   host.innerHTML = g ? `<div class="a goalcard" style="left:24px;top:0;width:354px;height:${hh}px;border-radius:16px;background:var(--sf);padding:16px;cursor:pointer">
-      <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:700 19px/23px var(--fd)">${g.name}</span><span style="font:500 13px/18px var(--fb);color:var(--tx2)">$${fmtN(g.per)} / month</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:700 19px/23px var(--fd);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;margin-right:10px">${esc(g.name)}</span><span style="font:500 13px/18px var(--fb);color:var(--tx2)">$${fmtN(g.per)} / month</span></div>
       <div style="font:500 15px/21px var(--fb);margin-top:4px">$${fmtN(g.saved)} of $${fmtN(g.target)}<span style="color:var(--tx2)"> · ${goalTime(g, g.per)}</span></div>
       <div class="bar" style="margin-top:10px;background:var(--sf2)"><i class="gfill" style="width:${Math.max(8, Math.round(314*clamp(g.saved/g.target, 0, 1)))}px;background:var(--blueS);transform-origin:0 0"></i></div>
-      ${offer ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font:500 13px/18px var(--fb)"><span style="color:var(--tx2)">Your money changed. Suggested: $${fmtN(sug)} / month</span><b class="guse" style="color:var(--blueS);padding:6px;margin:-6px;cursor:pointer">Use</b></div>` : ''}</div>`
+      ${offer ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font:500 13px/18px var(--fb)"><span style="color:var(--tx2)">Suggested from your spare money: $${fmtN(sug)} / month</span><b class="guse" style="color:var(--blueS);padding:6px;margin:-6px;cursor:pointer">Use</b></div>` : ''}</div>`
     : `<div class="row goalcard" style="top:0;cursor:pointer;color:var(--blueS);font-weight:600">+ Add a savings goal</div>`;
   tap(q('.goalcard', host), () => pushQ('goal'), {scale:.985});
   const u = q('.guse', host); if (u) tap(u, () => { g.per = sug; g.auto = true; refresh(); toast(`${g.name}: $${fmtN(sug)} a month, ${goalTime(g, sug)}. It now follows your spare money.`); }, {scale:.9, op:.6});
@@ -1300,14 +1347,16 @@ function buildCheck(kind, offline, list){
   tap(q('.gear', el), () => pushSettings(), {scale:.85});
   tap(addm, () => pushAdd(), {scale:.95});
   tap(q('.addm2', el), () => pushAdd());
-  tap(q('.calcall', el), () => calcAll(), {scale:.92, op:.6});
+  tap(q('.calcall', el), () => q('.calcall', el).dataset.m === 'save' ? saveAll() : calcAll(), {scale:.92, op:.6});
   A.check = new Stack(el, {kind:'drafts', baseY:base, items:list ? list : offline ? [draftSet('one')[0], {key:'lampD', detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days'}}] : draftSet(kind),
     onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
     onChange:(st, inst) => {
       const n = st.items.length;
       q('.ccount', el).textContent = `${n} of 5 drafts`;
-      const ca = q('.calcall', el), todo = st.items.filter(i => P[i.key].price && !i.calcd).length >= 2;
-      (inst ? setv : spring)(ca, {o:todo ? 1 : 0}, {response:.3}); ca.style.pointerEvents = todo ? 'auto' : 'none';
+      const ca = q('.calcall', el), todo = st.items.filter(i => P[i.key].price && !i.calcd).length >= 2, done2 = st.items.filter(i => P[i.key].price && i.calcd).length >= 2;
+      ca.textContent = todo ? 'Calculate all' : 'Save all'; ca.dataset.m = todo ? 'calc' : 'save';
+      const on = todo || done2;
+      (inst ? setv : spring)(ca, {o:on ? 1 : 0}, {response:.3}); ca.style.pointerEvents = on ? 'auto' : 'none';
       const front = st.items[n-1];
       const y = n ? base + (n-1)*56 + st.bodyH(front) + 22 : 574;
       (inst ? setv : spring)(addm, {y:y - 574, o:(n && n < 5) ? 1 : 0}, {response:.5, damping:.86});
@@ -1322,8 +1371,20 @@ function addDraft(prod){
   const key = 'm' + (++manualN);
   P[key] = Object.assign({added:100 + manualN}, prod);
   const st = A.check;
-  if (st.items.length >= 5){ const old = st.items[0]; const nm = P[old.key].name; st.take(old.id, 'drop'); later(500, () => toast(`Drafts are full. “${nm}” was removed to make room.`, {ms:4500})); }
+  let gone = null;
+  if (st.items.length >= 5){ const old = st.items[0]; const nm = P[old.key].name; gone = st.take(old.id, 'drop'); later(500, () => toast(`Drafts are full. “${nm}” was removed to make room.`, {ms:6000, action:'Undo', onAction:() => { const x = st.items.find(i => i.key === key); if (x) st.take(x.id, 'drop'); st.insert(gone.data, 0, true); }})); }
   return st.insert({key, detail:'Expires in 3 days', bodyH:199, draft:{expires:'Expires in 3 days', justAdded:true}});
+}
+function saveAll(){
+  const st = A.check, list = st.items.filter(i => P[i.key].price && i.calcd);
+  if (!list.length) return;
+  if (st.open) st.close();
+  let n = 0;
+  list.forEach((it, i) => later(140*i, () => {
+    if (!A.items.has(it.key) && !A.items.hasName(P[it.key].name)){ P[it.key].savedAt = Date.now(); A.items.insert({key:it.key}, A.items.items.length, true); n++; }
+    st.take(it.id, 'fly');
+  }));
+  later(140*list.length + 300, () => { bounceTab('items'); toast(`${list.length} ${list.length === 1 ? 'item' : 'items'} saved to My items.`); refresh(); });
 }
 function calcAll(){
   const st = A.check, todo = st.items.filter(i => P[i.key].price && !i.calcd);
@@ -1413,7 +1474,7 @@ function buildMoney(){
     <div class="row r-inc" style="top:357px;cursor:pointer">Take-home<span class="rv" data-b="incRhy"></span></div>
     <div class="row r-pay" style="top:413px;cursor:pointer">Next payday<span class="rv" data-b="payday"></span></div>
     <div class="row r-rent" style="top:469px;cursor:pointer">Rent<span class="rv" data-b="rent"></span></div>
-    <div class="row r-bills" style="top:525px;cursor:pointer">Other bills<span class="rv" data-b="bills"></span></div>
+    <div class="row r-bills" style="top:525px;cursor:pointer">Bills and spending<span class="rv" data-b="bills"></span></div>
     <div class="sec" style="top:593px">Saving for</div>
     <div class="a" data-goal style="left:0;top:629px;width:402px;height:100px"></div>
     <div class="a" data-bought style="left:0;top:749px;width:402px"></div>
@@ -1442,25 +1503,56 @@ function pushSettings(inst){
     <div class="row r-name" style="top:193px;cursor:pointer">Name<span class="rv" data-b="name"></span></div>
     <div class="row r-app" style="top:249px">Appearance</div>
     <div class="row" style="top:305px">Notifications</div>
-    <div class="row r-priv" style="top:361px;height:63px;line-height:21px;padding-top:11px;cursor:pointer">Privacy and data<div style="font:500 13px/18px var(--fb);color:var(--tx2)">Export · Delete</div><span class="a" style="left:316px;top:20px">${IC.chev}</span></div>
-    <div class="row" style="top:432px">Region and currency<span class="rv">USD · $</span></div>
-    <div class="row" style="top:488px">About DeciBuy<span class="a" style="left:316px;top:12px">${IC.chev}</span></div>
+    <div class="row r-priv" style="top:361px;height:63px;line-height:21px;padding-top:11px;cursor:pointer">Privacy and data<div style="font:500 13px/18px var(--fb);color:var(--tx2)">What’s stored · Export · Delete</div><span class="a" style="left:316px;top:20px">${IC.chev}</span></div>
+    <div class="row r-reg" style="top:432px;cursor:pointer">Region and currency<span class="rv">USD · $</span></div>
+    <div class="row r-about" style="top:488px;cursor:pointer">About DeciBuy<span class="a" style="left:316px;top:12px">${IC.chev}</span></div>
     <div class="a" style="left:24px;top:561px;font:500 13px/18px var(--fb);color:var(--tx2)">DeciBuy helps you decide. The final call is always yours.</div>
   </div>`);
-  el.appendChild(toggle(true, 308, 313));
+  const nt = toggle(A.U.notif !== false, 308, 313); el.appendChild(nt);
+  nt._on = on => { A.U.notif = on; scheduleSave(); toast(on ? 'Reminders on.' : 'Reminders off. We won’t send any.'); };
   el.appendChild(segmented(170, 257));
-  qa('.row', el).forEach(r => { if (!r.classList.contains('r-app')) tap(r, () => { if (r.classList.contains('r-name')) pushQ('name'); if (r.classList.contains('r-priv')) privacySheet(); }, {scale:.985}); });
+  qa('.row', el).forEach(r => { if (!r.classList.contains('r-app')) tap(r, () => { if (r.classList.contains('r-name')) pushQ('name'); if (r.classList.contains('r-priv')) privacySheet(); if (r.classList.contains('r-reg')) toast('This prototype uses US dollars. In the app you pick your currency.'); if (r.classList.contains('r-about')) aboutSheet(); }, {scale:.985}); });
   tap(q('.bk', el), () => A.nav.pop(), {scale:.85});
   A.nav.push(el, inst); refresh();
   return el;
 }
+function infoSheet(html, h0, btns){
+  const L = A.over; L.style.pointerEvents = 'auto';
+  const host = h('<div class="L"><div class="dim"></div></div>'); L.appendChild(host);
+  const dim = q('.dim', host); setv(dim, {o:0}); spring(dim, {o:.45}, {response:.3});
+  const sh = h(`<div class="sheet" style="top:calc(var(--dh) - ${h0}px);height:${h0}px"><div class="grab"></div>${html}</div>`);
+  host.appendChild(sh); setv(sh, {y:h0 + 10}); spring(sh, {y:0}, {response:.45, damping:.86});
+  const close = fn => { spring(sh, {y:h0 + 10}, {response:.35}); spring(dim, {o:0}, {response:.3}); later(300, () => { host.remove(); L.style.pointerEvents = 'none'; if (fn) fn(); }); };
+  tap(dim, () => close(), {scale:1});
+  for (const [sel, fn] of btns) tap(q(sel, sh), () => close(fn), {scale:.95});
+}
+function exportData(){
+  try {
+    const raw = localStorage.getItem(SKEY) || '{}';
+    const url = URL.createObjectURL(new Blob([JSON.stringify(JSON.parse(raw), null, 2)], {type:'application/json'}));
+    const a = document.createElement('a'); a.href = url; a.download = 'decibuy-my-data.json'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('Your data was saved as a file.');
+  } catch(_){ toast('Couldn’t export right now.'); }
+}
 function privacySheet(){
+  infoSheet(`<div class="a" style="left:24px;top:34px;width:354px;font:800 28px/1.1 var(--fd)">Privacy and data</div>
+    <div class="a" style="left:24px;top:76px;width:354px;font:500 14px/20px var(--fb);color:var(--tx2)">Everything you enter stays on this phone: your money profile, items, Bought list and goal. No bank login, no account, no tracking.</div>
+    <div class="btn pexp" style="top:150px">Export my data</div>
+    <div class="lnk pdel" style="top:222px"><span style="color:var(--no)">Delete my data</span></div>`, 290, [['.pexp', exportData], ['.pdel span', deleteDialog]]);
+}
+function aboutSheet(){
+  infoSheet(`<div class="a" style="left:24px;top:34px;width:354px;font:800 28px/1.1 var(--fd)">About DeciBuy</div>
+    <div class="a" style="left:24px;top:76px;width:354px;font:500 14px/20px var(--fb);color:var(--tx2)">A prototype by Kirill Blik, product designer. It checks a purchase against your own month: Buy, Wait for payday or Not now.<br><br>DeciBuy helps you decide. The final call is always yours.</div>
+    <div class="btn aok" style="top:206px">Close</div>`, 290, [['.aok', null]]);
+}
+function deleteDialog(){
   const L = A.over; L.style.pointerEvents = 'auto';
   const host = h('<div class="L"><div class="dim"></div></div>'); L.appendChild(host);
   const dim = q('.dim', host); setv(dim, {o:0}); spring(dim, {o:.45}, {response:.3});
   const dg = h(`<div class="dialog">
     <div style="font:800 24px/1.1 var(--fd);text-wrap:balance">Delete all your data?</div>
-    <div style="font:500 14px/20px var(--fb);color:var(--tx2);margin-top:10px">Your numbers, drafts and saved items are stored only on this phone. This removes them and starts setup again.</div>
+    <div style="font:500 14px/20px var(--fb);color:var(--tx2);margin-top:10px">This removes everything you entered on this phone: your money profile, name, goal, drafts, saved items and Bought list. Setup starts again.</div>
     <div class="btn ok" style="position:relative;left:0;width:290px;margin-top:20px;background:var(--no);color:#000">Delete my data</div>
     <div class="nn" style="font:600 15px/18px var(--fb);margin-top:18px;cursor:pointer;display:inline-block">Cancel</div>
   </div>`);
@@ -1469,7 +1561,7 @@ function privacySheet(){
   tap(q('.ok', dg), () => close(deleteData)); tap(q('.nn', dg), () => close(), {scale:.94, op:.6}); tap(dim, () => close(), {scale:1});
 }
 function fieldInput(label, ph, o = {}){
-  return `<div class="field fi ${o.cls || ''}" style="left:${o.x ?? 20}px;top:${o.y}px;${o.w ? `width:${o.w}px;` : ''}${o.bg ? `background:${o.bg};` : ''}cursor:text"><div class="fl">${label}</div><input ${o.id ? `data-k="${o.id}"` : ''} placeholder="${ph}" ${o.mode ? `inputmode="${o.mode}"` : ''} autocomplete="off" spellcheck="false" value="${o.value ?? ''}">${o.suffix ? `<span class="sfx"></span>` : ''}</div>`;
+  return `<div class="field fi ${o.cls || ''}" style="left:${o.x ?? 20}px;top:${o.y}px;${o.w ? `width:${o.w}px;` : ''}${o.bg ? `background:${o.bg};` : ''}cursor:text"><div class="fl">${label}</div><input ${o.id ? `data-k="${o.id}"` : ''} placeholder="${ph}" ${o.mode ? `inputmode="${o.mode}"` : ''} autocomplete="off" spellcheck="false" value="${esc(o.value ?? '')}">${o.suffix ? `<span class="sfx"></span>` : ''}</div>`;
 }
 /* amounts are capped at $999,999; trying a 7th digit shows "Up to $999,999" for a moment */
 function overMax(inp){
@@ -1479,7 +1571,18 @@ function overMax(inp){
   inp._mt = setTimeout(() => spring(m, {o:0, y:2}, {response:.4}), 2500);
 }
 function moneyIn(inp, cb){
-  inp.addEventListener('input', () => { const raw = inp.value.replace(/\D/g, ''); if (raw.length > 6) overMax(inp); const d = raw.slice(0, 6); inp.value = d ? '$' + (+d).toLocaleString('en-US') : ''; cb(d ? +d : null); });
+  inp.addEventListener('input', () => { const raw = inp.value.split('.')[0].replace(/\D/g, ''); if (raw.length > 6) overMax(inp); const d = raw.slice(0, 6); inp.value = d ? '$' + (+d).toLocaleString('en-US') : ''; cb(d ? +d : null); });
+}
+function priceIn(inp, cb, start){
+  let d = start ? String(Math.round(start*100)) : '';
+  const show = () => { inp.value = d ? '$' + (+d/100).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''; };
+  show();
+  inp.addEventListener('input', () => {
+    let raw = inp.value.replace(/\D/g, '').replace(/^0+/, '');
+    if (raw.length > 8){ overMax(inp); raw = raw.slice(0, 8); }
+    d = raw; show(); cb(d ? +d/100 : null);
+    try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch(_){}
+  });
 }
 function wireFields(el){ qa('.fi', el).forEach(f => { f.addEventListener('pointerdown', e => e.stopPropagation()); f.addEventListener('click', () => q('input', f).focus({preventScroll:true})); }); }
 function pushAdd(e1, inst, editKey){
@@ -1493,7 +1596,7 @@ function pushAdd(e1, inst, editKey){
       <div class="a warn" style="left:20px;top:97px;width:314px;height:60px;border-radius:14px;background:var(--wait);color:#000;display:flex;align-items:center;gap:10px;padding:0 14px;font:600 13px/18px var(--fb)">${IC.alert}<span>Couldn’t read this page. Add the name and price yourself.</span></div>
       <div class="mv L" style="pointer-events:none">
         ${fieldInput('Name', 'What is it?', {y:127, id:'name'})}
-        ${fieldInput('Price', '$ 0.00', {y:204, id:'price', mode:'numeric'})}
+        ${fieldInput('Price', '$0.00', {y:204, id:'price', mode:'numeric'})}
         <div class="a inst" style="left:20px;top:281px;width:314px;height:31px;pointer-events:auto"><span style="font:600 16px/31px var(--fb)">Pay in installments?</span></div>
         ${fieldInput('Installments', 'Number of payments', {y:324, id:'inst', mode:'numeric', cls:'f-inst', suffix:true})}
         ${fieldInput('Interest, % a year (if any)', '0 if interest-free', {y:401, id:'rate', mode:'decimal', cls:'f-rate', suffix:true})}
@@ -1510,7 +1613,7 @@ function pushAdd(e1, inst, editKey){
   const card = q('.card', el), warn = q('.warn', el), orl = q('.orl', el), mv = q('.mv', el), finst = q('.f-inst', el), frate = q('.f-rate', el), rnote = q('.rnote', el), btn = q('.add', el), addb = q('.addb', el), sdraft = q('.sdraft', el);
   const peek = q('.addpk', el); const pk = A.check.items[A.check.items.length - 1];
   if (pk) q('.nm', peek).textContent = P[pk.key].name; else peek.style.display = 'none';
-  const tg = toggle(false, 263, 0); q('.inst', el).appendChild(tg);
+  const tg = toggle(!!(E && E.inst), 263, 0); q('.inst', el).appendChild(tg);
   const F = {link:'', name:E ? E.name : '', price:E ? E.price : null, inst:E ? E.inst || null : null, rate:E ? E.rate || null : null};
   const st = {e1:!!e1, inst:!!(E && E.inst)};
   const I = k => q(`input[data-k="${k}"]`, el);
@@ -1530,16 +1633,17 @@ function pushAdd(e1, inst, editKey){
     const cost = costOf({price:F.price || 0, inst:F.inst, rate:F.rate});
     const sx = qa('.sfx', el);
     sx[0].textContent = F.inst > 1 && F.price ? ` × $${fmtN(Math.ceil(cost/F.inst))}` : '';
-    sx[1].textContent = F.rate && F.inst > 1 && F.price ? `% · ≈ $${fmtN(cost)} total` : F.rate ? '%' : '';
+    sx[1].textContent = F.rate && F.inst > 1 && F.price ? `% · ≈ $${fmtN(cost)} total` : F.rate === 0 ? '% · no interest' : F.rate ? '%' : '';
   };
   tg._on = on => { st.inst = on; lay(); if (on) later(200, () => I('inst').focus({preventScroll:true})); };
   I('link').addEventListener('input', () => { F.link = I('link').value.trim(); });
-  I('link').addEventListener('change', () => { if (F.link && !st.e1){ st.e1 = true; lay(); later(250, () => I('name').focus({preventScroll:true})); } if (!F.link && st.e1){ st.e1 = false; lay(); } });
+  let lt; I('link').addEventListener('input', () => { clearTimeout(lt); lt = setTimeout(() => I('link').dispatchEvent(new Event('change')), 350); });
+  I('link').addEventListener('change', () => { if (F.link && !st.e1){ st.e1 = true; lay(); later(250, () => { if (document.activeElement === I('link')) I('name').focus({preventScroll:true}); }); } if (!F.link && st.e1){ st.e1 = false; lay(); } });
   I('name').addEventListener('input', () => { F.name = I('name').value; lay(); });
-  moneyIn(I('price'), v => { F.price = v; lay(); });
+  priceIn(I('price'), v => { F.price = v; lay(); }, E && E.price);
   I('inst').addEventListener('input', () => { const d = I('inst').value.replace(/\D/g, '').slice(0, 2); I('inst').value = d; F.inst = d ? +d : null; lay(); });
-  I('rate').addEventListener('input', () => { let v = I('rate').value.replace(',', '.').replace(/[^\d.]/g, ''); const [a, b] = v.split('.'); v = a.slice(0, 2) + (b !== undefined ? '.' + b.slice(0, 1) : ''); I('rate').value = v; F.rate = parseFloat(v) || null; lay(); });
-  if (E){ I('name').value = E.name; I('price').value = '$' + fmtN(E.price || 0); if (!E.price) I('price').value = ''; if (E.inst){ I('inst').value = E.inst; } if (E.rate) I('rate').value = E.rate; if (E.inst){ tg.classList.add('on'); setv(q('i', tg), {x:22}); } }
+  I('rate').addEventListener('input', () => { let v = I('rate').value.replace(',', '.').replace(/[^\d.]/g, ''); const [a, b] = v.split('.'); v = a.slice(0, 2) + (b !== undefined ? '.' + b.slice(0, 1) : ''); I('rate').value = v; F.rate = v === '' || isNaN(parseFloat(v)) ? null : parseFloat(v); lay(); });
+  if (E){ I('name').value = E.name; if (E.inst){ I('inst').value = E.inst; } if (E.rate != null) I('rate').value = E.rate; }
   wireFields(el);
   if (e1){ I('link').value = F.link = 'ikea.com/p/mushroom-lamp…'; }
   tap(q('.bk', el), () => A.nav.pop(), {scale:.85});
@@ -1552,14 +1656,15 @@ function pushAdd(e1, inst, editKey){
   const submit = draftOnly => {
     if (!valid()) return;
     if (document.activeElement) document.activeElement.blur();
-    if (E){ const pr = build_(); Object.assign(E, {name:pr.name, price:pr.price, inst:pr.inst, rate:pr.rate, failed:false}); if (pr.site !== 'Added manually') E.site = pr.site;
+    if (E){ const pr = build_(); if (pr.price !== E.price) E.was = null; Object.assign(E, {name:pr.name, price:pr.price, inst:pr.inst, rate:pr.rate, failed:false}); if (pr.site !== 'Added manually') E.site = pr.site;
       A.nav.pop(); later(300, () => { for (const s2 of [A.check, A.home, A.items]) for (const it of s2.items) if (it.key === editKey) s2.rerender(it); refresh(); toast('Saved. The verdict uses the new numbers.'); }); return; }
     const prod = build_();
     A.nav.pop(); if (A.tab !== 'check') switchTab('check');
     later(380, () => { const it = addDraft(prod); if (!draftOnly && it) later(450, () => { it.done = true; A.check.calc(it); }); });
   };
-  tap(btn, () => submit(false));
-  if (sdraft) tap(q('span', sdraft), () => submit(true), {scale:.94, op:.6});
+  let sent = false;
+  tap(btn, () => { if (sent || !valid()) return; sent = true; submit(false); });
+  if (sdraft) tap(q('span', sdraft), () => { if (sent || !valid()) return; sent = true; submit(true); }, {scale:.94, op:.6});
   setv(warn, {o:0}); setv(card, {h:409}); setv(addb, {y:0}); setv(mv, {y:0}); setv(peek, {x:24, y:DHn-82});
   lay(true);
   A.nav.push(el, inst);
@@ -1597,7 +1702,7 @@ function picker(host, values, sel, cb, top = 338, hgt = 300){
   });
 }
 function dayStrip(host, top, cur, cb){
-  const days = Array.from({length:35}, (_, i) => new Date(TODAY.getTime() + i*DAY));
+  const days = Array.from({length:35}, (_, i) => new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + i)); // calendar days, safe across clock changes
   const strip = h(`<div class="a strip" style="left:0;top:${top}px;width:402px;height:64px;overflow:hidden;touch-action:none"><div class="strk" style="position:absolute;left:24px;top:0;display:flex;gap:8px">${days.map((d, i) => `<div class="dchip" data-i="${i}"><span>${WD[d.getDay()].slice(0, 3)}</span><b>${d.getDate()}</b><span>${MO[d.getMonth()]}</span></div>`).join('')}</div></div>`);
   host.appendChild(strip);
   const trk = q('.strk', strip), W = 64, max = -(days.length*W - 354);
@@ -1629,7 +1734,7 @@ function qScreen(kind, mode, T, done){
   const mainBtn = (label, top = 726) => { add(`<div class="btn main" style="top:${B(top)}">${label}</div>`); return q('.btn.main', el); };
   const sync = () => { const b = q('.btn.main', el); if (b) b.classList.toggle('dis', !ok()); };
   if (kind === 'income'){
-    add(head('What lands in your account each month?', 'After tax. A range is enough.'));
+    add(head('What lands in your account each month?', 'After tax. Paid every 2 weeks? Add both paychecks. A range is enough.'));
     const pH = clamp(DHn - 148 - 75 - 338 - 7, 160, 300);
     add(`<div class="lnk exl" style="top:${338 + pH + 24}px"><span>Enter exact amount</span></div>`);
     add(fieldInput('Your exact amount', '$4,500', {x:24, y:338 + pH + 7, w:354, id:'iex', mode:'numeric', bg:'var(--sf)', cls:'exf', value:T.incExact ? '$' + fmtN(T.incExact) : ''}));
@@ -1637,29 +1742,34 @@ function qScreen(kind, mode, T, done){
     const showEx = (on, inst) => { (inst ? setv : spring)(exf, {o:on ? 1 : 0, y:on ? 0 : 10, s:on ? 1 : .97}, {response:.45, damping:.85}); exf.style.pointerEvents = on ? 'auto' : 'none'; (inst ? setv : spring)(exl, {o:on ? 0 : 1}, {response:.25}); exl.style.pointerEvents = on ? 'none' : ''; };
     picker(el, INC.map(x => x[0]), T.inc, i => {
       if (i !== T.inc && T.incExact){ T.incExact = null; iex.value = ''; }
-      T.inc = i; showEx(i === INC.length - 1 || !!T.incExact);
+      T.inc = i; showEx(i === INC.length - 1 || !!T.incExact); dimPick();
     }, 338, pH);
-    moneyIn(iex, v => { T.incExact = v; });
+    const dimPick = () => spring(q('.pick', el), {o:T.incExact ? .35 : 1}, {response:.3});
+    el._showEx = () => { showEx(true); later(250, () => iex.focus({preventScroll:true})); };
+    moneyIn(iex, v => { T.incExact = v || null; dimPick(); });
+    setv(q('.pick', el), {o:T.incExact ? .35 : 1});
     wireFields(el);
     tap(q('span', exl), () => { showEx(true); later(250, () => iex.focus({preventScroll:true})); }, {scale:.94, op:.6});
     showEx(T.inc === INC.length - 1 || !!T.incExact || !!T._exact, true);
     mainBtn(btnLabel);
   }
   if (kind === 'bills'){
-    add(head('Other regular bills you pay?', 'Phone, subscriptions, transport, loans. A guess is fine.'));
+    add(head('Bills and everyday spending?', 'Everything except rent: groceries, utilities, phone, transport, medicine, subscriptions, loans. A guess is fine.'));
     const pH = clamp(DHn - 148 - 75 - 300 - 7, 160, 300);
     add(`<div class="lnk exl" style="top:${300 + pH + 24}px"><span>Enter exact amount</span></div>`);
-    add(fieldInput('Your exact amount', '$800', {x:24, y:300 + pH + 7, w:354, id:'bex', mode:'numeric', bg:'var(--sf)', cls:'exf', value:T.billsExact ? '$' + fmtN(T.billsExact) : ''}));
+    add(fieldInput('Your exact amount', '$800', {x:24, y:300 + pH + 7, w:354, id:'bex', mode:'numeric', bg:'var(--sf)', cls:'exf', value:T.billsExact != null ? '$' + fmtN(T.billsExact) : ''}));
     const exl = q('.exl', el), exf = q('.exf', el), bex = q('input[data-k="bex"]', el);
     const showEx = (on, inst) => { (inst ? setv : spring)(exf, {o:on ? 1 : 0, y:on ? 0 : 10, s:on ? 1 : .97}, {response:.45, damping:.85}); exf.style.pointerEvents = on ? 'auto' : 'none'; (inst ? setv : spring)(exl, {o:on ? 0 : 1}, {response:.25}); exl.style.pointerEvents = on ? 'none' : ''; };
     picker(el, BILLS.map(x => x[0]), T.bills, i => {
-      if (i !== T.bills && T.billsExact){ T.billsExact = null; bex.value = ''; }
-      T.bills = i; showEx(i === BILLS.length - 1 || !!T.billsExact);
+      if (i !== T.bills && T.billsExact != null){ T.billsExact = null; bex.value = ''; }
+      T.bills = i; showEx(i === BILLS.length - 1 || T.billsExact != null); dimPick();
     }, 300, pH);
-    moneyIn(bex, v => { T.billsExact = v; });
+    const dimPick = () => spring(q('.pick', el), {o:T.billsExact != null ? .35 : 1}, {response:.3});
+    moneyIn(bex, v => { T.billsExact = v; dimPick(); });
+    setv(q('.pick', el), {o:T.billsExact != null ? .35 : 1});
     wireFields(el);
     tap(q('span', exl), () => { showEx(true); later(250, () => bex.focus({preventScroll:true})); }, {scale:.94, op:.6});
-    showEx(T.bills === BILLS.length - 1 || !!T.billsExact || !!T._exact, true);
+    showEx(T.bills === BILLS.length - 1 || T.billsExact != null || !!T._exact, true);
     mainBtn(btnLabel);
   }
   if (kind === 'rhythm'){
@@ -1706,14 +1816,14 @@ function qScreen(kind, mode, T, done){
         <div class="a" data-b="spareLbl" style="top:22px;font:600 13px/18px var(--fb)">About</div>
         <div class="a amt" data-b="spare" style="top:52px;font:700 28px/34px var(--fd);font-variant-numeric:tabular-nums"></div>
         <div class="a" style="top:98px;width:306px;height:1px;background:rgba(255,255,255,.3)"></div>
-        ${[['Take-home','inc','income'],['Rent','rentNeg','rent'],['Other bills','billsNeg','bills']].map((r, i) => `<div class="a r6" data-q="${r[2]}" style="top:${104 + i*33}px;left:12px;width:330px;height:33px;padding:6px 12px;border-radius:10px;display:flex;justify-content:space-between;align-items:baseline;${onb ? '' : 'cursor:pointer'}"><span style="font:500 15px/21px var(--fb)">${r[0]}</span><span style="font:600 13px/18px var(--fb)" data-b="${r[1]}"></span></div>`).join('')}
+        ${[['Take-home','inc','income'],['Rent','rentNeg','rent'],['Bills and spending','billsNeg','bills']].map((r, i) => `<div class="a r6" data-q="${r[2]}" style="top:${104 + i*33}px;left:12px;width:330px;height:33px;padding:6px 12px;border-radius:10px;display:flex;justify-content:space-between;align-items:baseline;${onb ? '' : 'cursor:pointer'}"><span style="font:500 15px/21px var(--fb)">${r[0]}</span><span style="font:600 13px/18px var(--fb)" data-b="${r[1]}"></span></div>`).join('')}
       </div>`);
     if (!onb) qa('.r6', el).forEach(r => tap(r, () => pushQ(r.dataset.q), {scale:.97}));
     if (onb){
-      const zero = money().hi <= 0;
+      const zero = money().zero;
       if (money().upTo){
-        mainBtn('Enter exact amounts'); mainAction = () => { A.U._exact = true; A.onb.popTo(1); };
-        add(`<div class="lnk adj" style="top:${B(790)}"><span>Keep the range</span></div><div class="foot" style="top:${B(822)}">Checks use the top of your range.</div>`);
+        mainBtn('Enter exact amounts'); mainAction = () => { A.U._exact = true; A.onb.popTo(1); later(450, () => { const t = A.onb.top(); if (t && t._showEx) t._showEx(); }); };
+        add(`<div class="lnk adj" style="top:${B(790)}"><span>Keep the range</span></div><div class="foot" style="top:${B(822)}">Checks use the middle of your range.</div>`);
         tap(q('.adj span', el), () => done(), {scale:.94, op:.6});
       } else if (zero){
         mainBtn('Adjust'); mainAction = () => A.onb.popTo(1);
@@ -1728,7 +1838,7 @@ function qScreen(kind, mode, T, done){
         qa('.r6', el).forEach((r, i) => { setv(r, {o:0, y:8}); spring(r, {o:1, y:0}, {response:.45, delay:.35 + i*.08}); }); };
     } else {
       mainBtn('Done');
-      if (money().upTo) add(`<div class="foot" style="top:552px;text-align:left">Tap Take-home or Other bills to enter exact amounts.</div>`);
+      if (money().upTo) add(`<div class="foot" style="top:552px;text-align:left">Tap Take-home or Bills and spending to enter exact amounts.</div>`);
     }
     el._back = () => refresh();
   }
@@ -1758,7 +1868,7 @@ function qScreen(kind, mode, T, done){
     wireFields(el);
     ok = () => W.name.trim() && W.target > 0 && W.per > 0;
     const b = mainBtn('Save goal');
-    tap(b, () => { if (!ok()) return; T.goal = {name:W.name.trim(), target:W.target, per:W.per, auto:W.auto, saved:(T.goal && T.goal.saved) || 0}; done(); });
+    tap(b, () => { if (!ok()) return; T.goal = {name:W.name.trim().slice(0, 40), target:W.target, per:Math.min(W.per, W.target), auto:W.auto, saved:(T.goal && T.goal.saved) || 0}; done(); });
     if (onb || T.goal){ add(`<div class="lnk skip" style="top:${B(790)}"><span>${onb ? 'Skip for now' : 'Remove goal'}</span></div>`); tap(q('.skip span', el), () => { T.goal = null; done(); }, {scale:.94, op:.6}); }
     sync();
     CURSH = 0;
@@ -1786,6 +1896,7 @@ function qScreen(kind, mode, T, done){
 function pushQ(kind){
   const T = Object.assign({}, A.U, {goal:A.U.goal ? Object.assign({}, A.U.goal) : null});
   if ((kind === 'income' || kind === 'bills') && money().upTo) T._exact = true;
+  T._oldGoal = A.U.goal ? Object.assign({}, A.U.goal) : null;
   if (kind === 'spare'){ const el = qScreen('spare', 'edit', T, () => A.nav.pop()); A.nav.push(el); refresh(); return; }
   const el = qScreen(kind, 'edit', T, () => {
     if (document.activeElement) document.activeElement.blur();
@@ -1793,10 +1904,11 @@ function pushQ(kind){
     keys.forEach(k => A.U[k] = T[k]);
     refresh(); A.nav.pop();
     const g = A.U.goal;
-    if (g && ['income','rent','bills','rhythm'].includes(kind)){
+    if (kind === 'goal'){ const old = T._oldGoal; if (old && !g) later(350, () => toast('Goal removed.', {action:'Undo', onAction:() => { A.U.goal = old; refresh(); }})); else later(350, () => toast(g ? `Goal saved. ${g.name}: $${fmtN(g.per)} a month, ${goalTime(g, g.per)}.` : 'Saved.')); }
+    else if (g && ['income','rent','bills','rhythm'].includes(kind)){
       const sug = goalSug(g.target);
-      if (g.auto) later(350, () => toast(`Saved. ${g.name} is now $${fmtN(g.per)} a month, ${goalTime(g, g.per)}.`));
-      else if (Math.abs(sug - g.per) >= Math.max(10, g.per*.1)) later(350, () => toast(`Saved. For ${g.name} we now suggest $${fmtN(sug)} a month.`, {action:'Use', onAction:() => { g.per = sug; g.auto = true; refresh(); }}));
+      if (g.auto && T._oldGoal && T._oldGoal.per !== g.per) later(350, () => toast(`Saved. ${g.name} is now $${fmtN(g.per)} a month, ${goalTime(g, g.per)}.`));
+      else if (!g.auto && Math.abs(sug - g.per) >= Math.max(10, g.per*.1)) later(350, () => toast(`Saved. For ${g.name} we now suggest $${fmtN(sug)} a month.`, {action:'Use', onAction:() => { g.per = sug; g.auto = true; refresh(); }}));
       else later(350, () => toast('Saved. Your verdicts use the new numbers.'));
     } else later(350, () => toast('Saved. Your verdicts use the new numbers.'));
   });
@@ -1836,7 +1948,11 @@ function onbScreen(i){
   }
   return qScreen(kind, 'onb', U, next);
 }
+const OKEY = 'decibuy-onb-v1';
+function saveOnb(i){ if (!A.live || A.onbDone) return; try { localStorage.setItem(OKEY, JSON.stringify({step:i, U:A.U})); } catch(_){} }
+function loadOnb(){ try { const d = JSON.parse(localStorage.getItem(OKEY)); return d && d.U && d.step > 0 ? d : null; } catch(_){ return null; } }
 function onbGo(i, inst){
+  saveOnb(i);
   const el = onbScreen(i);
   if (i === 0) A.onb.base(el); else A.onb.push(el, inst);
   const f = q('.prog i:last-child', el) && qa('.prog i', el).pop();
@@ -1846,6 +1962,7 @@ function onbGo(i, inst){
 }
 function finishOnb(){
   delete A.U._exact;
+  try { localStorage.removeItem(OKEY); } catch(_){}
   A.onbDone = true; saveState();
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(_){}
   const root = A.onb.root;
@@ -1903,7 +2020,7 @@ function prePrompt(parent){
 }
 function lockScreen(kind, onShown){
   const L = A.over; L.style.pointerEvents = 'auto';
-  const date = kind === 'add' ? 'Friday, October 24' : 'Tuesday, October 28';
+  const date = kind === 'add' ? 'Saturday, October 24' : 'Wednesday, October 28';
   const t1 = kind === 'add' ? 'Added: Mushroom table lamp' : 'Payday is today.';
   const t2 = kind === 'add' ? 'Tap to check' : 'Re-check your Mushroom table lamp?';
   const el = h(`<div class="lock">
@@ -1954,9 +2071,15 @@ function saveState(){
 }
 let _svT;
 function scheduleSave(){ clearTimeout(_svT); _svT = setTimeout(saveState, 250); }
-function loadState(){ try { const d = JSON.parse(localStorage.getItem(SKEY)); return d && d.v === 1 && d.U ? d : null; } catch(_){ return null; } }
+function migrateU(U){
+  // 2026-10-21: "Other bills" became "Bills and everyday spending" with wider ranges; keep old answers as exact amounts
+  if (U && !U.bv2){ if (U.billsExact == null && U.bills != null) U.billsExact = [100, 250, 400, 575, 800][U.bills] ?? null; const b = U.billsExact ?? 400; U.bills = b < 300 ? 0 : b < 600 ? 1 : b < 900 ? 2 : b < 1300 ? 3 : 4; U.bv2 = true; }
+  return U;
+}
+function loadState(){ try { const d = JSON.parse(localStorage.getItem(SKEY)); if (d && d.v === 1 && d.U){ migrateU(d.U); return d; } return null; } catch(_){ return null; } }
 function deleteData(){
-  try { localStorage.removeItem(SKEY); } catch(_){}
+  try { localStorage.removeItem(SKEY); localStorage.removeItem(OKEY); localStorage.removeItem('decibuy-theme'); } catch(_){}
+  A.theme = 'system'; applyTheme(true);
   A.onbDone = false; A.live = true; jump({onb:0});
 }
 addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveState(); });
@@ -1968,7 +2091,7 @@ function build(p){
   seedProducts();
   if (p.prep) p.prep();
   const R_ = p.restore;
-  A.U = R_ ? reviveU(R_.U) : p.onb !== undefined ? NEWU() : JSON.parse(JSON.stringify(EMMA), (k, v) => k === 'payday' ? new Date(v) : v);
+  A.U = R_ ? reviveU(R_.U) : p.resume ? reviveU(migrateU(p.resume)) : p.onb !== undefined ? NEWU() : JSON.parse(JSON.stringify(EMMA), (k, v) => k === 'payday' ? new Date(v) : v);
   if (R_){ Object.assign(P, R_.P); manualN = R_.manualN || 0; }
   // a new user (after onboarding) starts with nothing; demo items only for the screen jumps
   const fresh = p.onb !== undefined || !!p.fresh || !!R_;
@@ -1990,7 +2113,7 @@ function build(p){
   if (p.onb !== undefined){
     const root = h('<div class="L" style="z-index:400;background:var(--bg)"></div>'); D.appendChild(root);
     A.onb = new Nav(root);
-    if (p.onb > 2) A.U.rent = 1200;
+    if (p.onb > 2 && !p.resume) A.U.rent = 1200;
     for (let i = 0; i <= p.onb; i++) onbGo(i, true);
     const top = A.onb.top(); setv(top, {x:0});
     if (top._intro) top._intro();
@@ -2044,6 +2167,7 @@ function jump(p){
   });
   document.getElementById('ptoggle').onclick = () => document.getElementById('panel').classList.toggle('open');
   qa('.p-list button')[0].classList.add('on');
+  document.getElementById('pcount').textContent = qa('.p-list button').length;
 })();
 function safeTop(){ const t = document.createElement('div'); t.style.cssText = 'position:fixed;top:0;padding-top:env(safe-area-inset-top,0px);visibility:hidden'; document.body.appendChild(t); const v = parseFloat(getComputedStyle(t).paddingTop) || 0; t.remove(); return v; }
 function fit(){
@@ -2070,7 +2194,7 @@ qa('.p-phone button').forEach(b => b.onclick = () => { A.sys = b.dataset.m; appl
 applyTheme(false);
 { const saved = loadState(); A.live = true;
   if (saved){ A.onbDone = true; jump({tab:'home', restore:saved}); qa('.p-list button').forEach(x => x.classList.remove('on')); }
-  else jump({onb:0}); }
+  else { const ob = loadOnb(); if (ob) jump({onb:Math.min(ob.step, 8), resume:ob.U}); else jump({onb:0}); } }
 document.fonts && document.fonts.ready.then(() => { for (const s of [A.home, A.check, A.items]) if (s) s.layout({instant:true}); });
 </script>
 <script>
