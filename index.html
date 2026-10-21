@@ -1169,7 +1169,7 @@ function renderBought(host){
       : `<div class="a" style="left:24px;top:36px;width:354px;font:500 15px/21px var(--fb);color:var(--tx2)">Items you mark as Bought show up here. Nothing else is tracked.</div>`);
   const hh = 36 + Math.max(1, b.length)*56;
   host.style.height = hh + 'px';
-  const scr = host.closest('.scr'); const sent = scr && scr.firstElementChild; if (sent) sent.style.top = (749 + hh + 100) + 'px';
+  const scr = host.closest('.scr'); const sent = scr && scr.firstElementChild; if (sent) sent.style.top = (host.offsetTop + hh + 100) + 'px';
   qa('.brow', host).forEach(r => tap(r, () => { const x = b[+r.dataset.i]; if (x) boughtSheet(x); }, {scale:.985}));
 }
 function boughtSheet(x){
@@ -1195,14 +1195,25 @@ function boughtSheet(x){
   }));
   tap(q('.cl span', sh), () => close(), {scale:.94, op:.6}); tap(dim, () => close(), {scale:1});
 }
+/* goal: suggested monthly amount = 20% of spare money (design assumption), follows the money unless the user set their own */
+function goalSug(target){ const m = money(); const base = m.upTo ? m.best : m.mid; return Math.min(target || 1e9, r10(Math.max(10, base*.2))); }
+function goalTime(g, per){ const left = Math.max(0, g.target - (g.saved || 0)); if (!per || !left) return left ? '' : 'Reached'; const n = Math.ceil(left/per); if (n <= 1) return 'about 1 month'; if (n < 24) return `about ${n} months`; return `about ${Math.round(n/12)} years`; }
+function syncGoal(){ const g = A.U.goal; if (g && g.auto) g.per = goalSug(g.target); }
 function renderGoal(host){
-  const g = A.U.goal;
-  host.innerHTML = g ? `<div class="a goalcard" style="left:24px;top:0;width:354px;height:100px;border-radius:16px;background:var(--sf);padding:16px;cursor:pointer">
+  syncGoal();
+  const g = A.U.goal, sug = g ? goalSug(g.target) : 0;
+  const offer = g && !g.auto && Math.abs(sug - g.per) >= Math.max(10, g.per*.1);
+  const hh = g ? (offer ? 140 : 100) : 48;
+  host.style.height = hh + 'px';
+  host.innerHTML = g ? `<div class="a goalcard" style="left:24px;top:0;width:354px;height:${hh}px;border-radius:16px;background:var(--sf);padding:16px;cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:700 19px/23px var(--fd)">${g.name}</span><span style="font:500 13px/18px var(--fb);color:var(--tx2)">$${fmtN(g.per)} / month</span></div>
-      <div style="font:500 15px/21px var(--fb);margin-top:4px">$${fmtN(g.saved)} of $${fmtN(g.target)}</div>
-      <div class="bar" style="margin-top:10px;background:var(--sf2)"><i class="gfill" style="width:${Math.max(8, Math.round(314*clamp(g.saved/g.target, 0, 1)))}px;background:var(--blueS);transform-origin:0 0"></i></div></div>`
+      <div style="font:500 15px/21px var(--fb);margin-top:4px">$${fmtN(g.saved)} of $${fmtN(g.target)}<span style="color:var(--tx2)"> · ${goalTime(g, g.per)}</span></div>
+      <div class="bar" style="margin-top:10px;background:var(--sf2)"><i class="gfill" style="width:${Math.max(8, Math.round(314*clamp(g.saved/g.target, 0, 1)))}px;background:var(--blueS);transform-origin:0 0"></i></div>
+      ${offer ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font:500 13px/18px var(--fb)"><span style="color:var(--tx2)">Your money changed. Suggested: $${fmtN(sug)} / month</span><b class="guse" style="color:var(--blueS);padding:6px;margin:-6px;cursor:pointer">Use</b></div>` : ''}</div>`
     : `<div class="row goalcard" style="top:0;cursor:pointer;color:var(--blueS);font-weight:600">+ Add a savings goal</div>`;
   tap(q('.goalcard', host), () => pushQ('goal'), {scale:.985});
+  const u = q('.guse', host); if (u) tap(u, () => { g.per = sug; g.auto = true; refresh(); toast(`${g.name}: $${fmtN(sug)} a month, ${goalTime(g, sug)}. It now follows your spare money.`); }, {scale:.9, op:.6});
+  const nx = host.nextElementSibling; if (nx && nx.hasAttribute('data-bought')) nx.style.top = (host.offsetTop + hh + 20) + 'px';
 }
 
 /* ---------------- Home ---------------- */
@@ -1724,22 +1735,30 @@ function qScreen(kind, mode, T, done){
   if (kind === 'goal'){
     const g = T.goal || {};
     add(head(onb ? 'Saving for something special?' : 'Your savings goal', 'Optional. A goal shows how a purchase moves it.'));
-    const sug = r10(Math.max(10, money().mid*.2));
-    add(`<div class="a" style="left:24px;top:300px;width:354px;height:288px;border-radius:24px;background:var(--sf)">
+    let sug = goalSug(g.target);
+    add(`<div class="a" style="left:24px;top:300px;width:354px;height:316px;border-radius:24px;background:var(--sf)">
         ${fieldInput('Name', 'Trip to Japan', {y:20, id:'gname', value:g.name || ''})}
         ${fieldInput('Target', '$3,000', {y:97, id:'gtarget', mode:'numeric', value:g.target ? '$' + fmtN(g.target) : ''})}
-        ${fieldInput('Per month', '$' + fmtN(sug), {y:174, id:'gper', mode:'numeric', value:'$' + fmtN(g.per || sug)})}
-        <div class="a" style="left:20px;top:251px;font:500 13px/18px var(--fb);color:var(--tx2)">Per month is suggested from your spare money.</div>
+        ${fieldInput('Per month', '$' + fmtN(sug), {y:174, id:'gper', mode:'numeric', value:'$' + fmtN(g.auto === false || (g.per && !g.auto && g.per !== sug) ? g.per : sug)})}
+        <div class="a gsug" style="left:20px;top:249px;width:314px;font:500 13px/18px var(--fb);color:var(--tx2)"></div>
       </div>`);
-    const W = {name:g.name || '', target:g.target || null, per:g.per || sug};
+    const W = {name:g.name || '', target:g.target || null, per:g.auto === false || (g.per && !g.auto && g.per !== sug) ? g.per : sug, auto:g.auto !== false && (!g.per || g.auto || g.per === sug)};
+    const gs = q('.gsug', el);
+    const hint = () => {
+      sug = goalSug(W.target);
+      const t = W.target && W.per ? ` Reach it in ${goalTime({target:W.target, saved:g.saved || 0}, W.per)}.` : '';
+      gs.innerHTML = W.auto ? `Suggested from your spare money (20%). Follows your money when it changes.${t}` : `Suggested: $${fmtN(sug)} a month. <b class="guse2" style="color:var(--blueS);cursor:pointer">Use suggested</b>${t}`;
+      const u = q('.guse2', gs); if (u) tap(u, () => { W.per = sug; W.auto = true; I('gper').value = '$' + fmtN(sug); hint(); sync(); }, {scale:.95, op:.6});
+    };
     const I = k => q(`input[data-k="${k}"]`, el);
     I('gname').addEventListener('input', () => { W.name = I('gname').value; sync(); });
-    moneyIn(I('gtarget'), v => { W.target = v; sync(); });
-    moneyIn(I('gper'), v => { W.per = v; sync(); });
+    moneyIn(I('gtarget'), v => { W.target = v; if (W.auto){ W.per = goalSug(v); I('gper').value = '$' + fmtN(W.per); } hint(); sync(); });
+    moneyIn(I('gper'), v => { W.per = v; W.auto = v === goalSug(W.target); hint(); sync(); });
+    hint();
     wireFields(el);
     ok = () => W.name.trim() && W.target > 0 && W.per > 0;
     const b = mainBtn('Save goal');
-    tap(b, () => { if (!ok()) return; T.goal = {name:W.name.trim(), target:W.target, per:W.per, saved:(T.goal && T.goal.saved) || 0}; done(); });
+    tap(b, () => { if (!ok()) return; T.goal = {name:W.name.trim(), target:W.target, per:W.per, auto:W.auto, saved:(T.goal && T.goal.saved) || 0}; done(); });
     if (onb || T.goal){ add(`<div class="lnk skip" style="top:${B(790)}"><span>${onb ? 'Skip for now' : 'Remove goal'}</span></div>`); tap(q('.skip span', el), () => { T.goal = null; done(); }, {scale:.94, op:.6}); }
     sync();
     CURSH = 0;
@@ -1773,7 +1792,13 @@ function pushQ(kind){
     const keys = {income:['inc','incExact'], rhythm:['rhy','payday'], rent:['rent'], bills:['bills','billsExact'], goal:['goal'], name:['name']}[kind];
     keys.forEach(k => A.U[k] = T[k]);
     refresh(); A.nav.pop();
-    later(350, () => toast('Saved. Your verdicts use the new numbers.'));
+    const g = A.U.goal;
+    if (g && ['income','rent','bills','rhythm'].includes(kind)){
+      const sug = goalSug(g.target);
+      if (g.auto) later(350, () => toast(`Saved. ${g.name} is now $${fmtN(g.per)} a month, ${goalTime(g, g.per)}.`));
+      else if (Math.abs(sug - g.per) >= Math.max(10, g.per*.1)) later(350, () => toast(`Saved. For ${g.name} we now suggest $${fmtN(sug)} a month.`, {action:'Use', onAction:() => { g.per = sug; g.auto = true; refresh(); }}));
+      else later(350, () => toast('Saved. Your verdicts use the new numbers.'));
+    } else later(350, () => toast('Saved. Your verdicts use the new numbers.'));
   });
   A.nav.push(el);
 }
