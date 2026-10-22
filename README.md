@@ -33,6 +33,7 @@ Only the live site, following the course rule that *the repository is the site, 
 |---|---|
 | `index.html` | The prototype (all screens, styles and scripts in one file) |
 | `landing/` | The product landing page (one HTML file + real app screenshots in `landing/assets/`). Live: https://jazzfoxtrot.github.io/DeciBuy/landing/ |
+| `case/` | The UX case study (one HTML file + images in `case/assets/`: real screens, low-fi frames from Figma, AI concept images). Live: https://jazzfoxtrot.github.io/DeciBuy/case/ |
 | `manifest.webmanifest`, `sw.js` | What makes the site installable and work offline |
 | `icon.svg` | App icon source (from the Figma App icon component); also the browser tab icon |
 | `icon-512.png`, `icon-192.png`, `apple-touch-icon.png` (180) | App icon exported from `icon.svg`, square, no rounded corners (the phone rounds them) |
