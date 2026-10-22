@@ -429,8 +429,11 @@ footer .tiny{margin-top:2rem}
 .lab ol li b{display:block}
 .lab ol li span{color:var(--tx2);font-size:.95rem}
 .lab-ctrls{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.4rem}
-.lab-ctrls button{appearance:none;border:0;cursor:pointer;min-block-size:44px;padding:.6rem 1rem;border-radius:999px;font:700 .9rem/1 var(--fb);background:var(--btn);color:var(--btnTx)}
-.lab-ctrls button.ghost{background:transparent;color:var(--tx);box-shadow:inset 0 0 0 1.5px var(--ln)}
+.lab-ctrls button{appearance:none;border:0;cursor:pointer;min-block-size:44px;padding:.6rem 1rem;border-radius:999px;font:700 .9rem/1 var(--fb);background:transparent;color:var(--tx);box-shadow:inset 0 0 0 1.5px var(--ln);transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+.lab-ctrls button[aria-pressed="true"]{background:var(--btn);color:var(--btnTx);box-shadow:none}
+@media (hover:hover){ .lab-ctrls button:not([aria-pressed="true"]):not(:disabled):hover{box-shadow:inset 0 0 0 1.5px var(--tx2)} }
+.lab-ctrls button:active:not(:disabled){transform:scale(.97)}
+.lab-ctrls .reset{margin-inline-start:auto}
 .lab-ctrls button:disabled{opacity:.4;cursor:not-allowed}
 @media (max-width:900px){ .lab{grid-template-columns:minmax(0,1fr)} }
 /* change stories */
@@ -809,10 +812,10 @@ details.more>div{padding-bottom:1.5rem}
           <li><div><b>Pull up the stack under an open folder</b><span>The rest rise so you can see and switch.</span></div></li>
         </ol>
         <div class="lab-ctrls" role="group" aria-label="Jump to a state">
-          <button type="button" data-go="M1" disabled>My items</button>
-          <button type="button" data-go="H" class="ghost" disabled>Home</button>
-          <button type="button" data-go="V2" class="ghost" disabled>An open verdict</button>
-          <button type="button" data-go="reset" class="ghost" disabled>Reset</button>
+          <button type="button" data-go="M1" aria-pressed="true" disabled>My items</button>
+          <button type="button" data-go="H" aria-pressed="false" disabled>Home</button>
+          <button type="button" data-go="V2" aria-pressed="false" disabled>An open verdict</button>
+          <button type="button" data-go="reset" class="reset" disabled>Reset</button>
         </div>
         <p class="tiny" style="margin-top:1rem">The real prototype on its demo data; nothing is saved. The buttons are a way in without gestures. Screen reader support for the gestures is still open.</p>
       </div>
@@ -1101,10 +1104,11 @@ details.more>div{padding-bottom:1.5rem}
 
   var lab = document.querySelector('#lab .phone'), ctrls = [].slice.call(document.querySelectorAll('#lab .lab-ctrls button'));
   lab.addEventListener('ready', function(){ ctrls.forEach(function(b){ b.disabled = false; }); });
+  function mark(code){ ctrls.forEach(function(x){ if (x.dataset.go !== 'reset') x.setAttribute('aria-pressed', x.dataset.go === code); }); }
   ctrls.forEach(function(b){ b.addEventListener('click', function(){
     var f = lab.querySelector('iframe'); if (!f) return;
-    if (b.dataset.go === 'reset'){ f.contentWindow.postMessage({decibuyDemo:'M1'}, '*'); return; }
-    f.contentWindow.postMessage({decibuyDemo:b.dataset.go}, '*'); }); });
+    var code = b.dataset.go === 'reset' ? 'M1' : b.dataset.go;
+    f.contentWindow.postMessage({decibuyDemo:code}, '*'); mark(code); }); });
 
   /* levitating screens: open one, the others stack beside it */
   document.querySelectorAll('.levi').forEach(function(lv){
