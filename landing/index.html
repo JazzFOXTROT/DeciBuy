@@ -174,7 +174,9 @@ section.alt{background:var(--sf)}
 .band{background:var(--blue);color:#000;padding-block:6rem}
 .band .eyebrow{color:#000}
 .band .eyebrow::before{background:#000}
-.band .big{font:800 clamp(2.6rem,9vw,6rem)/.98 var(--fd);letter-spacing:-.035em;max-inline-size:14ch}
+/* the page's one break: bigger than every h2, always exactly two lines (each line never wraps) */
+.band .big{font:800 clamp(1.9rem,8.2vw,6rem)/1 var(--fd);letter-spacing:-.035em}
+.band .big span{display:block;white-space:nowrap}
 .band p{margin-block-start:1.5rem;font-size:1.2rem;max-inline-size:34rem;font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:.6rem;margin-block-start:2rem}
 .chip{padding:.7rem 1.1rem;border-radius:999px;font:800 1rem/1 var(--fd);letter-spacing:.01em;color:#000}
@@ -350,7 +352,7 @@ footer a{font-weight:700;text-decoration:none;color:var(--tx)}
 <section class="band" aria-labelledby="h-goal">
   <div class="wrap">
     <p class="eyebrow">Our goal</p>
-    <h2 class="big rv" id="h-goal">Not fewer purchases. Fewer regrets.</h2>
+    <h2 class="big rv" id="h-goal"><span>Not fewer purchases.</span> <span>Fewer regrets.</span></h2>
     <p class="rv">If it fits your month, DeciBuy says Buy. Every Wait comes with a date. Every Not now comes with the numbers.</p>
     <div class="chips rv" aria-hidden="true">
       <span class="chip" style="background:var(--buy)">BUY</span>
