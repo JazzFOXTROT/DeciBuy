@@ -332,8 +332,7 @@ footer .tiny{margin-top:2rem}
 }
 ::view-transition-group(*){animation-duration:.5s;animation-timing-function:cubic-bezier(.23,1,.32,1)}
 
-.rv{opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease-out),transform .6s var(--ease-out)}
-.rv.in{opacity:1;transform:none}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .rv{opacity:1;transform:none;transition:none}
@@ -342,6 +341,136 @@ footer .tiny{margin-top:2rem}
   .marquee{overflow-x:auto;-webkit-mask-image:none;mask-image:none}
   ::view-transition-group(*){animation:none}
 }
+
+/* ===== v02 editorial layer: open compositions, frames only for artifacts and demos ===== */
+.chapter-head{display:grid;grid-template-columns:minmax(0,1fr);gap:.4rem;margin-bottom:clamp(2rem,5vw,3.5rem)}
+.chapter-head .num{font:800 .85rem/1 var(--fd);letter-spacing:.04em;color:var(--blueS)}
+[data-theme="dark"] .chapter-head .num{color:var(--blue)}
+.chapter-head h2{font-size:clamp(2.6rem,7.5vw,6rem);line-height:.95;letter-spacing:-.04em;margin:0}
+.chapter-head p{font-size:1.2rem;color:var(--tx2);max-width:36rem;margin:.8rem 0 0}
+.statement{font:800 clamp(1.8rem,4.2vw,3.2rem)/1.05 var(--fd);letter-spacing:-.03em;max-width:22ch;margin:0 0 1.25rem}
+.step{display:grid;grid-template-columns:minmax(0,14rem) minmax(0,1fr);gap:1rem clamp(2rem,5vw,4rem);padding-block:clamp(2.5rem,5vw,4rem);border-top:1px solid var(--ln)}
+.step:first-of-type{border-top:0;padding-top:0}
+.step-label{font:800 .8rem/1.3 var(--fb);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)}
+.step-label b{display:block;font:800 1.6rem/1.05 var(--fd);letter-spacing:-.02em;text-transform:none;color:var(--tx);margin-top:.45rem}
+@media (max-width:860px){ .step{grid-template-columns:minmax(0,1fr)} }
+.lead-xl{font:600 clamp(1.25rem,2.2vw,1.55rem)/1.4 var(--fb);color:var(--tx);max-width:40rem}
+/* provenance ledger */
+.ledger{list-style:none;margin:1.5rem 0 0;padding:0;max-width:none;display:grid;gap:0}
+.ledger li{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:1rem;padding:1rem 0;border-top:1px solid var(--ln);margin:0}
+.ledger li:last-child{border-bottom:1px solid var(--ln)}
+.ledger p{margin:0;color:var(--tx2);max-width:46rem}
+.ledger p b{color:var(--tx)}
+.src{display:inline-flex;align-items:center;gap:.45rem;font:700 .72rem/1 var(--fb);letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;align-self:start;margin-top:.3rem}
+.src::before{content:"";inline-size:9px;block-size:9px;border-radius:50%}
+.src.real::before{background:var(--buy);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--tx) 25%,transparent)}
+.src.sim::before{background:transparent;box-shadow:inset 0 0 0 2px var(--tx3)}
+.src.own::before{background:var(--blue)}
+@media (max-width:640px){ .ledger li{grid-template-columns:minmax(0,1fr);gap:.4rem} }
+/* research to product chains */
+.chain{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(0,1fr));gap:1.25rem clamp(1.25rem,3vw,2.5rem);padding-block:clamp(2rem,4vw,2.75rem);border-top:1px solid var(--ln);align-items:start}
+.chain h3{font-size:clamp(1.5rem,2.6vw,2.1rem);line-height:1.05;margin:0}
+.chain .src{margin-top:.9rem}
+.chain dl{margin:0}
+.chain dt{font:700 .72rem/1 var(--fb);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:.55rem}
+.chain dd{margin:0;color:var(--tx2);font-size:.98rem;line-height:1.5}
+.chain dl:last-child dd{color:var(--tx);font-weight:700}
+@media (max-width:960px){ .chain{grid-template-columns:repeat(3,minmax(0,1fr))} .chain>div:first-child{grid-column:1/-1} }
+@media (max-width:640px){ .chain{grid-template-columns:minmax(0,1fr)} }
+/* segmented control */
+.seg{display:inline-flex;gap:.25rem;padding:.3rem;border-radius:999px;background:var(--sf);margin:0 0 1.25rem;flex-wrap:wrap}
+.alt .seg{background:var(--card)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--tx2);font:700 .92rem/1 var(--fb);padding:.75rem 1.1rem;border-radius:999px;cursor:pointer;min-block-size:44px;transition:background-color .18s ease,color .18s ease}
+.seg button[aria-selected="true"]{background:var(--btn);color:var(--btnTx)}
+@media (hover:hover){ .seg button:not([aria-selected="true"]):hover{color:var(--tx)} }
+.seg button .dot{display:inline-block;inline-size:10px;block-size:10px;border-radius:50%;margin-inline-end:.45rem;vertical-align:-.05em}
+/* a stage with a fixed frame: switching never moves the layout */
+.stage{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:clamp(1.5rem,5vw,4.5rem);align-items:center}
+.stage-shot{position:relative;aspect-ratio:402/874;border-radius:34px;overflow:hidden;background:var(--sf2);box-shadow:0 0 0 1px color-mix(in srgb,var(--ln) 70%,transparent),0 44px 60px -34px rgba(0,0,0,.5)}
+.stage-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .28s ease}
+.stage-shot img.off{opacity:0}
+.stage-text h3{font-size:clamp(1.8rem,3.6vw,2.6rem);margin:.4rem 0 .7rem}
+.stage-text p{color:var(--tx2);font-size:1.1rem}
+.stage-text .keep{margin-top:1.5rem;padding-top:1.1rem;border-top:1px solid var(--ln);font-size:.95rem}
+.stage-text .keep b{color:var(--tx)}
+@media (max-width:760px){ .stage{grid-template-columns:minmax(0,1fr)} .stage-shot{width:min(66vw,260px)} }
+.wide-frame{position:relative;aspect-ratio:16/9;border-radius:var(--r-md);overflow:hidden;background:var(--sf2);border:1px solid var(--ln)}
+.wide-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .28s ease}
+.wide-frame img.off{opacity:0}
+.wide-frame button{position:absolute;inset:0;border:0;background:none;cursor:zoom-in}
+.frame-cap{margin-top:.8rem;font-size:var(--t-small);color:var(--tx2);max-width:none}
+.frame-cap .role{margin:0 .5rem 0 0}
+/* hero */
+.hero2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(2rem,5vw,4rem);align-items:center;padding-block:clamp(2.5rem,5vw,4rem) clamp(3rem,6vw,5rem)}
+.hero2 h1{font-size:clamp(3.4rem,10vw,7.5rem);line-height:.9;letter-spacing:-.045em;margin:.6rem 0 1rem}
+.hero2 .thesis{font:800 clamp(1.5rem,3vw,2.2rem)/1.1 var(--fd);letter-spacing:-.02em;margin:0 0 1rem;max-width:20ch}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 2rem;margin:2rem 0 0;max-width:34rem}
+.meta div{border-top:1px solid var(--ln);padding-top:.7rem}
+.meta dt{font:700 .72rem/1 var(--fb);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:.4rem}
+.meta dd{margin:0;font-weight:700;font-size:.98rem;line-height:1.35}
+@media (max-width:900px){ .hero2{grid-template-columns:minmax(0,1fr)} }
+.livebadge{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .85rem;border-radius:999px;background:var(--blueS);color:#fff;font:700 .85rem/1 var(--fb);margin:0 auto 1rem}
+.livebadge i{inline-size:8px;block-size:8px;border-radius:50%;background:#fff;animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}100%{box-shadow:0 0 0 10px rgba(255,255,255,0)}}
+.herophone{display:flex;flex-direction:column;align-items:center}
+.chapters{display:flex;flex-wrap:wrap;gap:.4rem 1.6rem;list-style:none;margin:0;padding:1.4rem 0 0;border-top:1px solid var(--ln);max-width:none}
+.chapters li{margin:0}
+.chapters a{display:inline-flex;gap:.5rem;align-items:baseline;text-decoration:none;font-weight:700;color:var(--tx2);min-height:44px;align-items:center}
+.chapters a b{font:800 .8rem/1 var(--fd);color:var(--blueS)}
+[data-theme="dark"] .chapters a b{color:var(--blue)}
+@media (hover:hover){ .chapters a:hover{color:var(--tx)} }
+/* gesture lab */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:clamp(2rem,5vw,4.5rem);align-items:center;padding:clamp(1.5rem,4vw,3rem);border-radius:var(--r-lg);background:var(--sf)}
+.alt .lab{background:var(--card)}
+.lab ol{list-style:none;counter-reset:g;padding:0;margin:1.25rem 0 0;max-width:none}
+.lab ol li{counter-increment:g;display:grid;grid-template-columns:2rem minmax(0,1fr);gap:.6rem;margin:0;padding:.8rem 0;border-top:1px solid var(--ln)}
+.lab ol li::before{content:counter(g);font:800 1rem/1.4 var(--fd);color:var(--blueS)}
+[data-theme="dark"] .lab ol li::before{color:var(--blue)}
+.lab ol li b{display:block}
+.lab ol li span{color:var(--tx2);font-size:.95rem}
+.lab-ctrls{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.4rem}
+.lab-ctrls button{appearance:none;border:0;cursor:pointer;min-block-size:44px;padding:.6rem 1rem;border-radius:999px;font:700 .9rem/1 var(--fb);background:var(--btn);color:var(--btnTx)}
+.lab-ctrls button.ghost{background:transparent;color:var(--tx);box-shadow:inset 0 0 0 1.5px var(--ln)}
+.lab-ctrls button:disabled{opacity:.4;cursor:not-allowed}
+@media (max-width:900px){ .lab{grid-template-columns:minmax(0,1fr)} }
+/* change stories */
+.story{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:1rem clamp(2rem,5vw,4rem);padding-block:clamp(2rem,4vw,3rem);border-top:1px solid var(--ln)}
+.story h3{font-size:clamp(1.5rem,2.8vw,2.2rem);margin:0}
+.story .evid{margin-top:.8rem;font-size:.92rem;color:var(--tx2)}
+.ba{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 1.5rem}
+.ba dt{font:700 .72rem/1 var(--fb);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:.5rem}
+.ba dd{margin:0;color:var(--tx2);line-height:1.5}
+.ba div:nth-child(2) dd{color:var(--tx);font-weight:700}
+.ba .why{grid-column:1/-1;padding-top:.9rem;border-top:1px dashed var(--ln)}
+@media (max-width:760px){ .story{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:480px){ .ba{grid-template-columns:minmax(0,1fr)} }
+/* triage list */
+.triage{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(15rem,100%),1fr));gap:2rem clamp(1.5rem,3vw,2.5rem);margin-top:2rem}
+.triage h4{font:800 1.1rem/1.15 var(--fd);margin:0 0 .7rem;display:flex;align-items:center;gap:.55rem}
+.triage h4 i{inline-size:12px;block-size:12px;border-radius:50%}
+.triage ul{margin:0;padding-inline-start:1.1em;color:var(--tx2);font-size:.97rem}
+/* details for secondary material */
+details.more{margin-top:2rem;border-top:1px solid var(--ln);border-bottom:1px solid var(--ln)}
+details.more summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1.1rem 0;font:800 1.15rem/1.2 var(--fd);min-height:44px}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::after{content:"+";font:800 1.6rem/1 var(--fd);color:var(--blueS);transition:transform .2s var(--ease-out)}
+details.more[open] summary::after{transform:rotate(45deg)}
+details.more>div{padding-bottom:1.5rem}
+.open-q{font:800 clamp(1.4rem,2.6vw,1.9rem)/1.15 var(--fd);letter-spacing:-.015em;max-width:30ch}
+.cols3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(17rem,100%),1fr));gap:2rem clamp(1.5rem,3vw,3rem)}
+.cols3 h3{font-size:1.35rem;margin-bottom:.6rem}
+.cols3 ul{color:var(--tx2);padding-inline-start:1.1em}
+.prompt{font:700 clamp(1.15rem,2vw,1.4rem)/1.4 var(--fb);max-width:40rem;margin:1rem 0 .4rem;padding-inline-start:1.1rem;border-inline-start:4px solid var(--blue)}
+
+.jmaps.single{grid-template-columns:minmax(0,1fr);margin-top:0}
+.jmaps.single .jmap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);grid-template-rows:none;gap:.5rem 2.5rem;grid-row:auto;padding:clamp(1.25rem,3vw,2rem);align-items:start}
+.jmaps.single .jmap[hidden]{display:none}
+.jmaps.single .jmap>h4,.jmaps.single .jmap>.jscale{grid-column:1/-1}
+.jmaps.single .jmap>.jchart{grid-column:1;grid-row:3/5}
+.jmaps.single .jmap>.jlegend{grid-column:2;grid-row:3;grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin-top:0}
+.jmaps.single .jmap>.jnote{grid-column:2;grid-row:4}
+.jmaps.single .jmap>.gallery{grid-column:1/-1}
+@media (max-width:800px){ .jmaps.single .jmap{grid-template-columns:minmax(0,1fr)} .jmaps.single .jmap>*{grid-column:1 !important;grid-row:auto !important} }
 </style>
 </head>
 <body>
@@ -364,16 +493,12 @@ footer .tiny{margin-top:2rem}
   <div class="wrap">
     <a class="logo" href="#top"><img src="assets/icon.svg" alt="">DeciBuy<span>Case study</span></a>
     <nav class="nav-links" aria-label="Chapters">
-      <a href="#challenge">Challenge</a>
-      <a href="#research">Research</a>
-      <a href="#journey">Journey</a>
-      <a href="#language">Language</a>
-      <a href="#screens">Screens</a>
-      <a href="#ai">AI</a>
-      <a href="#build">Code</a>
+      <a href="#idea">The idea</a>
+      <a href="#moment">The moment</a>
+      <a href="#interaction">The interaction</a>
+      <a href="#motion">In motion</a>
       <a href="#testing">Testing</a>
-      <a href="#mistakes">What broke</a>
-      <a href="#learned">Learned</a>
+      <a href="#reflection">Reflection</a>
     </nav>
     <button class="tgl" type="button" aria-label="Switch light and dark theme"><svg class="ic sun"><use href="#i-sun"/></svg><svg class="ic moon"><use href="#i-moon"/></svg></button>
   </div>
@@ -381,473 +506,482 @@ footer .tiny{margin-top:2rem}
 
 <main id="main">
 
-<!-- HERO -->
-<section id="top" style="padding-block-start:0">
+<!-- 01 THE IDEA -->
+<section id="top" style="padding-block:0">
   <div class="wrap">
-    <div class="hero">
-      <div class="rv">
-        <p class="eyebrow">Case study · Mobile app concept · Live prototype</p>
+    <div class="hero2" id="idea">
+      <div>
+        <p class="eyebrow">Case study · Interaction design · 2026</p>
         <h1>DeciBuy</h1>
-        <p class="lead">An app that looks at a price, your spare money and your payday, and answers before you pay: Buy, Wait for payday, or Not now.</p>
-        <ul class="chips">
-          <li class="chip">Solo product designer</li>
-          <li class="chip">Sep 30 to Oct 22, 2026</li>
-          <li class="chip">31 screens, light and dark</li>
-          <li class="chip">iPhone first, 6 languages</li>
-        </ul>
+        <p class="thesis">Designing a calmer moment before a purchase.</p>
+        <p class="lead">A phone app that looks at a price, your spare money and your payday, and answers before you pay: Buy, Wait for payday, or Not now. Every list in it is a stack of folders you can open, flick and pull.</p>
+        <dl class="meta">
+          <div><dt>Role</dt><dd>Solo product designer</dd></div>
+          <div><dt>Timeline</dt><dd>Sep 30 to Oct 22, 2026</dd></div>
+          <div><dt>Platform</dt><dd>iPhone first, 6 languages, light and dark</dd></div>
+          <div><dt>Status</dt><dd>A working prototype, not a launched product</dd></div>
+        </dl>
         <div class="btn-row">
-          <a class="cta" href="../" target="_blank" rel="noopener">Open the live prototype<svg class="ic"><use href="#i-go"/></svg></a>
+          <a class="cta" href="../" target="_blank" rel="noopener">Open the full prototype<svg class="ic"><use href="#i-go"/></svg></a>
           <a class="cta ghost" href="../landing/">Landing page</a>
         </div>
-        <p class="role-line"><b>My role.</b> Solo product designer. I used Claude as a production and critique partner, and as a research engine: working through the research, stress tests, synthetic studies and possible usage scenarios. Every output checked by me.</p>
       </div>
-      <div class="phone-stage rv">
-        <div class="phone">
-          <div class="phone__screen"><img class="phone__poster themed" data-s="home" src="assets/home-light.webp" alt="DeciBuy Home: spare money this month, Coming up, and Recent checks as colored folders"></div>
+      <div class="herophone">
+        <span class="livebadge"><i></i>Live prototype · tap a folder</span>
+        <div class="phone-stage" style="padding-top:0">
+          <div class="phone" data-demo="M1">
+            <div class="phone__screen">
+              <img class="phone__poster themed" data-s="items" src="assets/items-light.webp" alt="My items: four saved items as colored folders">
+              <button type="button" class="phone__start" hidden>
+                <span class="play" aria-hidden="true"><svg class="ic" style="width:1.6rem;height:1.6rem"><use href="#i-play"/></svg></span>
+                <b>Start the live app</b>
+                <span>Runs on demo data and saves nothing.</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <nav class="toc rv" aria-label="What is on this page">
-      <h3>On this page</h3>
-      <ol>
-        <li><a href="#challenge"><b>01</b>The challenge</a></li>
-        <li><a href="#research"><b>02</b>Research</a></li>
-        <li><a href="#journey"><b>03</b>Journey and structure</a></li>
-        <li><a href="#language"><b>04</b>Design language</a></li>
-        <li><a href="#screens"><b>05</b>Screens and the live app</a></li>
-        <li><a href="#ai"><b>06</b>Working with AI</a></li>
-        <li><a href="#build"><b>07</b>Design to code</a></li>
-        <li><a href="#beforeafter"><b>08</b>Before and after</a></li>
-        <li><a href="#testing"><b>09</b>Testing</a></li>
-        <li><a href="#mistakes"><b>10</b>What broke</a></li>
-        <li><a href="#learned"><b>11</b>Outcome and what I learned</a></li>
-      </ol>
-    </nav>
+    <p class="role-line" style="margin-top:0"><b>My role.</b> Solo product designer. I used Claude as a production and critique partner, and as a research engine: working through the research, stress tests, synthetic studies and possible usage scenarios. Every output checked by me.</p>
+    <ol class="chapters" aria-label="Chapters" style="margin-top:2.5rem">
+      <li><a href="#idea"><b>01</b>The idea</a></li>
+      <li><a href="#moment"><b>02</b>Understanding the moment</a></li>
+      <li><a href="#interaction"><b>03</b>Finding the interaction</a></li>
+      <li><a href="#motion"><b>04</b>The product in motion</a></li>
+      <li><a href="#testing"><b>05</b>Testing and iteration</a></li>
+      <li><a href="#reflection"><b>06</b>Reflection</a></li>
+    </ol>
   </div>
 </section>
 
-<!-- 01 CHALLENGE -->
-<section id="challenge" class="alt">
-  <div class="wrap rv">
-    <figure class="banner">
-      <div class="banner-media">
-      <button type="button" class="banner-img" data-full="assets/board-cjm-b.webp" data-cap="Journey map B: a late night buy from a TikTok video, paid in four parts, regretted when the package arrives." aria-label="Enlarge: FigJam journey map B, from scrolling in bed to the end of the month"><img src="assets/board-cjm-b.webp" alt="FigJam journey map B, from scrolling in bed to the end of the month" style="object-position:50% 40%" loading="lazy"></button>
-      <div class="banner-txt"><p class="eyebrow">01 · The challenge</p><h2>Where did all that money go?</h2></div>
-      </div>
-      <figcaption><span class="role ext">Extension</span>Journey map B: a late night buy from a TikTok video, paid in four parts, regretted when the package arrives.</figcaption>
-    </figure>
+<section aria-labelledby="h-problem" style="padding-block-start:clamp(3rem,7vw,5rem)">
+  <div class="wrap">
     <div class="split2">
       <div class="s-l">
-      <p>Many people I talk to don’t track their spending, or can’t keep it up for long. Sales, discounts and online stores make the monthly total very big, and then comes the question: where did I spend so much?</p>
+        <p class="eyebrow">01 · The idea</p>
+        <h2 id="h-problem" class="statement">Where did all that money go?</h2>
       </div>
       <div class="s-r">
-      <p>Before I buy a thing or tickets, I ask myself the same questions. How much can I afford it? How many hours of work is it? How will it hit me next month? How much further away does it push the goal I’m saving for? How often will I really use it? I heard the same questions from people at work, friends and relatives. Many care about this and have no clear answer. And few people will sit down and do the math before every purchase.</p>
-      </div>
-    </div>
-    <div class="grid g3" style="margin-top:2.2rem">
-      <div class="card"><h3>Who it hurts</h3><p>People who earn their own money and buy online, often in the evening, fast, from a feed, an ad or a sale.</p></div>
-      <div class="card"><h3>What they do today</h3><p>Leave it in the cart, take a screenshot, compare prices. Some tried a budgeting app and stopped: too much logging, or it made them feel guilty.</p></div>
-      <div class="card"><h3>My goal</h3><p>A clear answer at the moment of buying, from facts about your own money. No expense tracking, no bank login, no judging.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- 02 RESEARCH -->
-<section id="research">
-  <div class="wrap rv">
-    <figure class="banner">
-      <div class="banner-media">
-      <button type="button" class="banner-img" data-full="assets/board-empathy-b.webp" data-cap="Empathy map B, built from the interviews: what fast buyers say, think, do and feel." aria-label="Enlarge: FigJam empathy map for persona B, Jake Moreno"><img src="assets/board-empathy-b.webp" alt="FigJam empathy map for persona B, Jake Moreno" style="object-position:50% 35%" loading="lazy"></button>
-      <div class="banner-txt"><p class="eyebrow">02 · Research</p><h2>What I asked, and whom</h2></div>
-      </div>
-      <figcaption><span class="role ext">Extension</span>Empathy map B, built from the interviews: what fast buyers say, think, do and feel.</figcaption>
-    </figure>
-    <div class="split2">
-      <div class="s-l">
-      <p>Desk research and a competitor scan first (Skip or Buy, CartPause, price trackers, budgeting apps). Then a survey in Google Forms: 20 responses, 18 qualified. Then five one-on-one interviews, P01 to P05. The interviews built two groups, and each group became a persona.</p>
-      </div>
-      <div class="s-r">
-      <div class="gap">
-        <b>About the survey sample</b>
-        <p>15 of the 20 survey responses are synthetic: I built them from buyer types known in marketing and sales, and mixed them with the real answers. I analysed it as one sample, so the counts below show a direction, not proof.</p>
-      </div>
-      </div>
-    </div>
-
-    <div class="grid g3" style="margin-top:2rem">
-      <div class="card"><div class="card-num">01</div><h3>Speed predicts regret</h3><p>Of 11 people who paid within an hour, 9 barely used the thing. Of 6 who took a day or longer, 5 use it weekly. So the app’s main answer became a pause with a reason and a date: Wait for payday.</p></div>
-      <div class="card"><div class="card-num">02</div><h3>Money apps fail when the model doesn’t fit life</h3><p>8 of 13 who tried a money app stopped: effort, guilt, income that changes every month. So DeciBuy asks for ranges once, never asks you to log spending, and works with biweekly and irregular pay.</p></div>
-      <div class="card"><div class="card-num">03</div><h3>Permission matters as much as warning</h3><p>Three of five interviewees wanted to hear “yes” too. So Buy is a real answer, given by the same rules as the other two, not a reward for saying no.</p></div>
-    </div>
-
-    <blockquote class="quote">Stop me. But nicely. Not like my mom.<cite>P01, interview, 22, shift worker</cite></blockquote>
-
-
-    <div class="split2" style="margin-top:3rem">
-      <div class="s-l">
-      <h3>Two groups, two personas</h3>
-      </div>
-      <div class="s-r">
-      <p>The interviews split into confidence seekers (P02, P03, P05) and fast buyers with strong regret (P01, P04). Emma and Jake are composite names; every quote on the boards is attributed to the participant who said it.</p>
-      </div>
-    </div>
-    <div class="gallery" style="--col:22rem;--ar:5/2">
-      <button type="button" data-full="assets/board-persona-a.webp" data-cap="Persona A · Emma Cole. Goals, frustrations, behaviors and the critical pain: a decision that looks careful but was made by the sale."><span class="shot"><img src="assets/board-persona-a-thumb.webp" alt="FigJam persona card A, Emma Cole, confidence seeker" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Persona A · Emma Cole</b>Goals, frustrations, behaviors and the critical pain: a decision that looks careful but was made by the sale.</span></button>
-      <button type="button" data-full="assets/board-persona-b.webp" data-cap="Persona B · Jake Moreno. Hourly or commission pay, late night buys, installments. Wants a firm answer in a friendly voice."><span class="shot"><img src="assets/board-persona-b-thumb.webp" alt="FigJam persona card B, Jake Moreno, fast buyer with strong regret" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Persona B · Jake Moreno</b>Hourly or commission pay, late night buys, installments. Wants a firm answer in a friendly voice.</span></button>
-    </div>
-    <div class="gallery" style="--col:22rem;--ar:5/3">
-      <button type="button" data-full="assets/board-empathy-a.webp" data-cap="Empathy map A. Says, thinks, does, feels, pains and gains, from P02, P03 and P05."><span class="shot"><img src="assets/board-empathy-a-thumb.webp" alt="FigJam empathy map for Emma Cole" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Empathy map A</b>Says, thinks, does, feels, pains and gains, from P02, P03 and P05.</span></button>
-      <button type="button" data-full="assets/board-empathy-b.webp" data-cap="Empathy map B. Says, thinks, does, feels, pains and gains, from P01 and P04."><span class="shot"><img src="assets/board-empathy-b-thumb.webp" alt="FigJam empathy map for Jake Moreno" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Empathy map B</b>Says, thinks, does, feels, pains and gains, from P01 and P04.</span></button>
-    </div>
-
-    <div class="split2" style="margin-top:3rem">
-      <div class="s-l">
-      <h3>The finding that renamed the product</h3>
-      <p class="claim">The project started as Impulse Check. Research showed that was too narrow.</p>
-      </div>
-      <div class="s-r">
-      <p>The old name said that purchases are only impulsive. But not all purchases, and not all people, are about impulse. Some want to weigh how much a buy is worth. So the app was named from Decision and Buy, and clearer answers came from that: buy, wait, or not now. The app doesn’t limit you. The final call is yours, and the app says so on every verdict. It won’t judge you, won’t pressure you, won’t tell you you’re deciding wrong.</p>
-      <p>The survey also suggested two modes, “help me feel sure” and “be strict with me”. I dropped that: a verdict that changes with what you want to hear isn’t a verdict. The rules stay the same for everyone.</p>
+        <p>Many people I talk to don’t track their spending, or can’t keep it up for long. Sales, discounts and online stores make the monthly total very big, and then comes the question: where did I spend so much?</p>
+        <p>Before I buy a thing or tickets, I ask myself the same questions. How much can I afford it? How many hours of work is it? How will it hit me next month? How much further away does it push the goal I’m saving for? How often will I really use it? Few people will sit down and do that math before every purchase.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 03 JOURNEY -->
-<section id="journey" class="alt">
-  <div class="wrap rv">
-    <figure class="banner">
-      <div class="banner-media">
-      <button type="button" class="banner-img" data-full="assets/board-sitemap-v03.webp" data-cap="Sitemap v03: the structure that shipped, four tabs and Settings behind a gear." aria-label="Enlarge: FigJam information architecture v03"><img src="assets/board-sitemap-v03.webp" alt="FigJam information architecture v03" style="object-position:50% 55%" loading="lazy"></button>
-      <div class="banner-txt"><p class="eyebrow">03 · Journey and structure</p><h2>Where the journey breaks</h2></div>
-      </div>
-      <figcaption><span class="role">Evidence</span>Sitemap v03: the structure that shipped, four tabs and Settings behind a gear.</figcaption>
-    </figure>
+<section class="band" aria-label="The principle">
+  <div class="wrap">
+    <p class="eyebrow">The principle</p>
+    <p class="big"><span>A product,</span><span>and three answers.</span></p>
+    <p>The app doesn’t limit you, and the final call is always yours. This one line decided the visuals, the way the app talks to you, and the savings goal.</p>
+    <div class="verdicts"><span style="background:var(--buy)">Buy</span><span style="background:var(--wait)">Wait for payday</span><span style="background:var(--no)">Not now</span></div>
+  </div>
+</section>
+
+<!-- 02 UNDERSTANDING THE MOMENT -->
+<section id="moment">
+  <div class="wrap">
+    <div class="chapter-head">
+      <span class="num">02</span>
+      <h2>Understanding the moment</h2>
+      <p>What I knew, what I only simulated, and what each one changed.</p>
+    </div>
+
     <div class="split2">
       <div class="s-l">
-      <p class="claim">The low point is not at checkout. Regret arrives later, when the package comes or the installments overlap.</p>
+        <p class="lead-xl">Most of my research was simulated. I used AI to explore the problem quickly and to write hypotheses. None of it counts as evidence about real people, so every decision below is a hypothesis until it’s tested.</p>
       </div>
       <div class="s-r">
-      <p>Two journey maps, one per persona, both “as is”: how people buy today, without the app. Emma (confidence seekers, from P02, P03, P05) and Jake (fast buyers with strong regret, from P01, P04) are composite names; the scores and quotes come from the interviews. 5 is motivation, 1 is frustration, and the red point is the lowest.</p>
+        <ul class="ledger" style="margin-top:0">
+          <li><span class="src own">My own</span><p><b>Observation and conversations</b> with people at work, friends and relatives. Informal, not recorded.</p></li>
+          <li><span class="src real">Real</span><p><b>Desk research and a competitor scan:</b> Skip or Buy, CartPause, price trackers, budgeting apps.</p></li>
+          <li><span class="src real">Real</span><p><b>5 survey responses</b> in Google Forms. Too few to count; I don’t show them as numbers.</p></li>
+          <li><span class="src sim">AI-simulated</span><p><b>15 survey responses</b> built from buyer types known in marketing and sales, and <b>5 interviews</b> (P01 to P05). The personas, empathy maps and journey maps were built from these.</p></li>
+          <li><span class="src sim">AI-simulated</span><p><b>A card sort</b> with 18 synthetic participants: an exploration of navigation options, not proof.</p></li>
+        </ul>
       </div>
+    </div>
+
+    <h3 class="statement" style="margin-top:clamp(3rem,7vw,5rem);font-size:clamp(1.6rem,3.4vw,2.6rem)">Three hypotheses, and what each one changed</h3>
+
+    <div class="chain">
+      <div><h3>Nobody wants another budget tracker.</h3><span class="src own">Own observation · simulated</span></div>
+      <dl><dt>Observation</dt><dd>People around me stop tracking spending after a while. In the simulated sample, the reasons were effort, guilt, and income that changes every month.</dd></dl>
+      <dl><dt>So</dt><dd>Ask for as little as possible, and only once.</dd></dl>
+      <dl><dt>Decision</dt><dd>Setup asks for ranges once: income, rent, bills, payday. No spending log, no bank connection.</dd></dl>
+    </div>
+    <div class="chain">
+      <div><h3>The decision is fast. The regret comes later.</h3><span class="src sim">Simulated interviews</span></div>
+      <dl><dt>Observation</dt><dd>In the simulated interviews, buying took minutes, often late at night, and regret came with the package or with overlapping installments.</dd></dl>
+      <dl><dt>So</dt><dd>The answer has to arrive in seconds, and come back later.</dd></dl>
+      <dl><dt>Decision</dt><dd>A verdict right after adding an item. Wait for payday comes with a date, a reminder and a fresh check on payday.</dd></dl>
+    </div>
+    <div class="chain" style="border-bottom:1px solid var(--ln)">
+      <div><h3>A yes matters as much as a no.</h3><span class="src own">My principle · simulated</span></div>
+      <dl><dt>Observation</dt><dd>The app shouldn’t judge or pressure. In the simulated interviews, people wanted to hear “yes, buy it” too.</dd></dl>
+      <dl><dt>So</dt><dd>The same rules for every answer.</dd></dl>
+      <dl><dt>Decision</dt><dd>Buy is a real answer. I dropped a “be strict with me” mode: a verdict that changes with what you want to hear isn’t a verdict.</dd></dl>
+    </div>
+
+    <div class="split2" style="margin-top:clamp(3rem,7vw,5rem)">
+      <div class="s-l">
+        <p class="eyebrow">The journey maps</p>
+        <h3 class="statement" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">Where would the journey break?</h3>
+      </div>
+      <div class="s-r">
+        <p>Two journey maps, one per persona, both “as is”: how buying works today, without the app. They come from the simulated interviews, so they are maps of a hypothesis. What they gave me was a question to design for: what happens after the purchase? 5 is motivation, 1 is frustration, and the red point is the lowest.</p>
+      </div>
+    </div>
+    <div role="tablist" aria-label="Journey map" class="seg" id="jseg">
+      <button type="button" role="tab" aria-selected="true" data-j="0">Emma · confidence seeker</button>
+      <button type="button" role="tab" aria-selected="false" data-j="1">Jake · fast buyer</button>
     </div>
     <div class="jmaps">
 <article class="jmap"><h4>Journey A · Emma, confidence seeker · a 30% off deal from an evening email</h4><p class="jscale"><span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg> 5 motivation</span><span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg> 1 frustration</span></p><svg viewBox="0 0 560 265" class="jchart" role="img" aria-label="Journey A · Emma, confidence seeker · a 30% off deal from an evening email"><line x1="532.0" y1="211.0" x2="40.0" y2="211.0" class="jg"/><text x="26" y="215.0" class="jt">1</text><line x1="532.0" y1="120.5" x2="40.0" y2="120.5" class="jg"/><text x="26" y="124.5" class="jt">3</text><line x1="532.0" y1="30.0" x2="40.0" y2="30.0" class="jg"/><text x="26" y="34.0" class="jt">5</text><path d="M40.0,75.2 L138.4,97.9 L236.8,143.1 L335.2,165.8 L433.6,97.9 L532.0,188.4 L532.0,211.0 L40.0,211.0 Z" class="ja"/><path d="M40.0,75.2 L138.4,97.9 L236.8,143.1 L335.2,165.8 L433.6,97.9 L532.0,188.4" class="jl"/><circle cx="40.0" cy="75.2" r="5" class="jd"/><text x="40.0" y="62.2" class="jv">4</text><text x="40.0" y="237" class="jn">1</text><circle cx="138.4" cy="97.9" r="5" class="jd"/><text x="138.4" y="84.9" class="jv">3.5</text><text x="138.4" y="237" class="jn">2</text><circle cx="236.8" cy="143.1" r="5" class="jd"/><text x="236.8" y="130.1" class="jv">2.5</text><text x="236.8" y="237" class="jn">3</text><circle cx="335.2" cy="165.8" r="5" class="jd"/><text x="335.2" y="152.8" class="jv">2</text><text x="335.2" y="237" class="jn">4</text><circle cx="433.6" cy="97.9" r="5" class="jd"/><text x="433.6" y="84.9" class="jv">3.5</text><text x="433.6" y="237" class="jn">5</text><circle cx="532.0" cy="188.4" r="6" class="jd jd--low"/><text x="532.0" y="175.4" class="jv jv--low">1.5</text><text x="532.0" y="237" class="jn">6</text></svg><ol class="jlegend"><li><span class="jn-num">1</span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg><span class="jn-body"><b>Deal appears</b><span>Excited · 4</span></span></li><li><span class="jn-num">2</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Research</b><span>Focused · 3.5</span></span></li><li><span class="jn-num">3</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Real deal?</b><span>Suspicious · 2.5</span></span></li><li><span class="jn-num">4</span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg><span class="jn-body"><b>Deadline</b><span>Pressured · 2</span></span></li><li><span class="jn-num">5</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Checkout</b><span>Relieved · 3.5</span></span></li><li><span class="jn-num">6</span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg><span class="jn-body"><b>Weeks later</b><span>Mild regret · 1.5</span></span></li></ol><p class="jnote">The dip sits after checkout: the deal felt good, the use didn't. Last stage forks: worth it 4, overpaid 2.</p><div class="gallery gallery--one" style="--ar:3/1;margin-block-start:1rem"><button type="button" data-full="assets/board-cjm-a.webp" data-cap="The original board. Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote"><span class="shot"><img src="assets/board-cjm-a-thumb.webp" alt="FigJam journey map A: seven stages with screens, actions, pains and opportunities" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ico" style="width:1.05rem;height:1.05rem"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>The original board</b>Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote.</span></button></div></article>
 <article class="jmap"><h4>Journey B · Jake, fast buyer · a late night TikTok buy, paid in 4</h4><p class="jscale"><span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg> 5 motivation</span><span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg> 1 frustration</span></p><svg viewBox="0 0 560 265" class="jchart" role="img" aria-label="Journey B · Jake, fast buyer · a late night TikTok buy, paid in 4"><line x1="532.0" y1="211.0" x2="40.0" y2="211.0" class="jg"/><text x="26" y="215.0" class="jt">1</text><line x1="532.0" y1="120.5" x2="40.0" y2="120.5" class="jg"/><text x="26" y="124.5" class="jt">3</text><line x1="532.0" y1="30.0" x2="40.0" y2="30.0" class="jg"/><text x="26" y="34.0" class="jt">5</text><path d="M40.0,120.5 L138.4,52.6 L236.8,75.2 L335.2,97.9 L433.6,143.1 L532.0,211.0 L532.0,211.0 L40.0,211.0 Z" class="ja"/><path d="M40.0,120.5 L138.4,52.6 L236.8,75.2 L335.2,97.9 L433.6,143.1 L532.0,211.0" class="jl"/><circle cx="40.0" cy="120.5" r="5" class="jd"/><text x="40.0" y="107.5" class="jv">3</text><text x="40.0" y="237" class="jn">1</text><circle cx="138.4" cy="52.6" r="5" class="jd"/><text x="138.4" y="39.6" class="jv">4.5</text><text x="138.4" y="237" class="jn">2</text><circle cx="236.8" cy="75.2" r="5" class="jd"/><text x="236.8" y="62.2" class="jv">4</text><text x="236.8" y="237" class="jn">3</text><circle cx="335.2" cy="97.9" r="5" class="jd"/><text x="335.2" y="84.9" class="jv">3.5</text><text x="335.2" y="237" class="jn">4</text><circle cx="433.6" cy="143.1" r="5" class="jd"/><text x="433.6" y="130.1" class="jv">2.5</text><text x="433.6" y="237" class="jn">5</text><circle cx="532.0" cy="211.0" r="6" class="jd jd--low"/><text x="532.0" y="198.0" class="jv jv--low">1</text><text x="532.0" y="237" class="jn">6</text></svg><ol class="jlegend"><li><span class="jn-num">1</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Scrolling in bed</b><span>Zoned out · 3</span></span></li><li><span class="jn-num">2</span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg><span class="jn-body"><b>Product tag</b><span>Want it · 4.5</span></span></li><li><span class="jn-num">3</span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg><span class="jn-body"><b>Pay in 4</b><span>Only $45 · 4</span></span></li><li><span class="jn-num">4</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Checkout</b><span>Rushed · 3.5</span></span></li><li><span class="jn-num">5</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Morning after</b><span>Uneasy · 2.5</span></span></li><li><span class="jn-num">6</span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg><span class="jn-body"><b>Package arrives</b><span>A bit stupid · 1</span></span></li></ol><p class="jnote">Highest at the product tag, lowest when the package arrives. End of month forks: fine 3.5, broke 1.5.</p><div class="gallery gallery--one" style="--ar:3/1;margin-block-start:1rem"><button type="button" data-full="assets/board-cjm-b.webp" data-cap="The original board. Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote"><span class="shot"><img src="assets/board-cjm-b-thumb.webp" alt="FigJam journey map B: seven stages from scrolling in bed to the end of the month" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ico" style="width:1.05rem;height:1.05rem"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>The original board</b>Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote.</span></button></div></article>
 </div>
 
-    <div class="marquee" role="region" aria-label="What people said in the interviews"><div class="mq-track"><div class="mq-set"><span class="mq-item">“The regret comes when the package arrives, not when I pay.”<cite>P01</cite></span><span class="mq-item">“At one in the morning I’m not a person, I’m just a thumb.”<cite>P01</cite></span><span class="mq-item">“$45 is nothing. Four times $45 is a problem, but later.”<cite>P04</cite></span><span class="mq-item">“First week I’m a king, last week it’s rice and pasta.”<cite>P04</cite></span><span class="mq-item">“I felt rich for one day.”<cite>P03</cite></span><span class="mq-item">“Every month it said I was failing.”<cite>P03</cite></span><span class="mq-item">“Half my hesitation is ‘is this the real deal or a fake discount’.”<cite>P02</cite></span><span class="mq-item">“If I’m already in the checkout, I’m gone.”<cite>P01</cite></span></div><div class="mq-set" aria-hidden="true"><span class="mq-item">“The regret comes when the package arrives, not when I pay.”<cite>P01</cite></span><span class="mq-item">“At one in the morning I’m not a person, I’m just a thumb.”<cite>P01</cite></span><span class="mq-item">“$45 is nothing. Four times $45 is a problem, but later.”<cite>P04</cite></span><span class="mq-item">“First week I’m a king, last week it’s rice and pasta.”<cite>P04</cite></span><span class="mq-item">“I felt rich for one day.”<cite>P03</cite></span><span class="mq-item">“Every month it said I was failing.”<cite>P03</cite></span><span class="mq-item">“Half my hesitation is ‘is this the real deal or a fake discount’.”<cite>P02</cite></span><span class="mq-item">“If I’m already in the checkout, I’m gone.”<cite>P01</cite></span></div></div></div>
-    <p>That is why saved items don’t just sit in a list. Wait for payday comes with a date and a reminder, and on payday the item is checked again with the new numbers.</p>
 
-    <div class="split2" style="margin-top:3rem">
+    <details class="more">
+      <summary>Personas and empathy maps (from the simulated interviews)</summary>
+      <div>
+        <p class="tiny" style="max-width:none">Emma and Jake are composite names. Every line on the boards traces to a simulated participant, not to a real person.</p>
+        <div class="gallery" style="--col:22rem;--ar:5/2;margin-top:1rem">
+          <button type="button" data-full="assets/board-persona-a.webp" data-cap="Persona A · Emma Cole. Goals, frustrations, behaviors and the critical pain."><span class="shot"><img src="assets/board-persona-a-thumb.webp" alt="FigJam persona card A, Emma Cole" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Persona A · Emma Cole</b>Goals, frustrations, behaviors and the critical pain.</span></button>
+          <button type="button" data-full="assets/board-persona-b.webp" data-cap="Persona B · Jake Moreno. Late night buys, installments, wants a firm answer in a friendly voice."><span class="shot"><img src="assets/board-persona-b-thumb.webp" alt="FigJam persona card B, Jake Moreno" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Persona B · Jake Moreno</b>Late night buys, installments, wants a firm answer in a friendly voice.</span></button>
+        </div>
+        <div class="gallery" style="--col:22rem;--ar:5/3">
+          <button type="button" data-full="assets/board-empathy-a.webp" data-cap="Empathy map A. Says, thinks, does, feels, pains and gains."><span class="shot"><img src="assets/board-empathy-a-thumb.webp" alt="FigJam empathy map for Emma Cole" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Empathy map A</b>Says, thinks, does, feels, pains and gains.</span></button>
+          <button type="button" data-full="assets/board-empathy-b.webp" data-cap="Empathy map B. Says, thinks, does, feels, pains and gains."><span class="shot"><img src="assets/board-empathy-b-thumb.webp" alt="FigJam empathy map for Jake Moreno" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Empathy map B</b>Says, thinks, does, feels, pains and gains.</span></button>
+        </div>
+      </div>
+    </details>
+
+    <div class="split2" style="margin-top:clamp(3rem,7vw,5rem)">
       <div class="s-l">
-      <h3>Information architecture</h3>
-      <p class="claim">I didn’t drop the wishlist. I moved it into Check and limited it to 5 items for 3 days.</p>
+        <p class="eyebrow">The name</p>
+        <h3 class="statement" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">It started as Impulse Check.</h3>
       </div>
       <div class="s-r">
-      <p>On purpose, so it doesn’t turn into one more cart you never finish. In Check you keep only the items you’re unsure about, before you decide to track them in My items. The hamburger menu went too: the only thing in it would be Settings, so Settings is one tap away instead. Everything else fits in four tabs: Home, Check, My items, My money. A simulated card sort (18 synthetic participants) put Settings outside the main tabs in every run.</p>
+        <p>The old name said that purchases are only impulsive. But not all purchases, and not all people, are about impulse. Some want to weigh how much a buy is worth. So the app was named from Decision and Buy, and clearer answers came from that: buy, wait, or not now. It won’t judge you, won’t pressure you, won’t tell you you’re deciding wrong.</p>
       </div>
-    </div>
-    <div class="gallery" style="--col:16rem;--ar:16/9">
-      <button type="button" data-full="assets/board-sitemap-v01.webp" data-cap="Sitemap v01. From research, before the card sort: a separate Wishlist tab and a Check flow on top of every screen."><span class="shot"><img src="assets/board-sitemap-v01-thumb.webp" alt="FigJam sitemap v01" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Sitemap v01</b>From research, before the card sort: a separate Wishlist tab and a Check flow on top of every screen.</span></button>
-      <button type="button" data-full="assets/board-sitemap-v02.webp" data-cap="Sitemap v02. After the card sort: Settings behind a gear in the top bar, Wishlist renamed My items."><span class="shot"><img src="assets/board-sitemap-v02-thumb.webp" alt="FigJam sitemap v02" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Sitemap v02</b>After the card sort: Settings behind a gear in the top bar, Wishlist renamed My items.</span></button>
-      <button type="button" data-full="assets/board-sitemap-v03.webp" data-cap="Sitemap v03. After the Crazy 8’s: Check becomes its own tab with drafts; the four tabs that shipped."><span class="shot"><img src="assets/board-sitemap-v03-thumb.webp" alt="FigJam sitemap v03" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Sitemap v03</b>After the Crazy 8’s: Check becomes its own tab with drafts; the four tabs that shipped.</span></button>
-    </div>
-    <div class="gallery" style="--col:22rem;--ar:16/7">
-      <button type="button" data-full="assets/board-flows-v01.webp" data-cap="User flows v01. Onboarding, checking a purchase, and the re-check on the verdict date, with Emma’s and Jake’s paths."><span class="shot"><img src="assets/board-flows-v01-thumb.webp" alt="FigJam user flows v01: onboarding, check a purchase, re-check" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>User flows v01</b>Onboarding, checking a purchase, and the re-check on the verdict date, with Emma’s and Jake’s paths.</span></button>
-      <button type="button" data-full="assets/board-flow2-v02.webp" data-cap="Check a purchase · flow v02. Rebuilt after the Crazy 8’s; it replaces flow 2 of v01."><span class="shot"><img src="assets/board-flow2-v02-thumb.webp" alt="FigJam user flow 2 v02, check a purchase" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Check a purchase · flow v02</b>Rebuilt after the Crazy 8’s; it replaces flow 2 of v01.</span></button>
     </div>
   </div>
 </section>
 
-<!-- BAND -->
-<section class="band" aria-label="The principle">
-  <div class="wrap rv">
-    <p class="eyebrow">The principle</p>
-    <p class="big"><span>A product,</span><span>and three answers.</span></p>
-    <p>This one line decided the visuals, the way the app talks to you, and the savings goal: if you save for something, the app reminds you of it, so you don’t forget what you’re saving for.</p>
-    <div class="verdicts"><span style="background:var(--buy)">Buy</span><span style="background:var(--wait)">Wait for payday</span><span style="background:var(--no)">Not now</span></div>
-  </div>
-</section>
-
-<!-- 04 LANGUAGE -->
-<section id="language">
-  <div class="wrap rv">
-    <div class="zrow">
-      <div class="z-media"><span class="z-shot"><img class="themed" data-s="notnow" src="assets/notnow-light.webp" alt="Not now verdict in coral red: one calm line about months of spare money" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
-      <div class="z-text">
-        <p class="eyebrow">04 · Design language</p>
-        <h2>A companion, not a judge</h2>
-        <p class="claim">The app must never make you feel shame. Even its red shouldn’t cause anxiety.</p>
-        <p>I wanted the app to feel like a friend that helps you understand how much you can afford something: welcoming, so you come back for advice without being afraid of what you want to buy. Even the wording follows this. “Not now” doesn’t say “don’t buy”. It doesn’t forbid you. It says lightly: some day you can, keep saving, but not now.</p>
-      </div>
+<!-- 03 FINDING THE INTERACTION -->
+<section id="interaction" class="alt">
+  <div class="wrap">
+    <div class="chapter-head">
+      <span class="num">03</span>
+      <h2>Finding the interaction</h2>
+      <p>From rows to folders: where the idea came from, what I rejected, and why it stayed.</p>
     </div>
 
-    <div class="grid g4" style="margin-top:2rem">
-      <div class="card"><h3>Calm</h3><p class="tiny">One reason line on top, facts below. The same layout for all three answers, only the color changes.</p></div>
-      <div class="card"><h3>Soft</h3><p class="tiny">Rounded corners everywhere, so nothing feels sharp or fixed. They soften the tone of the decision.</p></div>
-      <div class="card"><h3>Bright, but clean</h3><p class="tiny">Strong colors on a white ground. Each color has one meaning and the brand blue never touches the verdict colors.</p></div>
-      <div class="card"><h3>Facts first</h3><p class="tiny">No product photo. A photo pulls you to the “want”; the screen is about what this price means for you.</p></div>
-    </div>
-
-    <div class="swatches">
-      <div class="sw wh"><i style="background:#206AED">Brand</i><span><b>#569EF6 · #206AED</b>Tabs, spare money card, links</span></div>
-      <div class="sw"><i style="background:#56F683">Buy</i><span><b>#56F683</b>Fits your money now</span></div>
-      <div class="sw"><i style="background:#F6DB56">Wait</i><span><b>#F6DB56</b>Fits after payday</span></div>
-      <div class="sw"><i style="background:#F66B56">Not now</i><span><b>#F66B56</b>Doesn’t fit yet</span></div>
-    </div>
-    <div class="typespec">
-      <div class="card"><div class="big">Bricolage</div><p class="tiny">Bricolage Grotesque ExtraBold for titles and the verdict word. Text on verdict colors is always black: white fails on green, yellow and red (1.4 to 2.9:1), black passes (7 to 15:1).</p></div>
-      <div class="card"><div class="big b">Manrope</div><p class="tiny">Manrope for everything you read, including the eyebrow line above each title (“Hi Emma”, “2 of 5 drafts”), so all the attention stays on the big title under it.</p></div>
-    </div>
-
-    <h3 style="margin-top:2.6rem">What I took out, and why</h3>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>Removed</th><th>Why</th></tr></thead>
-        <tbody>
-          <tr><td>Product photo and thumbnail</td><td>It distracts from the verdict and from what the price means for you. Manual items would have no photo anyway.</td></tr>
-          <tr><td>The verdict word on folder tabs</td><td>With several folders you saw “Buy” repeated and no price. The folder color already is the verdict, so every tab now shows the price.</td></tr>
-          <tr><td>Colored dots in list rows</td><td>They carried no meaning.</td></tr>
-          <tr><td>A light grey background</td><td>A contrast check showed the light verdict folders would blend into it. White stayed.</td></tr>
-          <tr><td>The hamburger menu</td><td>It would hold only Settings. A gear is one step shorter.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="tiny" style="margin-top:1rem">Later I added a large cropped Buy, Wait or Not now word at the bottom of the open folder. It’s a graphic element that balances the card, not the verdict itself.</p>
-  </div>
-</section>
-
-<!-- 05 SCREENS -->
-<section id="screens" class="alt">
-  <div class="wrap rv">
-    <div class="zrow flip">
-      <div class="z-media"><span class="z-shot"><img class="themed" data-s="buy" src="assets/buy-light.webp" alt="Buy verdict in green for a sneaker cleaning kit" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
-      <div class="z-text">
-        <p class="eyebrow">05 · Screens and the live app</p>
-        <h2>One decision per screen</h2>
-        <p>Tap a screen to open it with the decision behind it. The screens follow the page theme: switch it at the top to see dark mode.</p>
-      </div>
-    </div>
-    <div class="levi" id="lv-sc" data-uid="sc"><div class="lv-grid"><button type="button" class="lv-item" style="--i:0" data-id="onb" data-title="Onboarding" data-role="product" data-text="Only what you know by heart, in ranges: income, rent, bills, payday. An exact amount is optional. Your name comes at the very end."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-onb"><img class="themed" data-s="onb-income" src="assets/onb-income-light.webp" alt="Onboarding question: what lands in your account each month, with income ranges" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Onboarding</b></span></button><button type="button" class="lv-item" style="--i:1" data-id="home" data-title="Home" data-role="product" data-text="Spare money until payday, not a balance. Items you mark Bought lower it: the one exception to no expense tracking."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-home"><img class="themed" data-s="home" src="assets/home-light.webp" alt="Home screen with the spare money card and Recent checks folders" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Home</b></span></button><button type="button" class="lv-item" style="--i:2" data-id="check" data-title="Check" data-role="product" data-text="Drafts: up to 5, each kept for 3 days. Adding an item checks it right away."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-check"><img class="themed" data-s="check" src="assets/check-light.webp" alt="Check tab with a draft card and a stack of drafts" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Check</b></span></button><button type="button" class="lv-item" style="--i:3" data-id="verdict" data-title="Verdict" data-role="product" data-text="One layout for all three answers, only the color changes: same facts, same rules. The reason line on top, fact tiles below."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-verdict"><img class="themed" data-s="wait" src="assets/wait-light.webp" alt="Wait for payday verdict for a lamp, with the reason line and fact tiles" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Verdict</b></span></button><button type="button" class="lv-item" style="--i:4" data-id="graph" data-title="Behind a fact" data-role="extension" data-text="Each fact tile opens one graph and one plain sentence, for people who want the why."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-graph"><img class="themed" data-s="graph" src="assets/graph-light.webp" alt="Price in 90 days graph with the lowest price marked" loading="lazy"></span></span><span class="lv-label"><span class="role ext">Extension</span><b>Behind a fact</b></span></button><button type="button" class="lv-item" style="--i:5" data-id="items" data-title="My items" data-role="product" data-text="Wait for payday comes with a date and a reminder. On payday the item is checked again, because regret comes after the purchase."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-items"><img class="themed" data-s="items" src="assets/items-light.webp" alt="My items: four saved items as colored folders, each showing its price" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>My items</b></span></button></div><div class="lv-open" hidden></div></div>
-
-    <h3 style="margin-top:3rem">The folders</h3>
-    <div class="split">
+    <div class="step">
+      <div class="step-label">Step 1<b>Exploration</b></div>
       <div>
-        <p class="claim">Every item opens like a folder and the rest slide down. That’s why the prototype is code, not Figma.</p>
-        <p>Figma can’t do these gestures: grab a folder mid-motion, flick it, pull the stack up to see what’s under it. The live app below is the real prototype. Add an item, open a folder, raise the stack. Data stays on your device.</p>
-        <p class="tiny">Some parts are marked Coming soon on purpose: sharing from a store and pasting a link don’t work in the prototype yet.</p>
+        <p class="lead-xl" style="margin-bottom:1.25rem">In my Crazy 8’s for My items, most sketches stack the items. The folder idea started here, before any screen existed.</p>
+        <div class="gallery" style="--col:22rem;--ar:4/3;margin-top:0">
+          <button type="button" data-full="assets/board-crazy8-r4-items.webp" data-cap="Crazy 8’s · round 4 · My items. Eight sketches, one minute each. Sketches 1, 2, 6 and 7 stack the items like folders."><span class="shot"><img src="assets/board-crazy8-r4-items-thumb.webp" alt="My Crazy 8’s round 4: eight grayscale sketches of My items, most with stacked folder cards" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Crazy 8’s · round 4 · My items</b>Eight sketches, one minute each. Sketches 1, 2, 6 and 7 stack the items like folders.</span></button>
+          <button type="button" data-full="assets/board-crazy8-r1-verdict.webp" data-cap="Crazy 8’s · round 1 · Verdict. The verdict word owns the screen. Sketches 4 and 6 already put the item on a folder tab."><span class="shot"><img src="assets/board-crazy8-r1-verdict-thumb.webp" alt="My Crazy 8’s round 1: eight grayscale sketches of the verdict screen" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Crazy 8’s · round 1 · Verdict</b>The verdict word owns the screen. Sketches 4 and 6 already put the item on a folder tab.</span></button>
+        </div>
+        <details class="more">
+          <summary>How Might We, and the graph detail round</summary>
+          <div class="gallery" style="--col:22rem;--ar:4/3;margin-top:0">
+            <button type="button" data-full="assets/board-hmw.webp" data-cap="How Might We. Seven questions from the journey maps, and the guardrails for every idea."><span class="shot"><img src="assets/board-hmw-thumb.webp" alt="How Might We board with seven questions and guardrails" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>How Might We</b>Seven questions from the journey maps, and the guardrails for every idea.</span></button>
+            <button type="button" data-full="assets/board-crazy8-r2-graph.webp" data-cap="Crazy 8’s · round 2 · Graph detail. From a fact tile to one full graph you can swipe through."><span class="shot"><img src="assets/board-crazy8-r2-graph-thumb.webp" alt="My Crazy 8’s round 2: sketches of the graph detail screen" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Crazy 8’s · round 2 · Graph detail</b>From a fact tile to one full graph you can swipe through.</span></button>
+          </div>
+        </details>
       </div>
+    </div>
+
+    <div class="step">
+      <div class="step-label">Step 2<b>Selection</b></div>
       <div>
-        <div class="phone-stage">
-          <div class="phone" id="phone">
-            <div class="phone__screen" id="phone-screen">
-              <img class="phone__poster themed" data-s="items" src="assets/items-light.webp" alt="My items screen, shown until the live app is started" loading="lazy">
-              <button type="button" class="phone__start" id="phone-start">
-                <span class="play" aria-hidden="true"><svg class="ic" style="width:1.6rem;height:1.6rem"><use href="#i-play"/></svg></span>
-                <b>Start the live app</b>
-                <span>It loads only now, so the page stays light. Use it like on a phone.</span>
-              </button>
-            </div>
+        <div role="tablist" aria-label="Design version" class="seg" id="evoseg">
+          <button type="button" role="tab" aria-selected="false" data-v="0">Low-fi v1</button>
+          <button type="button" role="tab" aria-selected="false" data-v="1">Low-fi v2</button>
+          <button type="button" role="tab" aria-selected="true" data-v="2">Final</button>
+        </div>
+        <div class="stage" id="evo">
+          <div class="stage-shot">
+            <img src="assets/lofi-v1-wait.webp" alt="Low-fi v1 of the Wait for payday screen: a list layout with a thumbnail" class="off" data-v="0">
+            <img src="assets/lofi-v2-wait.webp" alt="Low-fi v2 of the Wait for payday screen: the verdict sits in an open folder" class="off" data-v="1">
+            <img class="themed" data-s="wait" src="assets/wait-light.webp" alt="Final Wait for payday verdict in yellow" data-v="2">
+          </div>
+          <div class="stage-text" aria-live="polite">
+            <div data-v="0" hidden><span class="role">Evidence</span><h3>A template list</h3><p>Low-fi v1 was made with AI in Figma: lists, item rows with a square thumbnail, boxed fields. Nothing says this is one item you opened.</p></div>
+            <div data-v="1" hidden><span class="role">Evidence</span><h3>My folders</h3><p>For v2 I redesigned onboarding and Home myself and set one graphic language for the whole app. The verdict is an open folder, and the next item waits below it.</p></div>
+            <div data-v="2"><span class="role out">Product</span><h3>Color is the verdict</h3><p>The folder takes the color of its answer, the reason line gives a date and what you’d have left, and the facts sit below in the same order for every answer.</p></div>
+            <p class="keep"><b>Why folders, not rows.</b> An item opens like a folder and the rest slide down, so you never lose the list. The color is the verdict, so a stack reads without words. The tab shows the price, so you never guess what something costs.</p>
           </div>
         </div>
-        <p class="demo__note"><a href="../" target="_blank" rel="noopener">Open full screen in a new tab</a></p>
+
+        <h3 style="margin-top:3rem">Who did what at this stage</h3>
+        <div class="cols3" style="margin-top:1rem">
+          <div><h4 class="step-label" style="margin:0 0 .5rem">I designed</h4><p>Onboarding and Home in low-fi v2, the visual language, the palette and app icon, the logo.</p></div>
+          <div><h4 class="step-label" style="margin:0 0 .5rem">Claude produced</h4><p>Low-fi v1, then v2 applied to the other screens, the hi-fi screens and the design system, through the Figma connection.</p></div>
+          <div><h4 class="step-label" style="margin:0 0 .5rem">I rejected and changed</h4><p>Its first pass drew plain lists with thumbnails. I pointed to Recent checks on Home: every list became a folder stack, the item page an open folder. I removed the “+” on Check and the verdict word on folder tabs.</p></div>
+        </div>
+        <p class="prompt">“Look at my updated design. It’s low-fi, don’t nitpick colors. Build the remaining screens according to this design.”</p>
+        <p class="tiny">My prompt in Figma, 2026-10-18. Paraphrased: I dictated it by voice in Russian, and the exact wording wasn’t saved.</p>
+
+        <details class="more">
+          <summary>An image model tried too, and lost the folders</summary>
+          <div>
+            <p>I asked ChatGPT for three grayscale alternatives per screen, based on my Crazy 8’s. It came back with a generic fintech look: lists, grey boxes, the verdict in a box instead of owning the screen. Its “stacked folders” version lost the folder idea. I kept a few details: the Check empty state that explains the rules, the “as of” date on saved prices, sort as a bottom sheet.</p>
+            <div class="gallery" style="--col:22rem;--ar:4/3">
+              <button type="button" data-full="assets/gpt-verdict.webp" data-cap="ChatGPT: verdict screens. Rejected: the verdict is a big word above a pile of boxes."><span class="shot"><img src="assets/gpt-verdict-thumb.webp" alt="ChatGPT concept: three grayscale verdict screens" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>ChatGPT: verdict screens</b>Rejected: the verdict is a big word above a pile of boxes.</span></button>
+              <button type="button" data-full="assets/gpt-items.webp" data-cap="ChatGPT: My items. Rejected: lists with product photos; variant B lost the folder metaphor."><span class="shot"><img src="assets/gpt-items-thumb.webp" alt="ChatGPT concept: grayscale My items lists" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>ChatGPT: My items</b>Rejected: lists with product photos; variant B lost the folder metaphor.</span></button>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-label">Step 3<b>The language around it</b></div>
+      <div>
+        <div class="zrow" style="margin-bottom:0">
+          <div class="z-media"><span class="z-shot"><img class="themed" data-s="notnow" src="assets/notnow-light.webp" alt="Not now verdict in coral red with one calm line about months of spare money" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
+          <div class="z-text">
+            <p class="statement" style="font-size:clamp(1.5rem,3vw,2.3rem)">A companion, not a judge. Even its red shouldn’t cause anxiety.</p>
+            <p>“Not now” doesn’t say “don’t buy”. It doesn’t forbid you. It says lightly: some day you can, keep saving, but not now. The rounded corners soften the tone, so nothing feels sharp or fixed.</p>
+            <ul class="ledger">
+              <li><span class="src">Removed</span><p><b>Product photos.</b> A photo pulls you to the “want”; the screen is about what this price means for you.</p></li>
+              <li><span class="src">Removed</span><p><b>The verdict word on folder tabs.</b> With several folders you saw “Buy” repeated and no price. Now every tab shows the price.</p></li>
+              <li><span class="src">Removed</span><p><b>A light grey background.</b> A contrast check showed the light verdict folders would blend into it.</p></li>
+              <li><span class="src">Removed</span><p><b>The hamburger menu.</b> It would hold only Settings, so a gear is one step shorter.</p></li>
+            </ul>
+          </div>
+        </div>
+        <div class="swatches" style="margin-top:2.5rem">
+          <div class="sw wh"><i style="background:#206AED">Brand</i><span><b>#569EF6 · #206AED</b>Never touches a verdict color</span></div>
+          <div class="sw"><i style="background:#56F683">Buy</i><span><b>#56F683</b>Fits your money now</span></div>
+          <div class="sw"><i style="background:#F6DB56">Wait</i><span><b>#F6DB56</b>Fits after payday</span></div>
+          <div class="sw"><i style="background:#F66B56">Not now</i><span><b>#F66B56</b>Doesn’t fit yet</span></div>
+        </div>
+        <p class="tiny" style="margin-top:1rem;max-width:none">Bricolage Grotesque ExtraBold for titles and the verdict word, Manrope for everything you read. Text on verdict colors is always black: white fails on green, yellow and red (1.4 to 2.9:1), black passes (7 to 15:1).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-label">Step 4<b>Structure</b></div>
+      <div>
+        <p class="lead-xl" style="margin-bottom:1rem">I didn’t drop the wishlist. I moved it into Check and limited it to 5 items for 3 days.</p>
+        <p>On purpose, so it doesn’t turn into one more cart you never finish. The hamburger went too. Everything else fits in four tabs: Home, Check, My items, My money.</p>
+        <div role="tablist" aria-label="Sitemap version" class="seg" id="mapseg" style="margin-top:1rem">
+          <button type="button" role="tab" aria-selected="false" data-v="0">Sitemap v01</button>
+          <button type="button" role="tab" aria-selected="false" data-v="1">v02</button>
+          <button type="button" role="tab" aria-selected="true" data-v="2">v03</button>
+        </div>
+        <div class="wide-frame" id="maps">
+          <img src="assets/board-sitemap-v01.webp" alt="Sitemap v01: from research, with a separate Wishlist tab" class="off" data-v="0" loading="lazy">
+          <img src="assets/board-sitemap-v02.webp" alt="Sitemap v02: after the card sort, Settings behind a gear" class="off" data-v="1" loading="lazy">
+          <img src="assets/board-sitemap-v03.webp" alt="Sitemap v03: Check becomes its own tab with drafts" data-v="2" loading="lazy">
+          <button type="button" class="map-zoom" aria-label="Enlarge the sitemap"></button>
+        </div>
+        <p class="frame-cap" aria-live="polite"><span class="role">Evidence</span><span id="mapcap">v03, after the Crazy 8’s: Check becomes its own tab with drafts; the four tabs that shipped.</span></p>
+        <p class="tiny">Between v01 and v02 I ran a simulated card sort (18 synthetic participants). I read it as an exploration of options, not as proof that the structure works.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 06 AI -->
-<section id="ai">
-  <div class="wrap rv">
-    <figure class="banner">
-      <div class="banner-media">
-      <button type="button" class="banner-img" data-full="assets/gpt-verdict.webp" data-cap="ChatGPT’s verdict screens: generic boxes, rejected. Details below." aria-label="Enlarge: ChatGPT concept: three grayscale verdict screens"><img src="assets/gpt-verdict.webp" alt="ChatGPT concept: three grayscale verdict screens" style="object-position:50% 30%" loading="lazy"></button>
-      <div class="banner-txt"><p class="eyebrow">06 · Working with AI</p><h2>Where it helped, and where I had to stop it</h2></div>
+<!-- 04 THE PRODUCT IN MOTION -->
+<section id="motion">
+  <div class="wrap">
+    <div class="chapter-head">
+      <span class="num">04</span>
+      <h2>The product in motion</h2>
+      <p>I wanted control over continuous motion, gesture speed and springs you can interrupt, so I prototyped in code instead of in Figma. I described each motion with references, and it went straight into code.</p>
+    </div>
+
+    <div class="lab" id="lab">
+      <div>
+        <p class="eyebrow">Gesture lab</p>
+        <h3 class="statement" style="font-size:clamp(1.6rem,3.2vw,2.4rem)">Try the folders yourself.</h3>
+        <ol>
+          <li><div><b>Tap a folder</b><span>It opens, and the others slide down below it.</span></div></li>
+          <li><div><b>Grab it while it moves</b><span>The spring follows your finger from wherever it is.</span></div></li>
+          <li><div><b>Flick or drag it</b><span>The spring keeps the speed of your finger.</span></div></li>
+          <li><div><b>Pull up the stack under an open folder</b><span>The rest rise so you can see and switch.</span></div></li>
+        </ol>
+        <div class="lab-ctrls" role="group" aria-label="Jump to a state">
+          <button type="button" data-go="M1" disabled>My items</button>
+          <button type="button" data-go="H" class="ghost" disabled>Home</button>
+          <button type="button" data-go="V2" class="ghost" disabled>An open verdict</button>
+          <button type="button" data-go="reset" class="ghost" disabled>Reset</button>
+        </div>
+        <p class="tiny" style="margin-top:1rem">The real prototype on its demo data; nothing is saved. The buttons are a way in without gestures. Screen reader support for the gestures is still open.</p>
       </div>
-      <figcaption><span class="role">Evidence</span>ChatGPT’s verdict screens: generic boxes, rejected. Details below.</figcaption>
-    </figure>
-    <div class="split2">
+      <div class="phone-stage" style="padding-bottom:1rem">
+        <div class="phone" data-demo="M1" data-lazy>
+          <div class="phone__screen">
+            <img class="phone__poster themed" data-s="items" src="assets/items-light.webp" alt="My items, shown until the live app is started" loading="lazy">
+            <button type="button" class="phone__start">
+              <span class="play" aria-hidden="true"><svg class="ic" style="width:1.6rem;height:1.6rem"><use href="#i-play"/></svg></span>
+              <b>Start the gesture lab</b>
+              <span>Loads only now. Use it like a phone.</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split2" style="margin-top:clamp(3.5rem,8vw,6rem)">
       <div class="s-l">
-      <p class="claim">The design and the visuals are mine. With Claude I built a system and made screens faster, and then edited them to match how I wanted them to look.</p>
+        <p class="eyebrow">Verdict explorer</p>
+        <h3 class="statement" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">Three outcomes, one rule.</h3>
       </div>
-      <div class="s-r">
-      <p>I designed onboarding and Home myself in Figma, which set the visual language. Then Claude applied it to the remaining screens through the Figma connection, built the hi-fi from my color board and set up the design system (Light and Dark variables, text styles, components). I reviewed every round.</p>
+      <div class="s-r"><p>Same layout, same facts, same rules. Only the color, the word and the reason line change. Examples from the prototype’s demo data.</p></div>
+    </div>
+    <div role="tablist" aria-label="Verdict" class="seg" id="vseg">
+      <button type="button" role="tab" aria-selected="true" data-v="0"><i class="dot" style="background:var(--buy)"></i>Buy</button>
+      <button type="button" role="tab" aria-selected="false" data-v="1"><i class="dot" style="background:var(--wait)"></i>Wait for payday</button>
+      <button type="button" role="tab" aria-selected="false" data-v="2"><i class="dot" style="background:var(--no)"></i>Not now</button>
+    </div>
+    <div class="stage" id="verd">
+      <div class="stage-shot">
+        <img class="themed" data-s="buy" src="assets/buy-light.webp" alt="Buy verdict in green for a sneaker cleaning kit" data-v="0">
+        <img class="themed off" data-s="wait" src="assets/wait-light.webp" alt="Wait for payday verdict in yellow for a lamp" data-v="1" loading="lazy">
+        <img class="themed off" data-s="notnow" src="assets/notnow-light.webp" alt="Not now verdict in coral for a camera" data-v="2" loading="lazy">
+      </div>
+      <div class="stage-text" aria-live="polite">
+        <div data-v="0"><h3>Buy</h3><p>A $39 sneaker cleaning kit. “Fits your month.” The first tile says how comfortable it is: 7.8% of your spare money.</p></div>
+        <div data-v="1" hidden><h3>Wait for payday</h3><p>A $180 lamp, or 4 × $45. “Payday is in 4 days. Buy it now and you’ll have only about $160 until then.” The app judges the full price, not the monthly payments.</p></div>
+        <div data-v="2" hidden><h3>Not now</h3><p>A $1,240 camera. “That’s about 2½ months of your spare money.” It doesn’t forbid; it says some day you can.</p></div>
+        <p class="keep"><b>What never changes:</b> the item on top, the reason line, the fact tiles in the same order, and the same actions under the folder. Behind each tile there’s one graph and one plain sentence, one swipe away.</p>
       </div>
     </div>
 
-    <div class="grid g3" style="margin-top:1.8rem">
-      <div class="card"><h3>What it did well</h3><p>Speed and consistency: 31 screens in light and dark from my components, overflow checks across every frame, contrast checks before I decided on colors.</p></div>
-      <div class="card"><h3>Where it was wrong</h3><p>On the first pass it ignored my folders and drew plain lists with a thumbnail, the layout carried over from the first low-fi rows. It added a “+” on Check, which already is the add screen. In the design system every folder tab said “Buy”.</p></div>
-      <div class="card"><h3>How I fixed it</h3><p>I pointed to Recent checks on Home: every item list became a folder stack and the item page became an open folder. I removed the “+”, the thumbnails and the verdict word on tabs. Color is the verdict.</p></div>
-    </div>
-
-    <h3 style="margin-top:2.4rem">The prompt that moved it</h3>
-    <blockquote class="quote">Look at my updated design. It’s low-fi, don’t nitpick colors. Build the remaining screens according to this design.<cite>My prompt to Claude in Figma, 2026-10-18 (paraphrased from a Russian voice message)</cite></blockquote>
-    <div class="gap"><b>No exact wording</b><p>I don’t have the exact prompt: the prompt was dictated by voice. What changed the result was showing my own screens as the reference instead of describing the style in words.</p></div>
-
-    <div class="split2" style="margin-top:3rem">
+    <div class="split2" style="margin-top:clamp(3.5rem,8vw,6rem)">
       <div class="s-l">
-      <h3>The image model, earlier</h3>
-      <p class="claim">ChatGPT was useful for edge states and small details, not for the concept.</p>
+        <p class="eyebrow">Every key screen</p>
+        <h3 class="statement" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">One decision per screen.</h3>
       </div>
-      <div class="s-r">
-      <p>I asked it for three grayscale alternatives per screen, based on my Crazy 8’s sketches. It came back with a generic fintech look: lists, grey boxes, the verdict sitting in a box instead of owning the screen. Even its “stacked folders” version lost the folder idea. I kept a few details: the Check empty state that explains the rules, the “as of” date on saved prices, sort as a bottom sheet.</p>
-      </div>
+      <div class="s-r"><p>31 screens in Figma, light and dark. These six carry the system. Tap one to open it with the decision behind it.</p></div>
     </div>
-    <div class="gallery" style="--col:22rem;--ar:4/3">
-      <button type="button" data-full="assets/gpt-verdict.webp" data-cap="ChatGPT: verdict screens. Rejected. The verdict is a big word above a pile of boxes; the facts compete with it."><span class="shot"><img src="assets/gpt-verdict-thumb.webp" alt="ChatGPT concept: three grayscale verdict screens, Buy, Wait for payday and Not now" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>ChatGPT: verdict screens</b>Rejected. The verdict is a big word above a pile of boxes; the facts compete with it.</span></button>
-      <button type="button" data-full="assets/gpt-items.webp" data-cap="ChatGPT: My items. Rejected. Lists with product photos; the “stacked folders” variant (B) lost the folder metaphor."><span class="shot"><img src="assets/gpt-items-thumb.webp" alt="ChatGPT concept: grayscale My items lists in three variants" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>ChatGPT: My items</b>Rejected. Lists with product photos; the “stacked folders” variant (B) lost the folder metaphor.</span></button>
-    </div>
+    <div class="levi" id="lv-sc" data-uid="sc"><div class="lv-grid"><button type="button" class="lv-item" style="--i:0" data-id="onb" data-title="Onboarding" data-role="product" data-text="Only what you know by heart, in ranges: income, rent, bills, payday. An exact amount is optional. Your name comes at the very end."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-onb"><img class="themed" data-s="onb-income" src="assets/onb-income-light.webp" alt="Onboarding question: what lands in your account each month, with income ranges" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Onboarding</b></span></button><button type="button" class="lv-item" style="--i:1" data-id="home" data-title="Home" data-role="product" data-text="Spare money until payday, not a balance. Items you mark Bought lower it: the one exception to no expense tracking."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-home"><img class="themed" data-s="home" src="assets/home-light.webp" alt="Home screen with the spare money card and Recent checks folders" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Home</b></span></button><button type="button" class="lv-item" style="--i:2" data-id="check" data-title="Check" data-role="product" data-text="Drafts: up to 5, each kept for 3 days. Adding an item checks it right away."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-check"><img class="themed" data-s="check" src="assets/check-light.webp" alt="Check tab with a draft card and a stack of drafts" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Check</b></span></button><button type="button" class="lv-item" style="--i:3" data-id="verdict" data-title="Verdict" data-role="product" data-text="One layout for all three answers, only the color changes. The reason line on top, fact tiles below."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-verdict"><img class="themed" data-s="wait" src="assets/wait-light.webp" alt="Wait for payday verdict for a lamp" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Verdict</b></span></button><button type="button" class="lv-item" style="--i:4" data-id="graph" data-title="Behind a fact" data-role="extension" data-text="Each fact tile opens one graph and one plain sentence, for people who want the why. Swipe back to the verdict."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-graph"><img class="themed" data-s="graph" src="assets/graph-light.webp" alt="Price in 90 days graph with the lowest price marked" loading="lazy"></span></span><span class="lv-label"><span class="role ext">Extension</span><b>Behind a fact</b></span></button><button type="button" class="lv-item" style="--i:5" data-id="items" data-title="My items" data-role="product" data-text="Wait for payday comes with a date and a reminder. On payday the item is checked again."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-items"><img class="themed" data-s="items" src="assets/items-light.webp" alt="My items: four saved items as colored folders" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>My items</b></span></button></div><div class="lv-open" hidden></div></div>
+
+    <p class="tiny" style="margin-top:2rem">What the code taught me: the keyboard covering a field on a small iPhone, scrolling cut short on iOS, and action links that did nothing in German were all invisible in a desktop browser.</p>
   </div>
 </section>
 
-<!-- 07 BUILD -->
-<section id="build" class="alt">
-  <div class="wrap rv">
-    <div class="zrow">
-      <div class="z-media"><span class="z-shot"><img class="themed" data-s="items" src="assets/items-light.webp" alt="My items: saved items as a stack of colored folders" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
-      <div class="z-text">
-        <p class="eyebrow">07 · Design to code</p>
-        <h2>Straight from motion references to code</h2>
-        <p class="claim">I skipped Figma prototyping on purpose: some of these interactions can’t be built there. I described each motion with references and it went straight into code.</p>
-        <p>It isn’t my first project, so moving from design to a live prototype wasn’t the hard part. The prototype is one HTML file on GitHub Pages: spring physics for the folders, data kept on the phone, light and dark, six languages, installable on the home screen.</p>
-      </div>
-    </div>
-    <div class="grid g3" style="margin-top:2.2rem">
-      <div class="card"><h3>What worked</h3><p>Folders you can grab mid-motion and flick, the same money math on every screen, and real verdicts from my rules (verdict logic v05), not fixed demo screens.</p></div>
-      <div class="card"><h3>What broke</h3><p>Things I couldn’t see in a desktop browser: the keyboard covering the field on a small iPhone, scrolling interrupted on iOS, and action links that did nothing in German, because the code read the translated text.</p></div>
-      <div class="card"><h3>What I’d do differently</h3><p>Test on a real iPhone and in other languages from the first coded version, not after many versions.</p></div>
-    </div>
-    <p class="tiny" style="margin-top:1.5rem">For a future launch I also benchmarked a product page parser on 183 links from 10 stores. It’s groundwork for releasing the app; it doesn’t change the design shown here.</p>
-  </div>
-</section>
-
-<!-- 08 BEFORE AFTER -->
-<section id="beforeafter">
-  <div class="wrap rv">
-    <figure class="banner">
-      <div class="banner-media">
-      <button type="button" class="banner-img" data-full="assets/board-crazy8-r4-items.webp" data-cap="My Crazy 8’s, round 4: saved items as stacked folders, before any screen was drawn." aria-label="Enlarge: My Crazy 8’s sketches of My items with stacked folder cards"><img src="assets/board-crazy8-r4-items.webp" alt="My Crazy 8’s sketches of My items with stacked folder cards" style="object-position:50% 62%" loading="lazy"></button>
-      <div class="banner-txt"><p class="eyebrow">08 · Before and after</p><h2>From a template to my folders</h2></div>
-      </div>
-      <figcaption><span class="role">Evidence</span>My Crazy 8’s, round 4: saved items as stacked folders, before any screen was drawn.</figcaption>
-    </figure>
-    <div class="split2">
-      <div class="s-l">
-      <p class="claim">The first low-fi was a generic list. The folder idea came from my own Crazy 8’s sketches.</p>
-      </div>
-      <div class="s-r">
-      <p>Low-fi v1 was made with AI in Figma: lists, item rows with a square thumbnail, boxed fields. For v2 I redesigned onboarding and Home myself and set one graphic language for the whole app, so nothing is out of balance: Bricolage titles, Manrope text, folder stacks, rows that run off the screen edge like tabs on sheets. The final version adds color, depth and real data.</p>
-      </div>
-    </div>
-    <div class="gallery" style="--col:22rem;--ar:4/3">
-      <button type="button" data-full="assets/board-crazy8-r4-items.webp" data-cap="Crazy 8’s · round 4 · My items. Eight sketches for saved items. Most of them stack the items as folders: the idea that became the whole app."><span class="shot"><img src="assets/board-crazy8-r4-items-thumb.webp" alt="My Crazy 8’s round 4: eight grayscale sketches of My items, most with stacked folder cards" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Crazy 8’s · round 4 · My items</b>Eight sketches for saved items. Most of them stack the items as folders: the idea that became the whole app.</span></button>
-      <button type="button" data-full="assets/board-crazy8-r1-verdict.webp" data-cap="Crazy 8’s · round 1 · Verdict. The verdict word owns the screen, facts go below. Sketches 4 and 6 already put the item on a folder tab."><span class="shot"><img src="assets/board-crazy8-r1-verdict-thumb.webp" alt="My Crazy 8’s round 1: eight grayscale sketches of the verdict screen" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Crazy 8’s · round 1 · Verdict</b>The verdict word owns the screen, facts go below. Sketches 4 and 6 already put the item on a folder tab.</span></button>
-      <button type="button" data-full="assets/board-hmw.webp" data-cap="How Might We. Seven HMW questions from the journey maps, each backed by an interview quote, and the guardrails for every idea."><span class="shot"><img src="assets/board-hmw-thumb.webp" alt="How Might We board with seven questions and guardrails" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>How Might We</b>Seven HMW questions from the journey maps, each backed by an interview quote, and the guardrails for every idea.</span></button>
-      <button type="button" data-full="assets/board-crazy8-r2-graph.webp" data-cap="Crazy 8’s · round 2 · Graph detail. From a fact tile to one full graph you can swipe through."><span class="shot"><img src="assets/board-crazy8-r2-graph-thumb.webp" alt="My Crazy 8’s round 2: sketches of the graph detail screen" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Crazy 8’s · round 2 · Graph detail</b>From a fact tile to one full graph you can swipe through.</span></button>
-    </div>
-    <div class="levi" id="lv-ba" data-uid="ba"><div class="lv-grid"><button type="button" class="lv-item" style="--i:0" data-id="w1" data-title="Wait · low-fi v1" data-role="evidence" data-text="A list screen made with AI from a template: thumbnail, title, four equal boxes. Nothing says this is one item you opened."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-ba-w1"><img src="assets/lofi-v1-wait.webp" alt="Low-fi v1 of the Wait for payday screen: grayscale list layout with a thumbnail" loading="lazy"></span></span><span class="lv-label"><span class="role">Evidence</span><b>Wait · low-fi v1</b></span></button><button type="button" class="lv-item" style="--i:1" data-id="w2" data-title="Wait · low-fi v2" data-role="evidence" data-text="My version: the verdict is an open folder, and the next item waits below it."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-ba-w2"><img src="assets/lofi-v2-wait.webp" alt="Low-fi v2 of the Wait for payday screen: the verdict sits in an open grey folder" loading="lazy"></span></span><span class="lv-label"><span class="role">Evidence</span><b>Wait · low-fi v2</b></span></button><button type="button" class="lv-item" style="--i:2" data-id="w3" data-title="Wait · final" data-role="product" data-text="Color is the verdict. The reason line gives the date and what you’d have left."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-ba-w3"><img class="themed" data-s="wait" src="assets/wait-light.webp" alt="Final Wait for payday verdict in yellow" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Wait · final</b></span></button><button type="button" class="lv-item" style="--i:3" data-id="i1" data-title="My items · low-fi v1" data-role="evidence" data-text="Rows with thumbnails and a status pill: easy to scan, but the photo pulls you to the “want”."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-ba-i1"><img src="assets/lofi-v1-items.webp" alt="Low-fi v1 of My items: four rows with grey thumbnails and status pills" loading="lazy"></span></span><span class="lv-label"><span class="role">Evidence</span><b>My items · low-fi v1</b></span></button><button type="button" class="lv-item" style="--i:4" data-id="i3" data-title="My items · final" data-role="product" data-text="Folders in their verdict color, the price on every tab, the open item on top."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-ba-i3"><img class="themed" data-s="items" src="assets/items-light.webp" alt="Final My items screen with colored folders" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>My items · final</b></span></button></div><div class="lv-open" hidden></div></div>
-  </div>
-</section>
-
-<!-- 09 TESTING -->
+<!-- 05 TESTING AND ITERATION -->
 <section id="testing" class="alt">
-  <div class="wrap rv">
-    <div class="zrow flip">
-      <div class="z-media"><span class="z-shot"><img class="themed" data-s="onb-income" src="assets/onb-income-light.webp" alt="Onboarding income step with ranges and an exact amount option" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
-      <div class="z-text">
-        <p class="eyebrow">09 · Testing</p>
-        <h2>Three kinds of testing, three kinds of finds</h2>
-        <p>I ran 20 synthetic AI testers on the prototype, then watched myself use it on my iPhone, then gave it to friends. Every remark was fixed: theirs, my friends’, and my own.</p>
-      </div>
+  <div class="wrap">
+    <div class="chapter-head">
+      <span class="num">05</span>
+      <h2>Testing and iteration</h2>
+      <p>Three kinds of checks, kept apart, because they are worth different things.</p>
     </div>
-    <div class="grid g3" style="margin-top:1.8rem">
-      <div class="card"><div class="card-num">20</div><h3>Synthetic testers</h3><p class="tiny">AI agents, each with a persona and a focus: tight budget, irregular income, huge numbers, an older user, accessibility, gesture chaos. A wide run of the app through many scenarios. They found the bugs: names rendered as code, $7.99 becoming $799, double taps creating duplicates.</p></div>
-      <div class="card"><div class="card-num">9</div><h3>Fixes from my own video</h3><p class="tiny">A 9-minute walk-through on my iPhone. The biggest find: after I had spent all my spare money, a $50 T-shirt still said Buy. Verdicts now follow the money left until payday.</p></div>
-      <div class="card"><div class="card-num">11</div><h3>Points from one friend</h3><p class="tiny">She tested over chat, sending screenshots and questions as she went. A second friend asked what happens if your money isn’t in dollars.</p></div>
-    </div>
-    <div class="split2" style="margin-top:2.4rem">
-      <div class="s-l">
-      <p class="claim">Synthetic testers found the bugs. Only a real person asked: what’s the point of drafts?</p>
-      </div>
-      <div class="s-r">
-      <p>She also asked “can I really do this?” about sharing from a store, which the prototype promised but couldn’t do. That became Coming soon labels. Currencies came from the friends too: the app now takes the currency from your phone’s region and converts per item.</p>
-      </div>
-    </div>
-    <div class="gap"><b>Who was measured</b><p>The 20 testers are simulated, not people. The real users so far are two friends, informally, with no tasks or recordings. A scripted test with 4 to 5 people on the current version is still to do.</p></div>
-  </div>
-</section>
-
-<!-- 10 MISTAKES -->
-<section id="mistakes">
-  <div class="wrap rv">
-    <p class="eyebrow">10 · What broke</p>
-    <h2>Four decisions that turned out wrong</h2>
-    <p>Not bugs: choices that made sense at the time, and the root cause behind each one.</p>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>What happened</th><th>Root cause</th><th>Fix</th></tr></thead>
-        <tbody>
-          <tr><td>Bills: “$700+” treated $720 and $3,000 the same</td><td>The exact amount existed only for income; I didn’t carry the pattern to similar steps</td><td>Exact amount for bills too, it opens by itself on “$700+”</td></tr>
-          <tr><td>Small buys got Buy after the money until payday was gone</td><td>The verdict looked at the monthly budget, not at what’s left until payday. I found it in my own video review</td><td>Verdict logic v04: follows the money left until payday; over budget is shown in red</td></tr>
-          <tr><td>Dollars only; a friend mixed shekels and dollars</td><td>A global product, tested on a US example</td><td>Currency from the phone’s region, per-item currency with conversion</td></tr>
-          <tr><td>The prototype promised Share, which doesn’t exist; a tester asked “can I really do this?”</td><td>I showed the planned product, not what works today</td><td>“Coming soon” on Share, Paste link and the onboarding step</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- 11 OUTCOME + LEARNED -->
-<section id="learned" class="alt">
-  <div class="wrap rv">
-    <p class="eyebrow">11 · Outcome and what I learned</p>
-    <h2>What was decided, and what is still open</h2>
-    <p>Every row traces to something people said or something I saw.</p>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>Problem or assumption</th><th>Evidence</th><th>What changed in the product</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>People won’t share exact income</td><td>“A range would be fine. My exact salary, no.” (P02); 5 of 5 on trust</td><td>Setup asks for ranges; an exact amount is optional; no bank connection</td><td><span class="pill done">Done</span></td></tr>
-          <tr><td>Fast buys are the regretted ones</td><td>Survey speed vs use; interviews</td><td>Wait for payday with a date, a reminder and a re-check on payday</td><td><span class="pill done">Done</span></td></tr>
-          <tr><td>People need to hear yes too</td><td>3 of 5 interviews (P02, P03, P05)</td><td>Buy follows the same rules as the other answers</td><td><span class="pill done">Done</span></td></tr>
-          <tr><td>Not everyone is paid monthly</td><td>Irregular income in survey and interviews (P01, P03)</td><td>Biweekly pay, honest ranges for tight budgets</td><td><span class="pill done">Done</span></td></tr>
-          <tr><td>Not everyone pays in dollars</td><td>Both friends</td><td>Currency from region, per-item conversion</td><td><span class="pill done">Done</span></td></tr>
-          <tr><td>How does the goal fill up?</td><td>Friend F1: “how do I make progress?”</td><td>At payday the app asks you to confirm what you saved (decided, not built)</td><td><span class="pill next">Next</span></td></tr>
-          <tr><td>Share from any store</td><td>Survey: most people already park items while shopping</td><td>Share extension in the native app; Coming soon in the prototype</td><td><span class="pill next">Next</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3 style="margin-top:2.4rem">What exists</h3>
-    <ul>
-      <li>Research: survey, five interviews, two personas, empathy maps, two journey maps, sitemap in three versions.</li>
-      <li>31 hi-fi screens in Figma, light and dark, on a design system with variables, text styles and components.</li>
-      <li>A live coded prototype in six languages, installable on a phone.</li>
-      <li>A landing page, and a native app started in Expo.</li>
+    <ul class="ledger">
+      <li><span class="src real">Real people</span><p><b>Two friends, informally.</b> F1 tested over chat, sending screenshots and questions as she went: 11 points. F2 asked about currencies (recalled, not written down). No tasks, no recordings.</p></li>
+      <li><span class="src own">My own</span><p><b>A 9-minute walk-through on my iPhone,</b> recorded and reviewed: 9 fixes, including the biggest one below.</p></li>
+      <li><span class="src sim">AI-simulated</span><p><b>20 AI testers</b>, each with a persona and a focus, drove the prototype in a browser. They found bugs, not opinions: names rendered as code, $7.99 becoming $799, double taps creating duplicates. All fixed.</p></li>
     </ul>
 
-    <div class="grid g2" style="margin-top:2.6rem;align-items:start">
-      <div class="card">
-        <p class="eyebrow">What I learned</p>
-        <h3>Designer as director</h3>
-        <p>This is my second project as a product designer, and I feel more confident with every decision. I see more and more that a designer won’t do everything by hand, but will be the director, the scriptwriter and the manager of the whole process: see the app as a user, a developer, a designer and a marketer, keep all of it in your head, check which decisions work and run stress tests.</p>
-        <p>AI is becoming a key tool for the whole product, not only the design. For a designer without a team it’s a big help: it widens what you can do around the product.</p>
+    <div class="marquee" role="region" aria-label="What the friends said, translated from Russian"><div class="mq-track"><div class="mq-set"><span class="mq-item">“Can I see the digits while I type them?”<cite>F1</cite></span><span class="mq-item">“You don’t believe in my expenses enough 😂”<cite>F1</cite></span><span class="mq-item">“Can I really do this, or do I type it in by hand?”<cite>F1</cite></span><span class="mq-item">“What’s the point of drafts?”<cite>F1</cite></span><span class="mq-item">“What if I want to change the price or the name?”<cite>F1</cite></span><span class="mq-item">“How do I make the progress move?”<cite>F1</cite></span><span class="mq-item">“Where is the money kept?”<cite>F1</cite></span><span class="mq-item">“What if it’s not in dollars?”<cite>F2</cite></span></div><div class="mq-set" aria-hidden="true"><span class="mq-item">“Can I see the digits while I type them?”<cite>F1</cite></span><span class="mq-item">“You don’t believe in my expenses enough 😂”<cite>F1</cite></span><span class="mq-item">“Can I really do this, or do I type it in by hand?”<cite>F1</cite></span><span class="mq-item">“What’s the point of drafts?”<cite>F1</cite></span><span class="mq-item">“What if I want to change the price or the name?”<cite>F1</cite></span><span class="mq-item">“How do I make the progress move?”<cite>F1</cite></span><span class="mq-item">“Where is the money kept?”<cite>F1</cite></span><span class="mq-item">“What if it’s not in dollars?”<cite>F2</cite></span></div></div></div>
+    <p class="tiny">F1 and F2, translated from Russian. Real people, real questions.</p>
+
+    <h3 class="statement" style="margin-top:clamp(2.5rem,6vw,4rem);font-size:clamp(1.6rem,3.4vw,2.6rem)">Four changes that came from testing</h3>
+    <article class="story">
+      <div><h3>The verdict forgot what I had bought</h3><p class="evid"><span class="src own">My iPhone walk-through</span></p></div>
+      <dl class="ba">
+        <div><dt>Before</dt><dd>After I had spent all my spare money, a $50 T-shirt still said Buy. The verdict looked at the monthly budget.</dd></div>
+        <div><dt>After</dt><dd>Verdicts follow the money left until payday, and show how far over budget you are, in red.</dd></div>
+        <div class="why"><dt>Why</dt><dd>A verdict that ignores what you already did can’t be trusted twice.</dd></div>
+      </dl>
+    </article>
+    <article class="story">
+      <div><h3>“You don’t believe in my expenses enough”</h3><p class="evid"><span class="src real">F1</span></p></div>
+      <dl class="ba">
+        <div><dt>Before</dt><dd>Bills topped out at “$700+”, so $720 and $3,000 were the same. Only income had an exact amount.</dd></div>
+        <div><dt>After</dt><dd>An exact amount for bills too. It opens by itself on “$700+”.</dd></div>
+        <div class="why"><dt>Why</dt><dd>I hadn’t carried a pattern to the step that needed it. Ranges stay the default.</dd></div>
+      </dl>
+    </article>
+    <article class="story">
+      <div><h3>Dollars only</h3><p class="evid"><span class="src real">F1 · F2</span></p></div>
+      <dl class="ba">
+        <div><dt>Before</dt><dd>A global product tested on a US example. F1 mixed shekels and dollars in one setup.</dd></div>
+        <div><dt>After</dt><dd>The currency comes from the phone’s region; each item can have its own, converted with “≈”.</dd></div>
+        <div class="why"><dt>Why</dt><dd>Wrong money in means a wrong verdict out.</dd></div>
+      </dl>
+    </article>
+    <article class="story" style="border-bottom:1px solid var(--ln)">
+      <div><h3>“Can I really do this?”</h3><p class="evid"><span class="src real">F1</span></p></div>
+      <dl class="ba">
+        <div><dt>Before</dt><dd>The prototype showed Share from a store and Paste link, which don’t work yet. Every link failed and read as broken.</dd></div>
+        <div><dt>After</dt><dd>“Coming soon” on Share, Paste link and the onboarding step, with no change to the layout.</dd></div>
+        <div class="why"><dt>Why</dt><dd>I had shown the planned product, not what works today.</dd></div>
+      </dl>
+    </article>
+
+    <h3 style="margin-top:3rem">What happened to F1’s 11 points</h3>
+    <div class="triage">
+      <div><h4><i style="background:var(--buy)"></i>Accepted and built</h4><ul><li>Exact amount for bills</li><li>Edit a name or a price</li><li>Currencies</li><li>Coming soon on Share and Paste link</li></ul></div>
+      <div><h4><i style="background:var(--wait)"></i>Decided, not built yet</h4><ul><li>Goal progress: at payday the app asks you to confirm what you saved</li><li>Where the money is kept: a copy question, still open</li></ul></div>
+      <div><h4><i style="background:var(--blue)"></i>Kept as designed, still open</h4><ul><li>Drafts. Only a real person asked what they are for; I kept them, and the wording needs a real test</li></ul></div>
+      <div><h4><i style="background:var(--tx3)"></i>Not reproduced</h4><ul><li>Digits hidden while typing: not seen on my phone. I added a keyboard guard; not yet retested on a small iPhone</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 REFLECTION -->
+<section id="reflection">
+  <div class="wrap">
+    <div class="chapter-head">
+      <span class="num">06</span>
+      <h2>Reflection</h2>
+    </div>
+    <div class="cols3">
+      <div>
+        <h3>Limitations</h3>
+        <ul>
+          <li>The interviews and 15 of 20 survey responses were simulated, so the personas and journey maps are hypotheses.</li>
+          <li>Real users so far: two friends, informally.</li>
+          <li>Screen reader support for the gestures is open.</li>
+          <li>Sharing from a store isn’t built.</li>
+        </ul>
       </div>
-      <div class="card">
-        <p class="eyebrow">What I’d do differently</p>
-        <h3>Real people, real phones, earlier</h3>
-        <ul style="margin:0">
-          <li>Test with real people earlier. Hi-fi was ready on Oct 19; real people came later and informally. Synthetic testers found bugs, but only a person asked what drafts are for.</li>
+      <div>
+        <h3>Needs real-world validation</h3>
+        <ul>
+          <li>Whether people find that the stack can be pulled, without being told.</li>
+          <li>Whether a verdict feels fair, and people come back on payday.</li>
+          <li>Whether drafts make sense to someone who didn’t design them.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>What I’d do differently</h3>
+        <ul>
+          <li>Test with real people earlier. Hi-fi was ready on Oct 19; real people came later and informally.</li>
           <li>Test on a real iPhone and in other languages from the first coded version.</li>
         </ul>
-        <p class="eyebrow" style="margin-top:1.4rem">Next</p>
+      </div>
+    </div>
+
+    <div class="split2" style="margin-top:clamp(3rem,7vw,5rem)">
+      <div class="s-l">
+        <p class="eyebrow">What I learned</p>
+        <p class="statement" style="font-size:clamp(1.6rem,3.4vw,2.6rem)">The designer stays the author.</p>
+      </div>
+      <div class="s-r">
+        <p>This is my second project as a product designer, and I feel more confident with every decision. A designer won’t do everything by hand, but will direct the whole process: see the app as a user, a developer, a designer and a marketer, keep all of it in mind, check which decisions work, and run stress tests.</p>
+        <p>AI is becoming a key tool for the whole product, not only the design. In this project it built screens from my direction, simulated research I then had to treat as hypotheses, and ran stress tests. The design decisions, and what I rejected, were mine.</p>
+      </div>
+    </div>
+
+    <div class="split2" style="margin-top:clamp(2.5rem,6vw,4rem)">
+      <div class="s-l"><p class="eyebrow">Next</p></div>
+      <div class="s-r">
         <ul style="margin:0">
-          <li>A scripted test with 4 to 5 people on the current version.</li>
+          <li>A scripted test with 4 to 5 real people on the current version, with the same tasks for everyone.</li>
           <li>The payday goal check-in.</li>
-          <li>Share from stores in the native app.</li>
+          <li>Share from stores in the native app, started in Expo.</li>
         </ul>
       </div>
     </div>
@@ -860,7 +994,7 @@ footer .tiny{margin-top:2rem}
     <h2>Kirill Blik</h2>
     <p class="lead">Product designer. DeciBuy is a concept app I designed and prototyped.</p>
     <div class="btn-row">
-      <a class="cta" href="../" target="_blank" rel="noopener">Open the live prototype<svg class="ic"><use href="#i-go"/></svg></a>
+      <a class="cta" href="../" target="_blank" rel="noopener">Open the full prototype<svg class="ic"><use href="#i-go"/></svg></a>
       <a class="cta ghost" href="../landing/">Landing page</a>
       <a class="cta ghost" href="https://www.linkedin.com/in/kirillblik/" target="_blank" rel="noopener">LinkedIn</a>
     </div>
@@ -881,12 +1015,13 @@ footer .tiny{margin-top:2rem}
 <script>
 (function(){
   var root = document.documentElement;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* theme: screenshots, lightbox sources and the live app follow it */
   function shots(){ var t = root.dataset.theme;
     document.querySelectorAll('img.themed, .lv-open img[data-s]').forEach(function(i){ i.src = 'assets/' + i.dataset.s + '-' + t + '.webp'; });
     document.querySelectorAll('.gallery button[data-s]').forEach(function(b){ b.dataset.full = 'assets/' + b.dataset.s + '-' + t + '.webp'; }); }
-  function sendTheme(){ var f = document.querySelector('#phone-screen iframe'); if (f && f.contentWindow) f.contentWindow.postMessage({decibuyTheme: root.dataset.theme}, '*'); }
+  function sendTheme(){ document.querySelectorAll('.phone iframe').forEach(function(f){ if (f.contentWindow) f.contentWindow.postMessage({decibuyTheme: root.dataset.theme}, '*'); }); }
   shots();
   document.querySelector('.tgl').addEventListener('click', function(){
     root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -894,34 +1029,82 @@ footer .tiny{margin-top:2rem}
     shots(); sendTheme();
   });
 
-  /* reading progress */
+  /* reading progress + chapter spy */
   var bar = document.getElementById('bar');
   function progress(){ var h = document.documentElement; bar.style.width = Math.min(100, h.scrollTop/((h.scrollHeight - h.clientHeight) || 1)*100) + '%'; }
   addEventListener('scroll', progress, {passive:true}); progress();
-
-  /* entrance */
-  var rv = document.querySelectorAll('.rv');
   if ('IntersectionObserver' in window){
-    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); }, {threshold:.04});
-    rv.forEach(function(el){ io.observe(el); });
     var links = [].slice.call(document.querySelectorAll('.nav-links a'));
     var spy = new IntersectionObserver(function(es){ es.forEach(function(e){ if (!e.isIntersecting) return;
       links.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id); }); }); }, {rootMargin:'-45% 0px -50% 0px'});
     links.forEach(function(a){ var t = document.querySelector(a.getAttribute('href')); if (t) spy.observe(t); });
-  } else rv.forEach(function(el){ el.classList.add('in'); });
-
-  /* lightbox: a real dialog for focus trap, Escape and backdrop close */
-  var box = document.getElementById('lightbox');
-  if (box && typeof box.showModal === 'function'){
-    var img = document.getElementById('lb-img'), cap = document.getElementById('lb-cap');
-    document.querySelectorAll('.gallery button, .banner-img').forEach(function(b){
-      b.addEventListener('click', function(){ img.src = b.dataset.full; img.alt = b.querySelector('img').alt; cap.textContent = b.dataset.cap || ''; box.showModal(); });
-    });
-    document.getElementById('lb-close').addEventListener('click', function(){ box.close(); });
-    box.addEventListener('click', function(e){ if (e.target === box || e.target.classList.contains('lb-in')) box.close(); });
-    box.addEventListener('close', function(){ img.removeAttribute('src'); });
   }
 
+  /* lightbox */
+  var box = document.getElementById('lightbox'), lbImg = document.getElementById('lb-img'), lbCap = document.getElementById('lb-cap');
+  function openLB(src, alt, cap){ if (!box.showModal) return; lbImg.src = src; lbImg.alt = alt || ''; lbCap.textContent = cap || ''; box.showModal(); }
+  document.querySelectorAll('.gallery button').forEach(function(b){ b.addEventListener('click', function(){ openLB(b.dataset.full, b.querySelector('img').alt, b.dataset.cap); }); });
+  document.getElementById('lb-close').addEventListener('click', function(){ box.close(); });
+  box.addEventListener('click', function(e){ if (e.target === box || e.target.classList.contains('lb-in')) box.close(); });
+  box.addEventListener('close', function(){ lbImg.removeAttribute('src'); });
+
+  /* tabs that swap content inside a fixed frame */
+  function tabs(segId, onPick){
+    var seg = document.getElementById(segId); if (!seg) return;
+    var bs = [].slice.call(seg.querySelectorAll('[role="tab"]'));
+    function pick(b, focus){ bs.forEach(function(x){ var on = x === b; x.setAttribute('aria-selected', on); x.tabIndex = on ? 0 : -1; }); if (focus) b.focus(); onPick(b); }
+    bs.forEach(function(b, i){
+      b.tabIndex = b.getAttribute('aria-selected') === 'true' ? 0 : -1;
+      b.addEventListener('click', function(){ pick(b); });
+      b.addEventListener('keydown', function(e){ var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return; e.preventDefault(); pick(bs[(i + d + bs.length) % bs.length], true); });
+    });
+  }
+  function swap(container, v){
+    container.querySelectorAll('img[data-v]').forEach(function(i){ i.classList.toggle('off', i.dataset.v !== v); });
+    container.querySelectorAll('.stage-text > div[data-v]').forEach(function(d){ d.hidden = d.dataset.v !== v; });
+  }
+  tabs('evoseg', function(b){ swap(document.getElementById('evo'), b.dataset.v); });
+  tabs('vseg', function(b){ swap(document.getElementById('verd'), b.dataset.v); });
+  var MAPCAP = ['v01, from research, before the card sort: a separate Wishlist tab and a Check flow over every screen.',
+                'v02, after the card sort: Settings behind a gear in the top bar; Wishlist renamed My items.',
+                'v03, after the Crazy 8’s: Check becomes its own tab with drafts; the four tabs that shipped.'];
+  var maps = document.getElementById('maps'), mapV = '2';
+  tabs('mapseg', function(b){ mapV = b.dataset.v; swap(maps, mapV); document.getElementById('mapcap').textContent = MAPCAP[+mapV]; });
+  maps.querySelector('.map-zoom').addEventListener('click', function(){ var i = maps.querySelector('img[data-v="' + mapV + '"]'); openLB(i.src, i.alt, 'Sitemap ' + MAPCAP[+mapV]); });
+
+  /* journey: one map at a time */
+  var jm = [].slice.call(document.querySelectorAll('.jmap')), jw = document.querySelector('.jmaps');
+  if (jw) jw.classList.add('single');
+  jm.forEach(function(a, i){ a.hidden = i !== 0; a.setAttribute('role', 'tabpanel'); });
+  tabs('jseg', function(b){ jm.forEach(function(a, i){ a.hidden = String(i) !== b.dataset.j; }); });
+
+  /* live phones: the real prototype in demo mode (nothing saved). Hero loads on wide screens; elsewhere on tap */
+  function fitFrame(scr){ var f = scr.querySelector('iframe'); if (!f) return; var w = scr.clientWidth, h = scr.clientHeight, top = h*.054, s = w/390;
+    f.style.top = top + 'px'; f.style.height = ((h - top)/s) + 'px'; f.style.transform = 'scale(' + s + ')'; }
+  function startPhone(phone){
+    var scr = phone.querySelector('.phone__screen'); if (scr.querySelector('iframe')) return;
+    var f = document.createElement('iframe');
+    f.src = '../?demo=' + phone.dataset.demo; f.title = 'DeciBuy, the live prototype on demo data'; f.setAttribute('allow', 'clipboard-write');
+    f.addEventListener('load', function(){ sendTheme(); setTimeout(sendTheme, 300);
+      setTimeout(function(){ var p = scr.querySelector('.phone__poster'); if (p) p.remove(); }, 400);
+      phone.dispatchEvent(new CustomEvent('ready')); });
+    scr.appendChild(f); fitFrame(scr);
+    var st = scr.querySelector('.phone__start'); if (st) st.remove();
+  }
+  document.querySelectorAll('.phone[data-demo]').forEach(function(phone){
+    var st = phone.querySelector('.phone__start');
+    if (st) st.addEventListener('click', function(){ startPhone(phone); });
+  });
+  var hero = document.querySelector('.hero2 .phone');
+  if (matchMedia('(min-width:901px)').matches){ addEventListener('load', function(){ setTimeout(function(){ startPhone(hero); }, 300); }); }
+  else { var hs = hero.querySelector('.phone__start'); if (hs) hs.hidden = false; }
+
+  var lab = document.querySelector('#lab .phone'), ctrls = [].slice.call(document.querySelectorAll('#lab .lab-ctrls button'));
+  lab.addEventListener('ready', function(){ ctrls.forEach(function(b){ b.disabled = false; }); });
+  ctrls.forEach(function(b){ b.addEventListener('click', function(){
+    var f = lab.querySelector('iframe'); if (!f) return;
+    if (b.dataset.go === 'reset'){ f.contentWindow.postMessage({decibuyDemo:'M1'}, '*'); return; }
+    f.contentWindow.postMessage({decibuyDemo:b.dataset.go}, '*'); }); });
 
   /* levitating screens: open one, the others stack beside it */
   document.querySelectorAll('.levi').forEach(function(lv){
@@ -930,10 +1113,9 @@ footer .tiny{margin-top:2rem}
     var ROLES = {evidence:['','Evidence'], extension:[' ext','Extension'], product:[' out','Product']};
     function imgOf(it){ var i = it.querySelector('img'), c = i.cloneNode(); c.removeAttribute('loading');
       if (c.dataset.s) c.src = 'assets/' + c.dataset.s + '-' + root.dataset.theme + '.webp'; return c; }
-    function vt(fn){ if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.startViewTransition(fn); else fn(); }
+    function vt(fn){ if (document.startViewTransition && !reduce) document.startViewTransition(fn); else fn(); }
     function render(id){
-      var cur = items.filter(function(it){ return it.dataset.id === id; })[0], n = items.indexOf(cur);
-      var r = ROLES[cur.dataset.role];
+      var cur = items.filter(function(it){ return it.dataset.id === id; })[0], n = items.indexOf(cur), r = ROLES[cur.dataset.role];
       panel.innerHTML = '';
       var big = document.createElement('span'); big.className = 'lv-big'; big.style.viewTransitionName = 'lv-' + uid + '-' + id; big.appendChild(imgOf(cur));
       var tx = document.createElement('div'); tx.className = 'lv-text';
@@ -954,32 +1136,18 @@ footer .tiny{margin-top:2rem}
       panel.appendChild(big); panel.appendChild(tx);
       grid.hidden = true; panel.hidden = false;
     }
-    items.forEach(function(it){ it.addEventListener('click', function(){
-      vt(function(){ render(it.dataset.id); });
-      var top = lv.getBoundingClientRect().top; if (top < 70) window.scrollBy({top: top - 90, behavior: 'smooth'});
-    }); });
+    items.forEach(function(it){ it.addEventListener('click', function(){ vt(function(){ render(it.dataset.id); });
+      var top = lv.getBoundingClientRect().top; if (top < 70) window.scrollBy({top: top - 90, behavior: reduce ? 'auto' : 'smooth'}); }); });
     lv.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !panel.hidden){ var b = panel.querySelector('.lv-back'); if (b) b.click(); } });
   });
 
-  /* the live app loads only on click */
-  var start = document.getElementById('phone-start'), screenEl = document.getElementById('phone-screen');
-  function fitFrame(){ var f = screenEl.querySelector('iframe'); if (!f) return; var w = screenEl.clientWidth, h = screenEl.clientHeight, top = h*.054, s = w/390;
-    f.style.top = top + 'px'; f.style.height = ((h - top)/s) + 'px'; f.style.transform = 'scale(' + s + ')'; }
-  if (start) start.addEventListener('click', function(){
-    var f = document.createElement('iframe');
-    f.src = '../'; f.title = 'DeciBuy, the live prototype'; f.setAttribute('allow', 'clipboard-write');
-    f.addEventListener('load', function(){ sendTheme(); setTimeout(sendTheme, 300); });
-    screenEl.appendChild(f); fitFrame();
-    var poster = screenEl.querySelector('.phone__poster'); if (poster) poster.remove();
-    start.remove();
-  }, {once:true});
-
-  /* a fixed-width phone scales down to fit narrow columns */
+  /* fixed-width phones scale down to fit narrow columns */
   document.querySelectorAll('.phone').forEach(function(phone){
     var stage = phone.parentElement;
     function fit(){ phone.style.setProperty('--s','1'); phone.style.setProperty('--gap-fix','0px');
       var s = Math.min(1, (stage.clientWidth - 32)/340);
-      phone.style.setProperty('--s', s.toFixed(3)); phone.style.setProperty('--gap-fix', Math.round(phone.offsetHeight*(s - 1)) + 'px'); fitFrame(); }
+      phone.style.setProperty('--s', s.toFixed(3)); phone.style.setProperty('--gap-fix', Math.round(phone.offsetHeight*(s - 1)) + 'px');
+      fitFrame(phone.querySelector('.phone__screen')); }
     fit(); addEventListener('resize', fit);
   });
 })();

@@ -2388,7 +2388,13 @@ new MutationObserver(ms => { for (const m of ms){ if (m.type === 'characterData'
 function setLang(l){ A.langPref = l; try { localStorage.setItem('decibuy-lang', l); } catch(_){} A.lang = l === 'system' ? sysLang() : l; document.documentElement.lang = A.lang; trEl(D); refresh(); }
 document.documentElement.lang = A.lang;
 applyTheme(false);
-{ const saved = loadState(); A.live = true;
+/* demo mode for embeds (case study): ?demo=<screen code from FLOWS>. Uses the demo data, never saves, never touches the user's own data.
+   The page that embeds it can switch screens with postMessage({decibuyDemo:'V1'}). */
+const DEMO = (() => { try { return new URLSearchParams(location.search).get('demo'); } catch(_){ return null; } })();
+function demoJump(code){ const hit = FLOWS.flatMap(f => f[1]).find(x => x[0] === code); A.live = false; A.onbDone = false; jump(hit ? hit[2] : {tab:'home'}); }
+if (DEMO){ document.body.classList.add('demo'); demoJump(DEMO);
+  addEventListener('message', e => { if (e.data && typeof e.data.decibuyDemo === 'string') demoJump(e.data.decibuyDemo); }); }
+else { const saved = loadState(); A.live = true;
   if (saved){ A.onbDone = true; jump({tab:'home', restore:saved}); qa('.p-list button').forEach(x => x.classList.remove('on')); }
   else { const ob = loadOnb(); if (ob) jump({onb:Math.min(ob.step, 8), resume:ob.U}); else jump({onb:0}); } }
 document.fonts && document.fonts.ready.then(() => { for (const s of [A.home, A.check, A.items]) if (s) s.layout({instant:true}); });
