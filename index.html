@@ -1207,8 +1207,16 @@ function switchTab(id, inst){
   fabMode(inst);
 }
 function scrollMode(el, m, inst){
-  if (m === 'open'){ if (el._stS == null) el._stS = el.scrollTop; if (el.scrollTop) el.scrollTo({top:0, behavior:inst ? 'auto' : 'smooth'}); el.style.overflowY = 'hidden'; }
-  else { el.style.overflowY = ''; const t = el._stS; el._stS = null; if (t) el.scrollTo({top:t, behavior:inst ? 'auto' : 'smooth'}); }
+  const shift = d => { qa('.fd', el).forEach(f => { S(f).y += d; apply(f); }); };
+  if (m === 'open'){
+    if (el._stS == null) el._stS = el.scrollTop;
+    el.style.overflowY = 'hidden';
+    const st = el.scrollTop;
+    if (st){ el.scrollTop = 0; shift(-st); const hd = q('.hdr', el); if (hd) setv(hd, {o:0}); }
+  } else if (el._stS != null){
+    const t = el._stS; el._stS = null; el.style.overflowY = '';
+    if (t){ el.scrollTop = t; shift(el.scrollTop); }
+  } else el.style.overflowY = '';
 }
 function hdrMode(hdr, mode, inst){ (inst ? setv : spring)(hdr, {o:mode === 'open' ? 0 : 1, y:mode === 'open' ? -8 : 0}, {response:mode === 'open' ? .3 : .45}); hdr.style.pointerEvents = mode === 'open' ? 'none' : ''; }
 function toast(txt, o = {}){
