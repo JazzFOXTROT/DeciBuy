@@ -1,5 +1,5 @@
 // Bump VERSION on every release, or visitors stay on the old cached version.
-var VERSION = "decibuy-v18";
+var VERSION = "decibuy-v19";
 var CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {

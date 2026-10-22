@@ -1160,7 +1160,7 @@ class Nav{
 A.theme = (() => { try { return localStorage.getItem('decibuy-theme') || 'system'; } catch(_){ return 'system'; } })();
 A.sys = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 function applyTheme(anim){
-  const dark = A.theme === 'dark' || (A.theme === 'system' && A.sys === 'dark');
+  const dark = A.embedTheme ? A.embedTheme === 'dark' : (A.theme === 'dark' || (A.theme === 'system' && A.sys === 'dark'));
   qa('.p-phone button').forEach(b => b.classList.toggle('on', b.dataset.m === A.sys));
   if (D.classList.contains('dk') === dark) return;
   if (anim && !RM){ D.classList.add('thx'); clearTimeout(A._thx); A._thx = setTimeout(() => D.classList.remove('thx'), 520); }
@@ -1168,7 +1168,9 @@ function applyTheme(anim){
   document.body.classList.toggle('mobdk', dark);
   const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = dark ? '#000000' : '#ffffff';
 }
-function setTheme(t){ A.theme = t; try { localStorage.setItem('decibuy-theme', t); } catch(_){} applyTheme(true); }
+// the landing page (the parent window) sends {decibuyTheme:'light'|'dark'} so the embedded app matches the page
+addEventListener('message', e => { if (e.source !== window.parent || window.parent === window) return; const t = e.data && e.data.decibuyTheme; if (t === 'light' || t === 'dark'){ A.embedTheme = t; applyTheme(true); } });
+function setTheme(t){ A.embedTheme = null; A.theme = t; try { localStorage.setItem('decibuy-theme', t); } catch(_){} applyTheme(true); }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => { A.sys = e.matches ? 'dark' : 'light'; applyTheme(true); });
 function segmented(x, y){
   const modes = ['system','light','dark'];

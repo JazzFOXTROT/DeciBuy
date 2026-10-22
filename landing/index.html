@@ -130,6 +130,16 @@ section.alt{background:var(--sf)}
 .ph.c .live{max-inline-size:none;position:absolute;inset-block-start:0;inset-inline-start:0;inline-size:390px;block-size:844px;border:0;transform-origin:0 0;opacity:0;transition:opacity .5s ease;background:var(--bg)}
 .ph.c.ready .live{opacity:1}
 .tryit{display:none}
+/* the live phone gets a hand-drawn marker loop and a soft DeciBuy-blue glow behind it (wide screens only, where it is live) */
+.hl{display:none}
+@media (min-width:1024px){
+  .hl{display:block;position:absolute;inset-block-start:50%;inset-inline-start:50%;inline-size:440px;block-size:800px;translate:-50% calc(-50% + 4px);z-index:1;pointer-events:none}
+  .hl .glow{position:absolute;inset:-12% -40%;background:radial-gradient(closest-side,color-mix(in srgb,var(--blue) 55%,transparent),transparent 72%);filter:blur(10px)}
+  .hl .marker{position:absolute;inset:0;inline-size:100%;block-size:100%;overflow:visible}
+  .hl .marker path{stroke:var(--blue);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.95}
+  .hl.in .marker path{transition:stroke-dashoffset 1.4s cubic-bezier(.65,0,.35,1) .5s;stroke-dashoffset:0}
+}
+@media (prefers-reduced-motion:reduce){ .hl .marker path{stroke-dashoffset:0;transition:none} }
 @media (min-width:640px){
   .ph.side{--w:250px}
   .ph.c{--w:310px}
@@ -297,6 +307,10 @@ footer a{font-weight:700;text-decoration:none;color:var(--tx)}
       <div class="scr">
         <img class="shot" data-s="items" alt="My items: saved products as colored folders, each with its verdict and price" width="804" height="1748" loading="eager"></div>
     </div>
+    <div class="hl" aria-hidden="true">
+      <div class="glow"></div>
+      <svg class="marker" viewBox="0 0 440 800" fill="none"><path pathLength="1" d="M70 30C160 18 300 22 372 34C420 44 428 90 426 160C424 330 432 520 424 690C420 752 392 774 330 778C240 784 150 782 84 774C34 766 16 734 18 670C22 500 12 320 20 130C24 60 52 30 110 26C190 20 260 30 300 40"/></svg>
+    </div>
     <div class="ph c rv" style="--i:4" id="livePhone">
       <div class="scr"><div class="island"></div><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><use href="#i-sig"/></svg><svg viewBox="0 0 26 12"><use href="#i-bat"/></svg></i></div>
         <img class="shot" data-s="home" alt="Home: your spare money this month, what's coming up and your recent checks" width="804" height="1748" loading="eager">
@@ -451,15 +465,18 @@ footer a{font-weight:700;text-decoration:none;color:var(--tx)}
   var LIVE = 'https://jazzfoxtrot.github.io/DeciBuy/';
 
   /* screenshots follow the theme */
+  /* the live app inside the middle phone follows the page theme */
+  function sendTheme(){ var f = document.querySelector('iframe.live'); if (f && f.contentWindow) f.contentWindow.postMessage({decibuyTheme: root.dataset.theme}, '*'); }
   function shots(){ var t = root.dataset.theme; document.querySelectorAll('img.shot').forEach(function(i){ i.src = 'assets/' + i.dataset.s + '-' + t + '.webp'; }); }
   shots();
   document.querySelector('.tgl').addEventListener('click', function(){
     root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
     try { localStorage.setItem('decibuy-landing-theme', root.dataset.theme); } catch(e){}
-    shots();
+    shots(); sendTheme();
   });
 
   /* entrance: reveal once when in view */
+  var hl = document.querySelector('.hl'); if (hl) setTimeout(function(){ hl.classList.add('in'); }, 50);
   var rv = document.querySelectorAll('.rv');
   if ('IntersectionObserver' in window){
     var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); }, {rootMargin:'0px 0px -8% 0px'});
@@ -482,7 +499,7 @@ footer a{font-weight:700;text-decoration:none;color:var(--tx)}
     f.className = 'live'; f.title = 'DeciBuy live prototype'; f.src = LIVE; f.loading = 'eager';
     f.setAttribute('allow', 'clipboard-write');
     var fit = function(){ var w = scr.clientWidth, h = scr.clientHeight, top = h*.054; f.style.top = top + 'px'; f.style.height = ((h - top)/(w/390)) + 'px'; f.style.transform = 'scale(' + (w/390) + ')'; };
-    f.addEventListener('load', function(){ setTimeout(function(){ phone.classList.add('ready'); }, 400); });
+    f.addEventListener('load', function(){ sendTheme(); setTimeout(sendTheme, 300); setTimeout(function(){ phone.classList.add('ready'); }, 400); });
     scr.appendChild(f); fit();
     if ('ResizeObserver' in window) new ResizeObserver(fit).observe(scr);
   }
