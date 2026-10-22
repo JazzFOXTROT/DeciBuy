@@ -125,18 +125,18 @@ section.alt{background:var(--sf)}
 .ph.side{--w:210px;opacity:.98}
 .ph.l{margin-inline-end:-56px;transform:translateY(40px) rotate(-6deg);z-index:1}
 .ph.r{margin-inline-start:-56px;transform:translateY(40px) rotate(6deg);z-index:1}
-.ph.c{--w:270px;z-index:2}
+.ph.c{--w:270px}
+.livewrap{position:relative;z-index:2;flex:none}
 .phones-fade{position:absolute;inset-inline:0;inset-block-end:0;block-size:28%;background:linear-gradient(to bottom,transparent,var(--bg));z-index:4;pointer-events:none}
 .ph.c .live{max-inline-size:none;position:absolute;inset-block-start:0;inset-inline-start:0;inline-size:390px;block-size:844px;border:0;transform-origin:0 0;opacity:0;transition:opacity .5s ease;background:var(--bg)}
 .ph.c.ready .live{opacity:1}
 .tryit{display:none}
-/* the live phone gets a hand-drawn marker loop and a soft DeciBuy-blue glow behind it (wide screens only, where it is live) */
+/* the live phone gets a hand-drawn marker loop close around it (wide screens only, where it is live) */
 .hl{display:none}
 @media (min-width:1024px){
-  .hl{display:block;position:absolute;inset-block-start:50%;inset-inline-start:50%;inline-size:440px;block-size:800px;translate:-50% calc(-50% + 4px);z-index:1;pointer-events:none}
-  .hl .glow{position:absolute;inset:-12% -40%;background:radial-gradient(closest-side,color-mix(in srgb,var(--blue) 55%,transparent),transparent 72%);filter:blur(10px)}
+  .hl{display:block;position:absolute;inset:-16px;z-index:-1;pointer-events:none}
   .hl .marker{position:absolute;inset:0;inline-size:100%;block-size:100%;overflow:visible}
-  .hl .marker path{stroke:var(--blue);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.95}
+  .hl .marker path{stroke:var(--blue);stroke-width:6;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.95}
   .hl.in .marker path{transition:stroke-dashoffset 1.4s cubic-bezier(.65,0,.35,1) .5s;stroke-dashoffset:0}
 }
 @media (prefers-reduced-motion:reduce){ .hl .marker path{stroke-dashoffset:0;transition:none} }
@@ -307,14 +307,13 @@ footer a{font-weight:700;text-decoration:none;color:var(--tx)}
       <div class="scr">
         <img class="shot" data-s="items" alt="My items: saved products as colored folders, each with its verdict and price" width="804" height="1748" loading="eager"></div>
     </div>
-    <div class="hl" aria-hidden="true">
-      <div class="glow"></div>
-      <svg class="marker" viewBox="0 0 440 800" fill="none"><path pathLength="1" d="M70 30C160 18 300 22 372 34C420 44 428 90 426 160C424 330 432 520 424 690C420 752 392 774 330 778C240 784 150 782 84 774C34 766 16 734 18 670C22 500 12 320 20 130C24 60 52 30 110 26C190 20 260 30 300 40"/></svg>
-    </div>
-    <div class="ph c rv" style="--i:4" id="livePhone">
+    <div class="livewrap rv" style="--i:4">
+    <div class="hl" aria-hidden="true"><svg class="marker" viewBox="0 0 362 728" preserveAspectRatio="none" fill="none"><path pathLength="1" d="M60 10C140 4 240 6 300 12C340 16 352 44 352 96C352 260 356 460 351 632C350 690 330 716 282 718C210 722 140 721 82 716C36 712 12 690 11 640C9 470 6 280 10 92C11 40 30 12 86 9C160 5 220 10 262 16"/></svg></div>
+    <div class="ph c" id="livePhone">
       <div class="scr"><div class="island"></div><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><use href="#i-sig"/></svg><svg viewBox="0 0 26 12"><use href="#i-bat"/></svg></i></div>
         <img class="shot" data-s="home" alt="Home: your spare money this month, what's coming up and your recent checks" width="804" height="1748" loading="eager">
       </div>
+    </div>
     </div>
     <div class="ph side r rv" style="--i:6">
       <div class="scr">
