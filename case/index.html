@@ -252,6 +252,42 @@ footer h2{font-size:clamp(2.2rem,6vw,3.6rem)}
 footer .tiny{margin-top:2rem}
 
 
+
+/* Z pattern: one main image beside the opening text, sides alternate; wide images become a banner with the title on it */
+.zrow{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(2rem,6vw,5.5rem);align-items:center;margin-block-end:clamp(2rem,5vw,3.5rem)}
+.zrow.flip .z-media{order:2}
+.z-media{display:flex;flex-direction:column;align-items:center;gap:1rem}
+.z-shot{display:block;width:min(100%,290px);aspect-ratio:402/874;border-radius:36px;overflow:hidden;background:var(--sf2);box-shadow:0 0 0 1px color-mix(in srgb,var(--ln) 70%,transparent),0 50px 70px -40px rgba(0,0,0,.55);transform:rotate(-2.5deg)}
+.zrow.flip .z-shot{transform:rotate(2.5deg)}
+.z-shot img{width:100%;height:100%;object-fit:cover;display:block}
+.z-text h2{font-size:clamp(2.2rem,5.2vw,3.75rem)}
+.z-text p:last-child{margin-bottom:0}
+@media (max-width:800px){
+  .zrow{grid-template-columns:minmax(0,1fr)}
+  .zrow .z-media,.zrow.flip .z-media{order:2}
+  .z-shot{width:min(62vw,240px)}
+}
+.banner{margin:0 0 clamp(2rem,5vw,3rem)}
+.split2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem clamp(2rem,5vw,4.5rem);align-items:start}
+.split2 p{max-width:none}
+.split2 .s-l .claim{margin-bottom:0}
+.split2 .s-l h3{font-size:clamp(1.5rem,2.6vw,2rem);margin-bottom:.8rem}
+.split2 .s-l p:not(.claim){font-size:1.2rem;line-height:1.5;color:var(--tx)}
+.split2 .s-r>:first-child{margin-top:0}
+.split2 .gap{margin-top:0}
+@media (max-width:800px){ .split2{grid-template-columns:minmax(0,1fr)} }
+.banner-media{position:relative}
+.banner-img{display:block;width:100%;padding:0;border:0;cursor:zoom-in;border-radius:var(--r-lg);overflow:hidden;height:clamp(240px,34vw,440px);background:var(--sf2);position:relative}
+.banner-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.2s var(--ease-out)}
+@media (hover:hover){ .banner-img:hover img{transform:scale(1.03)} }
+.banner-img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 25%,rgba(0,0,0,.78) 100%);pointer-events:none}
+.banner-txt{position:absolute;inset-inline:clamp(1.25rem,4vw,2.75rem);inset-block-end:clamp(1.25rem,3.5vw,2.5rem);pointer-events:none;color:#fff}
+.banner-txt .eyebrow{color:rgba(255,255,255,.85)}
+.banner-txt h2{color:#fff;font-size:clamp(2rem,5.6vw,4.25rem);margin:0;max-width:16ch;text-wrap:balance}
+.banner figcaption{display:flex;align-items:baseline;gap:.6rem;margin-top:.8rem;font-size:var(--t-small);color:var(--tx2)}
+.banner figcaption .role{margin:0;flex:none}
+.banner-img:focus-visible{outline:3px solid var(--blueS);outline-offset:3px}
+
 /* quotes as a slow marquee */
 .marquee{overflow:hidden;margin:2.75rem 0 2rem;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
 .mq-track{display:flex;width:max-content;animation:mq 90s linear infinite}
@@ -394,10 +430,21 @@ footer .tiny{margin-top:2rem}
 <!-- 01 CHALLENGE -->
 <section id="challenge" class="alt">
   <div class="wrap rv">
-    <p class="eyebrow">01 · The challenge</p>
-    <h2>Where did all that money go?</h2>
-    <p>Many people I talk to don’t track their spending, or can’t keep it up for long. Sales, discounts and online stores make the monthly total very big, and then comes the question: where did I spend so much?</p>
-    <p>Before I buy a thing or tickets, I ask myself the same questions. How much can I afford it? How many hours of work is it? How will it hit me next month? How much further away does it push the goal I’m saving for? How often will I really use it? I heard the same questions from people at work, friends and relatives. Many care about this and have no clear answer. And few people will sit down and do the math before every purchase.</p>
+    <figure class="banner">
+      <div class="banner-media">
+      <button type="button" class="banner-img" data-full="assets/board-cjm-b.webp" data-cap="Journey map B: a late night buy from a TikTok video, paid in four parts, regretted when the package arrives." aria-label="Enlarge: FigJam journey map B, from scrolling in bed to the end of the month"><img src="assets/board-cjm-b.webp" alt="FigJam journey map B, from scrolling in bed to the end of the month" style="object-position:50% 40%" loading="lazy"></button>
+      <div class="banner-txt"><p class="eyebrow">01 · The challenge</p><h2>Where did all that money go?</h2></div>
+      </div>
+      <figcaption><span class="role ext">Extension</span>Journey map B: a late night buy from a TikTok video, paid in four parts, regretted when the package arrives.</figcaption>
+    </figure>
+    <div class="split2">
+      <div class="s-l">
+      <p>Many people I talk to don’t track their spending, or can’t keep it up for long. Sales, discounts and online stores make the monthly total very big, and then comes the question: where did I spend so much?</p>
+      </div>
+      <div class="s-r">
+      <p>Before I buy a thing or tickets, I ask myself the same questions. How much can I afford it? How many hours of work is it? How will it hit me next month? How much further away does it push the goal I’m saving for? How often will I really use it? I heard the same questions from people at work, friends and relatives. Many care about this and have no clear answer. And few people will sit down and do the math before every purchase.</p>
+      </div>
+    </div>
     <div class="grid g3" style="margin-top:2.2rem">
       <div class="card"><h3>Who it hurts</h3><p>People who earn their own money and buy online, often in the evening, fast, from a feed, an ad or a sale.</p></div>
       <div class="card"><h3>What they do today</h3><p>Leave it in the cart, take a screenshot, compare prices. Some tried a budgeting app and stopped: too much logging, or it made them feel guilty.</p></div>
@@ -409,12 +456,23 @@ footer .tiny{margin-top:2rem}
 <!-- 02 RESEARCH -->
 <section id="research">
   <div class="wrap rv">
-    <p class="eyebrow">02 · Research</p>
-    <h2>What I asked, and whom</h2>
-    <p>Desk research and a competitor scan first (Skip or Buy, CartPause, price trackers, budgeting apps). Then a survey in Google Forms: 20 responses, 18 qualified. Then five one-on-one interviews, P01 to P05. The interviews built two groups, and each group became a persona.</p>
-    <div class="gap">
-      <b>About the survey sample</b>
-      <p>15 of the 20 survey responses are synthetic: I built them from buyer types known in marketing and sales, and mixed them with the real answers. I analysed it as one sample, so the counts below show a direction, not proof.</p>
+    <figure class="banner">
+      <div class="banner-media">
+      <button type="button" class="banner-img" data-full="assets/board-empathy-b.webp" data-cap="Empathy map B, built from the interviews: what fast buyers say, think, do and feel." aria-label="Enlarge: FigJam empathy map for persona B, Jake Moreno"><img src="assets/board-empathy-b.webp" alt="FigJam empathy map for persona B, Jake Moreno" style="object-position:50% 35%" loading="lazy"></button>
+      <div class="banner-txt"><p class="eyebrow">02 · Research</p><h2>What I asked, and whom</h2></div>
+      </div>
+      <figcaption><span class="role ext">Extension</span>Empathy map B, built from the interviews: what fast buyers say, think, do and feel.</figcaption>
+    </figure>
+    <div class="split2">
+      <div class="s-l">
+      <p>Desk research and a competitor scan first (Skip or Buy, CartPause, price trackers, budgeting apps). Then a survey in Google Forms: 20 responses, 18 qualified. Then five one-on-one interviews, P01 to P05. The interviews built two groups, and each group became a persona.</p>
+      </div>
+      <div class="s-r">
+      <div class="gap">
+        <b>About the survey sample</b>
+        <p>15 of the 20 survey responses are synthetic: I built them from buyer types known in marketing and sales, and mixed them with the real answers. I analysed it as one sample, so the counts below show a direction, not proof.</p>
+      </div>
+      </div>
     </div>
 
     <div class="grid g3" style="margin-top:2rem">
@@ -426,8 +484,14 @@ footer .tiny{margin-top:2rem}
     <blockquote class="quote">Stop me. But nicely. Not like my mom.<cite>P01, interview, 22, shift worker</cite></blockquote>
 
 
-    <h3 style="margin-top:2.6rem">Two groups, two personas</h3>
-    <p>The interviews split into confidence seekers (P02, P03, P05) and fast buyers with strong regret (P01, P04). Emma and Jake are composite names; every quote on the boards is attributed to the participant who said it.</p>
+    <div class="split2" style="margin-top:3rem">
+      <div class="s-l">
+      <h3>Two groups, two personas</h3>
+      </div>
+      <div class="s-r">
+      <p>The interviews split into confidence seekers (P02, P03, P05) and fast buyers with strong regret (P01, P04). Emma and Jake are composite names; every quote on the boards is attributed to the participant who said it.</p>
+      </div>
+    </div>
     <div class="gallery" style="--col:22rem;--ar:5/2">
       <button type="button" data-full="assets/board-persona-a.webp" data-cap="Persona A · Emma Cole. Goals, frustrations, behaviors and the critical pain: a decision that looks careful but was made by the sale."><span class="shot"><img src="assets/board-persona-a-thumb.webp" alt="FigJam persona card A, Emma Cole, confidence seeker" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Persona A · Emma Cole</b>Goals, frustrations, behaviors and the critical pain: a decision that looks careful but was made by the sale.</span></button>
       <button type="button" data-full="assets/board-persona-b.webp" data-cap="Persona B · Jake Moreno. Hourly or commission pay, late night buys, installments. Wants a firm answer in a friendly voice."><span class="shot"><img src="assets/board-persona-b-thumb.webp" alt="FigJam persona card B, Jake Moreno, fast buyer with strong regret" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Persona B · Jake Moreno</b>Hourly or commission pay, late night buys, installments. Wants a firm answer in a friendly voice.</span></button>
@@ -437,20 +501,37 @@ footer .tiny{margin-top:2rem}
       <button type="button" data-full="assets/board-empathy-b.webp" data-cap="Empathy map B. Says, thinks, does, feels, pains and gains, from P01 and P04."><span class="shot"><img src="assets/board-empathy-b-thumb.webp" alt="FigJam empathy map for Jake Moreno" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role ext">Extension</span><b>Empathy map B</b>Says, thinks, does, feels, pains and gains, from P01 and P04.</span></button>
     </div>
 
-    <h3 style="margin-top:2.6rem">The finding that renamed the product</h3>
-    <p class="claim">The project started as Impulse Check. Research showed that was too narrow.</p>
-    <p>The old name said that purchases are only impulsive. But not all purchases, and not all people, are about impulse. Some want to weigh how much a buy is worth. So the app was named from Decision and Buy, and clearer answers came from that: buy, wait, or not now. The app doesn’t limit you. The final call is yours, and the app says so on every verdict. It won’t judge you, won’t pressure you, won’t tell you you’re deciding wrong.</p>
-    <p>The survey also suggested two modes, “help me feel sure” and “be strict with me”. I dropped that: a verdict that changes with what you want to hear isn’t a verdict. The rules stay the same for everyone.</p>
+    <div class="split2" style="margin-top:3rem">
+      <div class="s-l">
+      <h3>The finding that renamed the product</h3>
+      <p class="claim">The project started as Impulse Check. Research showed that was too narrow.</p>
+      </div>
+      <div class="s-r">
+      <p>The old name said that purchases are only impulsive. But not all purchases, and not all people, are about impulse. Some want to weigh how much a buy is worth. So the app was named from Decision and Buy, and clearer answers came from that: buy, wait, or not now. The app doesn’t limit you. The final call is yours, and the app says so on every verdict. It won’t judge you, won’t pressure you, won’t tell you you’re deciding wrong.</p>
+      <p>The survey also suggested two modes, “help me feel sure” and “be strict with me”. I dropped that: a verdict that changes with what you want to hear isn’t a verdict. The rules stay the same for everyone.</p>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- 03 JOURNEY -->
 <section id="journey" class="alt">
   <div class="wrap rv">
-    <p class="eyebrow">03 · Journey and structure</p>
-    <h2>Where the journey breaks</h2>
-    <p class="claim">The low point is not at checkout. Regret arrives later, when the package comes or the installments overlap.</p>
-    <p>Two journey maps, one per persona, both “as is”: how people buy today, without the app. Emma (confidence seekers, from P02, P03, P05) and Jake (fast buyers with strong regret, from P01, P04) are composite names; the scores and quotes come from the interviews. 5 is motivation, 1 is frustration, and the red point is the lowest.</p>
+    <figure class="banner">
+      <div class="banner-media">
+      <button type="button" class="banner-img" data-full="assets/board-sitemap-v03.webp" data-cap="Sitemap v03: the structure that shipped, four tabs and Settings behind a gear." aria-label="Enlarge: FigJam information architecture v03"><img src="assets/board-sitemap-v03.webp" alt="FigJam information architecture v03" style="object-position:50% 55%" loading="lazy"></button>
+      <div class="banner-txt"><p class="eyebrow">03 · Journey and structure</p><h2>Where the journey breaks</h2></div>
+      </div>
+      <figcaption><span class="role">Evidence</span>Sitemap v03: the structure that shipped, four tabs and Settings behind a gear.</figcaption>
+    </figure>
+    <div class="split2">
+      <div class="s-l">
+      <p class="claim">The low point is not at checkout. Regret arrives later, when the package comes or the installments overlap.</p>
+      </div>
+      <div class="s-r">
+      <p>Two journey maps, one per persona, both “as is”: how people buy today, without the app. Emma (confidence seekers, from P02, P03, P05) and Jake (fast buyers with strong regret, from P01, P04) are composite names; the scores and quotes come from the interviews. 5 is motivation, 1 is frustration, and the red point is the lowest.</p>
+      </div>
+    </div>
     <div class="jmaps">
 <article class="jmap"><h4>Journey A · Emma, confidence seeker · a 30% off deal from an evening email</h4><p class="jscale"><span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg> 5 motivation</span><span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg> 1 frustration</span></p><svg viewBox="0 0 560 265" class="jchart" role="img" aria-label="Journey A · Emma, confidence seeker · a 30% off deal from an evening email"><line x1="532.0" y1="211.0" x2="40.0" y2="211.0" class="jg"/><text x="26" y="215.0" class="jt">1</text><line x1="532.0" y1="120.5" x2="40.0" y2="120.5" class="jg"/><text x="26" y="124.5" class="jt">3</text><line x1="532.0" y1="30.0" x2="40.0" y2="30.0" class="jg"/><text x="26" y="34.0" class="jt">5</text><path d="M40.0,75.2 L138.4,97.9 L236.8,143.1 L335.2,165.8 L433.6,97.9 L532.0,188.4 L532.0,211.0 L40.0,211.0 Z" class="ja"/><path d="M40.0,75.2 L138.4,97.9 L236.8,143.1 L335.2,165.8 L433.6,97.9 L532.0,188.4" class="jl"/><circle cx="40.0" cy="75.2" r="5" class="jd"/><text x="40.0" y="62.2" class="jv">4</text><text x="40.0" y="237" class="jn">1</text><circle cx="138.4" cy="97.9" r="5" class="jd"/><text x="138.4" y="84.9" class="jv">3.5</text><text x="138.4" y="237" class="jn">2</text><circle cx="236.8" cy="143.1" r="5" class="jd"/><text x="236.8" y="130.1" class="jv">2.5</text><text x="236.8" y="237" class="jn">3</text><circle cx="335.2" cy="165.8" r="5" class="jd"/><text x="335.2" y="152.8" class="jv">2</text><text x="335.2" y="237" class="jn">4</text><circle cx="433.6" cy="97.9" r="5" class="jd"/><text x="433.6" y="84.9" class="jv">3.5</text><text x="433.6" y="237" class="jn">5</text><circle cx="532.0" cy="188.4" r="6" class="jd jd--low"/><text x="532.0" y="175.4" class="jv jv--low">1.5</text><text x="532.0" y="237" class="jn">6</text></svg><ol class="jlegend"><li><span class="jn-num">1</span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg><span class="jn-body"><b>Deal appears</b><span>Excited · 4</span></span></li><li><span class="jn-num">2</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Research</b><span>Focused · 3.5</span></span></li><li><span class="jn-num">3</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Real deal?</b><span>Suspicious · 2.5</span></span></li><li><span class="jn-num">4</span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg><span class="jn-body"><b>Deadline</b><span>Pressured · 2</span></span></li><li><span class="jn-num">5</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Checkout</b><span>Relieved · 3.5</span></span></li><li><span class="jn-num">6</span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg><span class="jn-body"><b>Weeks later</b><span>Mild regret · 1.5</span></span></li></ol><p class="jnote">The dip sits after checkout: the deal felt good, the use didn't. Last stage forks: worth it 4, overpaid 2.</p><div class="gallery gallery--one" style="--ar:3/1;margin-block-start:1rem"><button type="button" data-full="assets/board-cjm-a.webp" data-cap="The original board. Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote"><span class="shot"><img src="assets/board-cjm-a-thumb.webp" alt="FigJam journey map A: seven stages with screens, actions, pains and opportunities" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ico" style="width:1.05rem;height:1.05rem"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>The original board</b>Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote.</span></button></div></article>
 <article class="jmap"><h4>Journey B · Jake, fast buyer · a late night TikTok buy, paid in 4</h4><p class="jscale"><span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg> 5 motivation</span><span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg> 1 frustration</span></p><svg viewBox="0 0 560 265" class="jchart" role="img" aria-label="Journey B · Jake, fast buyer · a late night TikTok buy, paid in 4"><line x1="532.0" y1="211.0" x2="40.0" y2="211.0" class="jg"/><text x="26" y="215.0" class="jt">1</text><line x1="532.0" y1="120.5" x2="40.0" y2="120.5" class="jg"/><text x="26" y="124.5" class="jt">3</text><line x1="532.0" y1="30.0" x2="40.0" y2="30.0" class="jg"/><text x="26" y="34.0" class="jt">5</text><path d="M40.0,120.5 L138.4,52.6 L236.8,75.2 L335.2,97.9 L433.6,143.1 L532.0,211.0 L532.0,211.0 L40.0,211.0 Z" class="ja"/><path d="M40.0,120.5 L138.4,52.6 L236.8,75.2 L335.2,97.9 L433.6,143.1 L532.0,211.0" class="jl"/><circle cx="40.0" cy="120.5" r="5" class="jd"/><text x="40.0" y="107.5" class="jv">3</text><text x="40.0" y="237" class="jn">1</text><circle cx="138.4" cy="52.6" r="5" class="jd"/><text x="138.4" y="39.6" class="jv">4.5</text><text x="138.4" y="237" class="jn">2</text><circle cx="236.8" cy="75.2" r="5" class="jd"/><text x="236.8" y="62.2" class="jv">4</text><text x="236.8" y="237" class="jn">3</text><circle cx="335.2" cy="97.9" r="5" class="jd"/><text x="335.2" y="84.9" class="jv">3.5</text><text x="335.2" y="237" class="jn">4</text><circle cx="433.6" cy="143.1" r="5" class="jd"/><text x="433.6" y="130.1" class="jv">2.5</text><text x="433.6" y="237" class="jn">5</text><circle cx="532.0" cy="211.0" r="6" class="jd jd--low"/><text x="532.0" y="198.0" class="jv jv--low">1</text><text x="532.0" y="237" class="jn">6</text></svg><ol class="jlegend"><li><span class="jn-num">1</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Scrolling in bed</b><span>Zoned out · 3</span></span></li><li><span class="jn-num">2</span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg><span class="jn-body"><b>Product tag</b><span>Want it · 4.5</span></span></li><li><span class="jn-num">3</span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg><span class="jn-body"><b>Pay in 4</b><span>Only $45 · 4</span></span></li><li><span class="jn-num">4</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Checkout</b><span>Rushed · 3.5</span></span></li><li><span class="jn-num">5</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Morning after</b><span>Uneasy · 2.5</span></span></li><li><span class="jn-num">6</span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg><span class="jn-body"><b>Package arrives</b><span>A bit stupid · 1</span></span></li></ol><p class="jnote">Highest at the product tag, lowest when the package arrives. End of month forks: fine 3.5, broke 1.5.</p><div class="gallery gallery--one" style="--ar:3/1;margin-block-start:1rem"><button type="button" data-full="assets/board-cjm-b.webp" data-cap="The original board. Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote"><span class="shot"><img src="assets/board-cjm-b-thumb.webp" alt="FigJam journey map B: seven stages from scrolling in bed to the end of the month" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ico" style="width:1.05rem;height:1.05rem"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>The original board</b>Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote.</span></button></div></article>
@@ -459,9 +540,15 @@ footer .tiny{margin-top:2rem}
     <div class="marquee" role="region" aria-label="What people said in the interviews"><div class="mq-track"><div class="mq-set"><span class="mq-item">“The regret comes when the package arrives, not when I pay.”<cite>P01</cite></span><span class="mq-item">“At one in the morning I’m not a person, I’m just a thumb.”<cite>P01</cite></span><span class="mq-item">“$45 is nothing. Four times $45 is a problem, but later.”<cite>P04</cite></span><span class="mq-item">“First week I’m a king, last week it’s rice and pasta.”<cite>P04</cite></span><span class="mq-item">“I felt rich for one day.”<cite>P03</cite></span><span class="mq-item">“Every month it said I was failing.”<cite>P03</cite></span><span class="mq-item">“Half my hesitation is ‘is this the real deal or a fake discount’.”<cite>P02</cite></span><span class="mq-item">“If I’m already in the checkout, I’m gone.”<cite>P01</cite></span></div><div class="mq-set" aria-hidden="true"><span class="mq-item">“The regret comes when the package arrives, not when I pay.”<cite>P01</cite></span><span class="mq-item">“At one in the morning I’m not a person, I’m just a thumb.”<cite>P01</cite></span><span class="mq-item">“$45 is nothing. Four times $45 is a problem, but later.”<cite>P04</cite></span><span class="mq-item">“First week I’m a king, last week it’s rice and pasta.”<cite>P04</cite></span><span class="mq-item">“I felt rich for one day.”<cite>P03</cite></span><span class="mq-item">“Every month it said I was failing.”<cite>P03</cite></span><span class="mq-item">“Half my hesitation is ‘is this the real deal or a fake discount’.”<cite>P02</cite></span><span class="mq-item">“If I’m already in the checkout, I’m gone.”<cite>P01</cite></span></div></div></div>
     <p>That is why saved items don’t just sit in a list. Wait for payday comes with a date and a reminder, and on payday the item is checked again with the new numbers.</p>
 
-    <h3 style="margin-top:3rem">Information architecture</h3>
-    <p class="claim">I didn’t drop the wishlist. I moved it into Check and limited it to 5 items for 3 days.</p>
-    <p>On purpose, so it doesn’t turn into one more cart you never finish. In Check you keep only the items you’re unsure about, before you decide to track them in My items. The hamburger menu went too: the only thing in it would be Settings, so Settings is one tap away instead. Everything else fits in four tabs: Home, Check, My items, My money. A simulated card sort (18 synthetic participants) put Settings outside the main tabs in every run.</p>
+    <div class="split2" style="margin-top:3rem">
+      <div class="s-l">
+      <h3>Information architecture</h3>
+      <p class="claim">I didn’t drop the wishlist. I moved it into Check and limited it to 5 items for 3 days.</p>
+      </div>
+      <div class="s-r">
+      <p>On purpose, so it doesn’t turn into one more cart you never finish. In Check you keep only the items you’re unsure about, before you decide to track them in My items. The hamburger menu went too: the only thing in it would be Settings, so Settings is one tap away instead. Everything else fits in four tabs: Home, Check, My items, My money. A simulated card sort (18 synthetic participants) put Settings outside the main tabs in every run.</p>
+      </div>
+    </div>
     <div class="gallery" style="--col:16rem;--ar:16/9">
       <button type="button" data-full="assets/board-sitemap-v01.webp" data-cap="Sitemap v01. From research, before the card sort: a separate Wishlist tab and a Check flow on top of every screen."><span class="shot"><img src="assets/board-sitemap-v01-thumb.webp" alt="FigJam sitemap v01" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Sitemap v01</b>From research, before the card sort: a separate Wishlist tab and a Check flow on top of every screen.</span></button>
       <button type="button" data-full="assets/board-sitemap-v02.webp" data-cap="Sitemap v02. After the card sort: Settings behind a gear in the top bar, Wishlist renamed My items."><span class="shot"><img src="assets/board-sitemap-v02-thumb.webp" alt="FigJam sitemap v02" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Sitemap v02</b>After the card sort: Settings behind a gear in the top bar, Wishlist renamed My items.</span></button>
@@ -487,10 +574,15 @@ footer .tiny{margin-top:2rem}
 <!-- 04 LANGUAGE -->
 <section id="language">
   <div class="wrap rv">
-    <p class="eyebrow">04 · Design language</p>
-    <h2>A companion, not a judge</h2>
-    <p class="claim">The app must never make you feel shame. Even its red shouldn’t cause anxiety.</p>
-    <p>I wanted the app to feel like a friend that helps you understand how much you can afford something: welcoming, so you come back for advice without being afraid of what you want to buy. Even the wording follows this. “Not now” doesn’t say “don’t buy”. It doesn’t forbid you. It says lightly: some day you can, keep saving, but not now.</p>
+    <div class="zrow">
+      <div class="z-media"><span class="z-shot"><img class="themed" data-s="notnow" src="assets/notnow-light.webp" alt="Not now verdict in coral red: one calm line about months of spare money" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
+      <div class="z-text">
+        <p class="eyebrow">04 · Design language</p>
+        <h2>A companion, not a judge</h2>
+        <p class="claim">The app must never make you feel shame. Even its red shouldn’t cause anxiety.</p>
+        <p>I wanted the app to feel like a friend that helps you understand how much you can afford something: welcoming, so you come back for advice without being afraid of what you want to buy. Even the wording follows this. “Not now” doesn’t say “don’t buy”. It doesn’t forbid you. It says lightly: some day you can, keep saving, but not now.</p>
+      </div>
+    </div>
 
     <div class="grid g4" style="margin-top:2rem">
       <div class="card"><h3>Calm</h3><p class="tiny">One reason line on top, facts below. The same layout for all three answers, only the color changes.</p></div>
@@ -530,9 +622,14 @@ footer .tiny{margin-top:2rem}
 <!-- 05 SCREENS -->
 <section id="screens" class="alt">
   <div class="wrap rv">
-    <p class="eyebrow">05 · Screens and the live app</p>
-    <h2>One decision per screen</h2>
-    <p>Tap a screen to open it with the decision behind it. The screens follow the page theme: switch it at the top to see dark mode.</p>
+    <div class="zrow flip">
+      <div class="z-media"><span class="z-shot"><img class="themed" data-s="buy" src="assets/buy-light.webp" alt="Buy verdict in green for a sneaker cleaning kit" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
+      <div class="z-text">
+        <p class="eyebrow">05 · Screens and the live app</p>
+        <h2>One decision per screen</h2>
+        <p>Tap a screen to open it with the decision behind it. The screens follow the page theme: switch it at the top to see dark mode.</p>
+      </div>
+    </div>
     <div class="levi" id="lv-sc" data-uid="sc"><div class="lv-grid"><button type="button" class="lv-item" style="--i:0" data-id="onb" data-title="Onboarding" data-role="product" data-text="Only what you know by heart, in ranges: income, rent, bills, payday. An exact amount is optional. Your name comes at the very end."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-onb"><img class="themed" data-s="onb-income" src="assets/onb-income-light.webp" alt="Onboarding question: what lands in your account each month, with income ranges" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Onboarding</b></span></button><button type="button" class="lv-item" style="--i:1" data-id="home" data-title="Home" data-role="product" data-text="Spare money until payday, not a balance. Items you mark Bought lower it: the one exception to no expense tracking."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-home"><img class="themed" data-s="home" src="assets/home-light.webp" alt="Home screen with the spare money card and Recent checks folders" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Home</b></span></button><button type="button" class="lv-item" style="--i:2" data-id="check" data-title="Check" data-role="product" data-text="Drafts: up to 5, each kept for 3 days. Adding an item checks it right away."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-check"><img class="themed" data-s="check" src="assets/check-light.webp" alt="Check tab with a draft card and a stack of drafts" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Check</b></span></button><button type="button" class="lv-item" style="--i:3" data-id="verdict" data-title="Verdict" data-role="product" data-text="One layout for all three answers, only the color changes: same facts, same rules. The reason line on top, fact tiles below."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-verdict"><img class="themed" data-s="wait" src="assets/wait-light.webp" alt="Wait for payday verdict for a lamp, with the reason line and fact tiles" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>Verdict</b></span></button><button type="button" class="lv-item" style="--i:4" data-id="graph" data-title="Behind a fact" data-role="extension" data-text="Each fact tile opens one graph and one plain sentence, for people who want the why."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-graph"><img class="themed" data-s="graph" src="assets/graph-light.webp" alt="Price in 90 days graph with the lowest price marked" loading="lazy"></span></span><span class="lv-label"><span class="role ext">Extension</span><b>Behind a fact</b></span></button><button type="button" class="lv-item" style="--i:5" data-id="items" data-title="My items" data-role="product" data-text="Wait for payday comes with a date and a reminder. On payday the item is checked again, because regret comes after the purchase."><span class="lv-float"><span class="lv-shot" style="view-transition-name:lv-sc-items"><img class="themed" data-s="items" src="assets/items-light.webp" alt="My items: four saved items as colored folders, each showing its price" loading="lazy"></span></span><span class="lv-label"><span class="role out">Product</span><b>My items</b></span></button></div><div class="lv-open" hidden></div></div>
 
     <h3 style="margin-top:3rem">The folders</h3>
@@ -564,10 +661,21 @@ footer .tiny{margin-top:2rem}
 <!-- 06 AI -->
 <section id="ai">
   <div class="wrap rv">
-    <p class="eyebrow">06 · Working with AI</p>
-    <h2>Where it helped, and where I had to stop it</h2>
-    <p class="claim">The design and the visuals are mine. With Claude I built a system and made screens faster, and then edited them to match how I wanted them to look.</p>
-    <p>I designed onboarding and Home myself in Figma, which set the visual language. Then Claude applied it to the remaining screens through the Figma connection, built the hi-fi from my color board and set up the design system (Light and Dark variables, text styles, components). I reviewed every round.</p>
+    <figure class="banner">
+      <div class="banner-media">
+      <button type="button" class="banner-img" data-full="assets/gpt-verdict.webp" data-cap="ChatGPT’s verdict screens: generic boxes, rejected. Details below." aria-label="Enlarge: ChatGPT concept: three grayscale verdict screens"><img src="assets/gpt-verdict.webp" alt="ChatGPT concept: three grayscale verdict screens" style="object-position:50% 30%" loading="lazy"></button>
+      <div class="banner-txt"><p class="eyebrow">06 · Working with AI</p><h2>Where it helped, and where I had to stop it</h2></div>
+      </div>
+      <figcaption><span class="role">Evidence</span>ChatGPT’s verdict screens: generic boxes, rejected. Details below.</figcaption>
+    </figure>
+    <div class="split2">
+      <div class="s-l">
+      <p class="claim">The design and the visuals are mine. With Claude I built a system and made screens faster, and then edited them to match how I wanted them to look.</p>
+      </div>
+      <div class="s-r">
+      <p>I designed onboarding and Home myself in Figma, which set the visual language. Then Claude applied it to the remaining screens through the Figma connection, built the hi-fi from my color board and set up the design system (Light and Dark variables, text styles, components). I reviewed every round.</p>
+      </div>
+    </div>
 
     <div class="grid g3" style="margin-top:1.8rem">
       <div class="card"><h3>What it did well</h3><p>Speed and consistency: 31 screens in light and dark from my components, overflow checks across every frame, contrast checks before I decided on colors.</p></div>
@@ -579,9 +687,15 @@ footer .tiny{margin-top:2rem}
     <blockquote class="quote">Look at my updated design. It’s low-fi, don’t nitpick colors. Build the remaining screens according to this design.<cite>My prompt to Claude in Figma, 2026-10-18 (paraphrased from a Russian voice message)</cite></blockquote>
     <div class="gap"><b>No exact wording</b><p>I don’t have the exact prompt: the prompt was dictated by voice. What changed the result was showing my own screens as the reference instead of describing the style in words.</p></div>
 
-    <h3 style="margin-top:2.6rem">The image model, earlier</h3>
-    <p class="claim">ChatGPT was useful for edge states and small details, not for the concept.</p>
-    <p>I asked it for three grayscale alternatives per screen, based on my Crazy 8’s sketches. It came back with a generic fintech look: lists, grey boxes, the verdict sitting in a box instead of owning the screen. Even its “stacked folders” version lost the folder idea. I kept a few details: the Check empty state that explains the rules, the “as of” date on saved prices, sort as a bottom sheet.</p>
+    <div class="split2" style="margin-top:3rem">
+      <div class="s-l">
+      <h3>The image model, earlier</h3>
+      <p class="claim">ChatGPT was useful for edge states and small details, not for the concept.</p>
+      </div>
+      <div class="s-r">
+      <p>I asked it for three grayscale alternatives per screen, based on my Crazy 8’s sketches. It came back with a generic fintech look: lists, grey boxes, the verdict sitting in a box instead of owning the screen. Even its “stacked folders” version lost the folder idea. I kept a few details: the Check empty state that explains the rules, the “as of” date on saved prices, sort as a bottom sheet.</p>
+      </div>
+    </div>
     <div class="gallery" style="--col:22rem;--ar:4/3">
       <button type="button" data-full="assets/gpt-verdict.webp" data-cap="ChatGPT: verdict screens. Rejected. The verdict is a big word above a pile of boxes; the facts compete with it."><span class="shot"><img src="assets/gpt-verdict-thumb.webp" alt="ChatGPT concept: three grayscale verdict screens, Buy, Wait for payday and Not now" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>ChatGPT: verdict screens</b>Rejected. The verdict is a big word above a pile of boxes; the facts compete with it.</span></button>
       <button type="button" data-full="assets/gpt-items.webp" data-cap="ChatGPT: My items. Rejected. Lists with product photos; the “stacked folders” variant (B) lost the folder metaphor."><span class="shot"><img src="assets/gpt-items-thumb.webp" alt="ChatGPT concept: grayscale My items lists in three variants" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>ChatGPT: My items</b>Rejected. Lists with product photos; the “stacked folders” variant (B) lost the folder metaphor.</span></button>
@@ -592,10 +706,15 @@ footer .tiny{margin-top:2rem}
 <!-- 07 BUILD -->
 <section id="build" class="alt">
   <div class="wrap rv">
-    <p class="eyebrow">07 · Design to code</p>
-    <h2>Straight from motion references to code</h2>
-    <p class="claim">I skipped Figma prototyping on purpose: some of these interactions can’t be built there. I described each motion with references and it went straight into code.</p>
-    <p>It isn’t my first project, so moving from design to a live prototype wasn’t the hard part. The prototype is one HTML file on GitHub Pages: spring physics for the folders, data kept on the phone, light and dark, six languages, installable on the home screen.</p>
+    <div class="zrow">
+      <div class="z-media"><span class="z-shot"><img class="themed" data-s="items" src="assets/items-light.webp" alt="My items: saved items as a stack of colored folders" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
+      <div class="z-text">
+        <p class="eyebrow">07 · Design to code</p>
+        <h2>Straight from motion references to code</h2>
+        <p class="claim">I skipped Figma prototyping on purpose: some of these interactions can’t be built there. I described each motion with references and it went straight into code.</p>
+        <p>It isn’t my first project, so moving from design to a live prototype wasn’t the hard part. The prototype is one HTML file on GitHub Pages: spring physics for the folders, data kept on the phone, light and dark, six languages, installable on the home screen.</p>
+      </div>
+    </div>
     <div class="grid g3" style="margin-top:2.2rem">
       <div class="card"><h3>What worked</h3><p>Folders you can grab mid-motion and flick, the same money math on every screen, and real verdicts from my rules (verdict logic v05), not fixed demo screens.</p></div>
       <div class="card"><h3>What broke</h3><p>Things I couldn’t see in a desktop browser: the keyboard covering the field on a small iPhone, scrolling interrupted on iOS, and action links that did nothing in German, because the code read the translated text.</p></div>
@@ -608,10 +727,21 @@ footer .tiny{margin-top:2rem}
 <!-- 08 BEFORE AFTER -->
 <section id="beforeafter">
   <div class="wrap rv">
-    <p class="eyebrow">08 · Before and after</p>
-    <h2>From a template to my folders</h2>
-    <p class="claim">The first low-fi was a generic list. The folder idea came from my own Crazy 8’s sketches.</p>
-    <p>Low-fi v1 was made with AI in Figma: lists, item rows with a square thumbnail, boxed fields. For v2 I redesigned onboarding and Home myself and set one graphic language for the whole app, so nothing is out of balance: Bricolage titles, Manrope text, folder stacks, rows that run off the screen edge like tabs on sheets. The final version adds color, depth and real data.</p>
+    <figure class="banner">
+      <div class="banner-media">
+      <button type="button" class="banner-img" data-full="assets/board-crazy8-r4-items.webp" data-cap="My Crazy 8’s, round 4: saved items as stacked folders, before any screen was drawn." aria-label="Enlarge: My Crazy 8’s sketches of My items with stacked folder cards"><img src="assets/board-crazy8-r4-items.webp" alt="My Crazy 8’s sketches of My items with stacked folder cards" style="object-position:50% 62%" loading="lazy"></button>
+      <div class="banner-txt"><p class="eyebrow">08 · Before and after</p><h2>From a template to my folders</h2></div>
+      </div>
+      <figcaption><span class="role">Evidence</span>My Crazy 8’s, round 4: saved items as stacked folders, before any screen was drawn.</figcaption>
+    </figure>
+    <div class="split2">
+      <div class="s-l">
+      <p class="claim">The first low-fi was a generic list. The folder idea came from my own Crazy 8’s sketches.</p>
+      </div>
+      <div class="s-r">
+      <p>Low-fi v1 was made with AI in Figma: lists, item rows with a square thumbnail, boxed fields. For v2 I redesigned onboarding and Home myself and set one graphic language for the whole app, so nothing is out of balance: Bricolage titles, Manrope text, folder stacks, rows that run off the screen edge like tabs on sheets. The final version adds color, depth and real data.</p>
+      </div>
+    </div>
     <div class="gallery" style="--col:22rem;--ar:4/3">
       <button type="button" data-full="assets/board-crazy8-r4-items.webp" data-cap="Crazy 8’s · round 4 · My items. Eight sketches for saved items. Most of them stack the items as folders: the idea that became the whole app."><span class="shot"><img src="assets/board-crazy8-r4-items-thumb.webp" alt="My Crazy 8’s round 4: eight grayscale sketches of My items, most with stacked folder cards" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Crazy 8’s · round 4 · My items</b>Eight sketches for saved items. Most of them stack the items as folders: the idea that became the whole app.</span></button>
       <button type="button" data-full="assets/board-crazy8-r1-verdict.webp" data-cap="Crazy 8’s · round 1 · Verdict. The verdict word owns the screen, facts go below. Sketches 4 and 6 already put the item on a folder tab."><span class="shot"><img src="assets/board-crazy8-r1-verdict-thumb.webp" alt="My Crazy 8’s round 1: eight grayscale sketches of the verdict screen" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ic"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>Crazy 8’s · round 1 · Verdict</b>The verdict word owns the screen, facts go below. Sketches 4 and 6 already put the item on a folder tab.</span></button>
@@ -625,16 +755,27 @@ footer .tiny{margin-top:2rem}
 <!-- 09 TESTING -->
 <section id="testing" class="alt">
   <div class="wrap rv">
-    <p class="eyebrow">09 · Testing</p>
-    <h2>Three kinds of testing, three kinds of finds</h2>
-    <p>I ran 20 synthetic AI testers on the prototype, then watched myself use it on my iPhone, then gave it to friends. Every remark was fixed: theirs, my friends’, and my own.</p>
+    <div class="zrow flip">
+      <div class="z-media"><span class="z-shot"><img class="themed" data-s="onb-income" src="assets/onb-income-light.webp" alt="Onboarding income step with ranges and an exact amount option" loading="lazy"></span><span class="z-role"><span class="role out">Product</span></span></div>
+      <div class="z-text">
+        <p class="eyebrow">09 · Testing</p>
+        <h2>Three kinds of testing, three kinds of finds</h2>
+        <p>I ran 20 synthetic AI testers on the prototype, then watched myself use it on my iPhone, then gave it to friends. Every remark was fixed: theirs, my friends’, and my own.</p>
+      </div>
+    </div>
     <div class="grid g3" style="margin-top:1.8rem">
       <div class="card"><div class="card-num">20</div><h3>Synthetic testers</h3><p class="tiny">AI agents, each with a persona and a focus: tight budget, irregular income, huge numbers, an older user, accessibility, gesture chaos. A wide run of the app through many scenarios. They found the bugs: names rendered as code, $7.99 becoming $799, double taps creating duplicates.</p></div>
       <div class="card"><div class="card-num">9</div><h3>Fixes from my own video</h3><p class="tiny">A 9-minute walk-through on my iPhone. The biggest find: after I had spent all my spare money, a $50 T-shirt still said Buy. Verdicts now follow the money left until payday.</p></div>
       <div class="card"><div class="card-num">11</div><h3>Points from one friend</h3><p class="tiny">She tested over chat, sending screenshots and questions as she went. A second friend asked what happens if your money isn’t in dollars.</p></div>
     </div>
-    <p class="claim" style="margin-top:2.4rem">Synthetic testers found the bugs. Only a real person asked: what’s the point of drafts?</p>
-    <p>She also asked “can I really do this?” about sharing from a store, which the prototype promised but couldn’t do. That became Coming soon labels. Currencies came from the friends too: the app now takes the currency from your phone’s region and converts per item.</p>
+    <div class="split2" style="margin-top:2.4rem">
+      <div class="s-l">
+      <p class="claim">Synthetic testers found the bugs. Only a real person asked: what’s the point of drafts?</p>
+      </div>
+      <div class="s-r">
+      <p>She also asked “can I really do this?” about sharing from a store, which the prototype promised but couldn’t do. That became Coming soon labels. Currencies came from the friends too: the app now takes the currency from your phone’s region and converts per item.</p>
+      </div>
+    </div>
     <div class="gap"><b>Who was measured</b><p>The 20 testers are simulated, not people. The real users so far are two friends, informally, with no tasks or recordings. A scripted test with 4 to 5 people on the current version is still to do.</p></div>
   </div>
 </section>
@@ -773,7 +914,7 @@ footer .tiny{margin-top:2rem}
   var box = document.getElementById('lightbox');
   if (box && typeof box.showModal === 'function'){
     var img = document.getElementById('lb-img'), cap = document.getElementById('lb-cap');
-    document.querySelectorAll('.gallery button').forEach(function(b){
+    document.querySelectorAll('.gallery button, .banner-img').forEach(function(b){
       b.addEventListener('click', function(){ img.src = b.dataset.full; img.alt = b.querySelector('img').alt; cap.textContent = b.dataset.cap || ''; box.showModal(); });
     });
     document.getElementById('lb-close').addEventListener('click', function(){ box.close(); });
