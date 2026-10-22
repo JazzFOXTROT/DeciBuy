@@ -646,6 +646,8 @@ class Stack{
     tap(this.back, () => this.onBack(), {scale:.85});
     this.acts = h('<div class="acts"></div>'); this.layer.appendChild(this.acts); setv(this.acts,{o:0}); this.acts.style.pointerEvents = 'none';
     this.disc = h('<div class="disc">DeciBuy helps you decide. The final call is always yours.</div>'); this.layer.appendChild(this.disc); setv(this.disc,{o:0});
+    this.spacer = h('<div style="position:absolute;left:0;top:0;width:1px;height:1px;pointer-events:none"></div>'); this.layer.appendChild(this.spacer);
+    this.ry = 0;
     cfg.items.forEach(d => this.make(d));
     this.layout({instant:true});
   }
@@ -759,7 +761,7 @@ class Stack{
           const Pp = [[24,py,354,1],[36,py-10,330,.75],[48,py-20,306,0]][Math.min(j,2)];
           G[it.id] = {x:Pp[0], y:Pp[1], w:Pp[2], h:201, r:16, o:Pp[3], s:1, z:58-j, face:'tab', role:'peek', cls:j === 0 ? 'pk pkf' : 'pk', more:j === 0 && rem.length > 1 ? `+${rem.length-1} more` : ''};
         } else {
-          G[it.id] = {x:24, y:DHn-208-j*64, w:354, h:201, r:16, o:1, s:1, z:70-j, face:'tab', role:'over', cls:'ov'};
+          G[it.id] = {x:24, y:DHn-208-j*64 + (raised ? this.ry || 0 : 0), w:354, h:201, r:16, o:1, s:1, z:70-j, face:'tab', role:'over', cls:'ov'};
         }
       });
     }
@@ -779,6 +781,8 @@ class Stack{
       else spring(el, vals, Object.assign({response:.5, damping:.86}, o.spring || {}, {velocity:o.vel && o.vel[it.id]}));
       this.faces(it, g.face, o.instant);
     }
+    if (this.open == null){ const n = this.items.length, last = this.items[n - 1], g = last && G[last.id];
+      this.spacer.style.top = (g ? this.cfg.baseY + (n - 1)*56 + (g.face === 'body' ? Math.min(g.h, 220) : 120) + 96 : 0) + 'px'; }
     const dimO = (this.open && this.raised) ? .38 : 0;
     o.instant ? setv(this.dim, {o:dimO}) : spring(this.dim, {o:dimO}, {response:.35});
     this.dim.style.pointerEvents = dimO ? 'auto' : 'none';
@@ -828,23 +832,23 @@ class Stack{
     this.acts.style.pointerEvents = show ? 'auto' : 'none';
     if (want) sp(this.acts, {o:show ? 1 : 0, y:116 - (this.sy || 0) + this.openH(this.get(want)) + 16 + (show ? 0 : 14)}, {response:show ? .5 : .25, delay:show ? .12 : 0});
     else sp(this.acts, {o:0}, {response:.2});
-    sp(this.disc, {o:show ? 1 : 0, y:this.discY()}, {response:show ? .5 : .2, delay:show ? .2 : 0});
+    sp(this.disc, {o:show ? this.discO(true) : 0, y:this.discY()}, {response:show ? .5 : .2, delay:show ? .2 : 0});
   }
   discY(){
-    const it = this.open && this.get(this.open); if (!it) return DHn - 120;
-    return Math.max(DHn - 120, 116 - (this.sy || 0) + this.openH(it) + 16 + (this.actsH || 82) + 14);
+    const it = this.open && this.get(this.open), dh = this.disc.offsetHeight || 18; if (!it) return DHn - 100 - dh;
+    return Math.max(DHn - 100 - dh, 116 - (this.sy || 0) + this.openH(it) + 16 + (this.actsH || 82) + 14);
   }
   buildActs(){
     const a = this.actionSet();
     this.actsH = a.note ? 110 : 82;
-    this.acts.innerHTML = `<div class="btn">${a.primary}</div>${a.note ? `<div class="note">${a.note}</div>` : ''}<div class="lnks" style="top:${a.note ? 92 : 64}px">${a.links.map(l => `<span>${l}</span>`).join('')}</div>`;
+    this.acts.innerHTML = `<div class="btn">${a.primary}</div>${a.note ? `<div class="note">${a.note}</div>` : ''}<div class="lnks" style="top:${a.note ? 92 : 64}px">${a.links.map(l => `<span data-a="${l}">${l}</span>`).join('')}</div>`;
     tap(q('.btn', this.acts), () => doAction(this, a.primary));
-    qa('.lnks span', this.acts).forEach(s => tap(s, () => doAction(this, s.textContent), {scale:.94, op:.6}));
+    qa('.lnks span', this.acts).forEach(s => tap(s, () => doAction(this, s.dataset.a), {scale:.94, op:.6}));
   }
   onBack(){ if (this.page === 1) return this.setPage(0); if (this.raised) return this.setRaised(false); this.close(); }
   openItem(id, phase = 'open', override){
     const it = this.get(id); if (!it) return;
-    this.open = id; this.phase = phase; this.page = 0; this.raised = false; this.fanD = 0; this.actsFor = undefined; this.sy = 0;
+    this.open = id; this.phase = phase; this.page = 0; this.raised = false; this.fanD = 0; this.actsFor = undefined; this.sy = 0; this.ry = 0;
     if (phase === 'open') this.renderOpen(it, override || verdictOf(it.key, {saved:this.cfg.kind !== 'drafts' && (this.cfg.kind === 'items' || (A.items && A.items.has(it.key)))}));
     else this.content = null;
     this.layout();
@@ -855,15 +859,29 @@ class Stack{
   maxSy(){
     if (!this.open || this.phase !== 'open' || this.raised) return 0;
     const it = this.get(this.open), bottom = 116 + this.openH(it) + 16 + (this.page === 0 ? (this.actsH || 82) : 0);
-    return Math.max(0, bottom + (this.page === 0 ? 46 : 18) - (DHn - 82));
+    const need = this.page === 0 ? Math.max(bottom + 46 - (DHn - 82), bottom + 14 + (this.disc.offsetHeight || 18) - (DHn - 100)) : bottom + 18 - (DHn - 82);
+    return Math.max(0, need);
   }
   placeScroll(){
     const it = this.get(this.open); if (!it) return;
     setv(it.el, {y:116 - this.sy}); setv(this.back, {y:-this.sy});
     setv(this.acts, {y:116 - this.sy + this.openH(it) + 16});
-    setv(this.disc, {y:this.discY()});
+    setv(this.disc, {y:this.discY(), o:this.page === 0 && !this.raised ? this.discO(false) : 0});
   }
-  setRaised(r, vel){ if (!this.open) return; this.raised = r; this.layout({vel, spring:{response:.48, damping:r ? .82 : .9}}); }
+  host(){ return this.scr.classList.contains('scroll') ? this.scr : null; }
+  maxRy(){ const m = this.items.length - 1; if (m < 1) return 0; return Math.max(0, 128 - (DHn - 208 - (m - 1)*64)); }
+  placeRaised(){ const G = this.geo(); for (const i of this.items) if (i.id !== this.open) setv(i.el, {y:G[i.id].y}); }
+  momentum(key, from, to, vy, ap){ const o = this[key] || (this[key] = {}); o._ap = ap; S(o).y = from; o._sp = {}; spring(o, {y:to}, {response:.6, damping:1, velocity:{y:vy}}); }
+  stopMomentum(){ for (const k of ['_ms', '_rs']) if (this[k]) this[k]._sp = {}; }
+  // the disclaimer fades out where the folders at the bottom would cover it, and back in as the item scrolls up
+  discO(useGeo){
+    const it = this.open && this.get(this.open); if (!it) return 1;
+    const rem = this.items.filter(i => i.id !== this.open); if (!rem.length) return 1;
+    const k = Math.min(1, rem.length - 1), G = useGeo ? this.geo() : null;
+    const top = useGeo ? G[rem[k].id].y : (S(rem[k].el).y ?? DHn);
+    return clamp((top - (this.discY() + (this.disc.offsetHeight || 18)))/8, 0, 1);
+  }
+  setRaised(r, vel){ if (!this.open) return; this.raised = r; this.ry = 0; this.layout({vel, spring:{response:.48, damping:r ? .82 : .9}}); }
   setPage(p, vx = 0){
     const it = this.get(this.open); if (!it || !it.trk) return;
     this.page = p; this.sy = 0;
@@ -936,20 +954,26 @@ class Stack{
   bind(it){
     const el = it.el; let mode = null; let G0, G1, rem;
     gesture(el, {
-      down:(ctx) => { ctx.role = this.role(it); if (ctx.role !== 'open') spring(el, {s:(S(el).s || 1)*0.985}, {response:.18}); },
+      down:(ctx) => { this.stopMomentum(); ctx.role = this.role(it); if (ctx.role !== 'open') spring(el, {s:(S(el).s || 1)*0.985}, {response:.18}); },
       start:(ctx, dx, dy) => {
         mode = null;
         const r = ctx.role;
-        if (r === 'list' && ctx.dir === 'y') mode = 'fan';
+        if (r === 'list' && ctx.dir === 'y'){ mode = 'fan'; ctx.H = this.host(); ctx.st0 = ctx.H ? ctx.H.scrollTop : 0; }
         if (r === 'open' && ctx.dir === 'y' && this.phase === 'open' && this.maxSy() > 0 && (dy < 0 || this.sy > 0)){ mode = 'scroll'; ctx.sy0 = this.sy; if (this._sp) this._sp._sp = {}; }
         else if (r === 'open' && ctx.dir === 'y' && dy > 0 && this.page === 0 && this.phase === 'open') mode = 'dismiss';
         if (r === 'open' && ctx.dir === 'x' && it.trk && this.phase === 'open') mode = 'pager';
-        if ((r === 'peek' || r === 'over') && ctx.dir === 'y'){ mode = 'raise'; rem = this.items.filter(i => i.id !== this.open).map(i => i.id); G0 = this.geo(false); G1 = this.geo(true); }
+        if (r === 'over' && this.raised && ctx.dir === 'y' && this.maxRy() > 0 && !(dy > 0 && this.ry >= this.maxRy() - 1)){ mode = 'rscroll'; ctx.ry0 = this.ry; }
+        else if ((r === 'peek' || r === 'over') && ctx.dir === 'y'){ mode = 'raise'; rem = this.items.filter(i => i.id !== this.open).map(i => i.id); G0 = this.geo(false); G1 = this.geo(true); }
         if (r !== 'open') spring(el, {s:1}, {response:.3});
         if (mode === 'raise') this.items.forEach(i => { if (rem.includes(i.id)) i.el.className = 'fd ov'; });
       },
       move:(ctx, dx, dy) => {
-        if (mode === 'fan'){ this.fanD = -dy > 0 ? rubber(-dy, 420, .7) : -rubber(dy, 200, .4); const G = this.geo(); for (const i of this.items) setv(i.el, {y:G[i.id].y}); }
+        if (mode === 'fan'){
+          // a long list scrolls first; the stretch / squeeze only happens past its ends
+          let over = -dy;
+          if (ctx.H){ const H = ctx.H, mx = Math.max(0, H.scrollHeight - H.clientHeight), want = ctx.st0 - dy, st = clamp(want, 0, mx); H.scrollTop = st; over = want - st; }
+          this.fanD = over > 0 ? rubber(over, 420, .7) : -rubber(-over, 200, .4); const G = this.geo(); for (const i of this.items) setv(i.el, {y:G[i.id].y}); }
+        else if (mode === 'rscroll'){ const mx = this.maxRy(); let y = ctx.ry0 + dy; if (y < 0) y = -rubber(-y, 200, .5); if (y > mx) y = mx + rubber(y - mx, 200, .5); this.ry = y; this.placeRaised(); }
         else if (mode === 'scroll'){ const mx = this.maxSy(); let y = ctx.sy0 - dy; if (y < 0) y = -rubber(-y, 200, .5); if (y > mx) y = mx + rubber(y - mx, 200, .5); this.sy = y; this.placeScroll(); }
         else if (mode === 'dismiss'){ const d = Math.max(0, dy); setv(el, {y:116 + d*0.92, s:1 - Math.min(d, 420)/2600}); setv(this.acts, {o:Math.max(0, 1 - d/140)}); }
         else if (mode === 'pager'){ let x = -this.page*354 + dx; if (x > 0) x = rubber(x, 354, .5); if (x < -354) x = -354 + rubber(x + 354, 354, .5); setv(it.trk, {x}); }
@@ -957,7 +981,12 @@ class Stack{
       },
       up:(ctx, dx, dy, v, isTap) => {
         if (isTap){ const g = this.geo()[it.id]; spring(el, {s:g ? g.s : 1}, {response:.35, damping:.7}); return this.tapped(it); }
-        if (mode === 'fan'){ this.fanD = 0; const vel = {}; for (const i of this.items) vel[i.id] = {y:v.y}; this.layout({vel, spring:{response:.55, damping:.62}}); }
+        if (mode === 'fan'){
+          const stretched = Math.abs(this.fanD) > .5; this.fanD = 0;
+          if (stretched || !ctx.H){ const vel = {}; for (const i of this.items) vel[i.id] = {y:v.y}; this.layout({vel, spring:{response:.55, damping:.62}}); }
+          else { const H = ctx.H, mx = Math.max(0, H.scrollHeight - H.clientHeight); this.momentum('_ms', H.scrollTop, clamp(H.scrollTop - project(v.y, .995), 0, mx), -v.y, s2 => { H.scrollTop = s2.y; }); }
+        }
+        else if (mode === 'rscroll'){ const mx = this.maxRy(); this.momentum('_rs', this.ry, clamp(this.ry + project(v.y, .995), 0, mx), v.y, s2 => { this.ry = s2.y; this.placeRaised(); }); }
         else if (mode === 'scroll'){
           const mx = this.maxSy(), target = clamp(this.sy - project(v.y, .995), 0, mx);
           if (!this._sp){ this._sp = {}; this._sp._ap = s2 => { this.sy = s2.y; this.placeScroll(); }; }
@@ -1177,6 +1206,10 @@ function switchTab(id, inst){
   if (next._enter) next._enter(inst);
   fabMode(inst);
 }
+function scrollMode(el, m, inst){
+  if (m === 'open'){ if (el._stS == null) el._stS = el.scrollTop; if (el.scrollTop) el.scrollTo({top:0, behavior:inst ? 'auto' : 'smooth'}); el.style.overflowY = 'hidden'; }
+  else { el.style.overflowY = ''; const t = el._stS; el._stS = null; if (t) el.scrollTo({top:t, behavior:inst ? 'auto' : 'smooth'}); }
+}
 function hdrMode(hdr, mode, inst){ (inst ? setv : spring)(hdr, {o:mode === 'open' ? 0 : 1, y:mode === 'open' ? -8 : 0}, {response:mode === 'open' ? .3 : .45}); hdr.style.pointerEvents = mode === 'open' ? 'none' : ''; }
 function toast(txt, o = {}){
   const host = A.ovl; if (!host) return;
@@ -1331,7 +1364,7 @@ function buildHome(fresh, list){
   tap(q('.hadd', el), () => pushAdd(), {scale:.95});
   A.home = new Stack(el, {kind:'home', baseY:620, items:list || (fresh ? [] : [{key:'sneaker'}, {key:'lamp'}, {key:'nike'}]),
     onChange:(st, inst) => { const e = q('.hempty', el), n = st.items.length; (inst ? setv : spring)(e, {o:n ? 0 : 1}, {response:.35}); q('.hadd', el).style.pointerEvents = n ? 'none' : 'auto'; },
-    onMode:(m, inst) => { if (m === 'open' && el.scrollTop) el.scrollTo({top:0, behavior:inst ? 'auto' : 'smooth'}); el.style.overflowY = m === 'open' ? 'hidden' : ''; hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); fabMode(); }});
+    onMode:(m, inst) => { scrollMode(el, m, inst); hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); fabMode(); }});
   A.fab = fab;
   el._enter = inst => { const f = q('.spfill', el); if (inst) return setv(f, {sx:1}); setv(f, {sx:0}); spring(f, {sx:1}, {response:1, delay:.2}); };
   return el;
@@ -1440,7 +1473,7 @@ const SORTS = [
   ['Waiting longest', (a, b) => (vRank(a.key) === 1 ? 0 : 1) - (vRank(b.key) === 1 ? 0 : 1) || P[a.key].added - P[b.key].added],
 ];
 function buildItems(fresh, list){
-  const el = h(`<div class="scr">
+  const el = h(`<div class="scr scroll">
     <div class="hdr L">
       <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
       <div class="eyebrow icount" style="top:118px">4 saved</div>
@@ -1454,7 +1487,7 @@ function buildItems(fresh, list){
   tap(q('.sortb', el), () => sortSheet(), {scale:.92, op:.6});
   tap(q('.recheck', el), () => recheckAll(), {scale:.92, op:.6});
   A.items = new Stack(el, {kind:'items', baseY:228, items:list || (fresh ? [] : [{key:'lamp'}, {key:'nike'}, {key:'canon'}, {key:'dyson'}]),
-    onMode:(m, inst) => { hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
+    onMode:(m, inst) => { scrollMode(el, m, inst); hdrMode(hdr, m, inst); showTabbar(m !== 'open', inst, el); },
     onChange:(st, inst) => { q('.icount', el).textContent = `${st.items.length} saved`; (inst ? setv : spring)(q('.iempty', el), {o:st.items.length ? 0 : 1}, {response:.3}); }});
   A.sortIdx = 2;
   return el;
