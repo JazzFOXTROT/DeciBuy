@@ -1,5 +1,5 @@
 // Bump VERSION on every release, or visitors stay on the old cached version.
-var VERSION = "decibuy-v20";
+var VERSION = "decibuy-v21";
 var CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
@@ -17,13 +17,16 @@ self.addEventListener("activate", function (e) {
 // Network first, so updates show up right away; the cache is the offline fallback (also keeps the fonts).
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
+  // the case study and the landing page are separate sites in the same repo: leave them to the browser
+  var path = new URL(e.request.url).pathname;
+  if (path.indexOf("/case/") !== -1 || path.indexOf("/landing/") !== -1) return;
   e.respondWith(
     fetch(e.request).then(function (res) {
       var copy = res.clone();
       caches.open(VERSION).then(function (c) { c.put(e.request, copy); });
       return res;
     }).catch(function () {
-      return caches.match(e.request).then(function (hit) { return hit || caches.match("./index.html"); });
+      return caches.match(e.request).then(function (hit) { return hit || (e.request.mode === "navigate" ? caches.match("./index.html") : Response.error()); });
     })
   );
 });

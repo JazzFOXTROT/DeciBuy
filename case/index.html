@@ -474,6 +474,26 @@ details.more>div{padding-bottom:1.5rem}
 .jmaps.single .jmap>.jnote{grid-column:2;grid-row:4}
 .jmaps.single .jmap>.gallery{grid-column:1/-1}
 @media (max-width:800px){ .jmaps.single .jmap{grid-template-columns:minmax(0,1fr)} .jmaps.single .jmap>*{grid-column:1 !important;grid-row:auto !important} }
+/* mobile review fixes */
+.phone__screen>iframe{opacity:0;transition:opacity .4s ease;background:transparent}
+.phone__screen>iframe.on{opacity:1}
+.phone__msg{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;padding:1.5rem;text-align:center;color:#fff;background:rgb(0 0 0 / .55);backdrop-filter:blur(2px);font-size:.9rem}
+.phone__msg[hidden],.phone__start[hidden]{display:none}
+.phone__msg b{font:800 1.1rem/1.2 var(--fd)}
+.phone__msg span{color:#E5E5EA;max-width:15rem}
+.phone__msg .cta{min-block-size:44px;margin-top:.4rem;background:#fff;color:#000}
+.spin{inline-size:28px;block-size:28px;border-radius:50%;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){ .spin{animation-duration:2.4s !important} }
+@media (max-width:640px){
+  .seg{display:flex;width:100%;flex-wrap:nowrap}
+  .seg button{flex:1 1 0;padding-inline:.5rem;white-space:nowrap;font-size:.88rem}
+  .seg .lg{display:none}
+  .chapters{flex-direction:column;gap:0}
+  .lab-ctrls{display:grid;grid-template-columns:1fr 1fr}
+  .lab-ctrls .reset{margin-inline-start:0}
+  .stage-shot{margin-inline:auto}
+}
 </style>
 </head>
 <body>
@@ -636,8 +656,8 @@ details.more>div{padding-bottom:1.5rem}
       </div>
     </div>
     <div role="tablist" aria-label="Journey map" class="seg" id="jseg">
-      <button type="button" role="tab" aria-selected="true" data-j="0">Emma · confidence seeker</button>
-      <button type="button" role="tab" aria-selected="false" data-j="1">Jake · fast buyer</button>
+      <button type="button" role="tab" aria-selected="true" data-j="0">Emma<span class="lg"> · confidence seeker</span></button>
+      <button type="button" role="tab" aria-selected="false" data-j="1">Jake<span class="lg"> · fast buyer</span></button>
     </div>
     <div class="jmaps">
 <article class="jmap"><h4>Journey A · Emma, confidence seeker · a 30% off deal from an evening email</h4><p class="jscale"><span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg> 5 motivation</span><span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg> 1 frustration</span></p><svg viewBox="0 0 560 265" class="jchart" role="img" aria-label="Journey A · Emma, confidence seeker · a 30% off deal from an evening email"><line x1="532.0" y1="211.0" x2="40.0" y2="211.0" class="jg"/><text x="26" y="215.0" class="jt">1</text><line x1="532.0" y1="120.5" x2="40.0" y2="120.5" class="jg"/><text x="26" y="124.5" class="jt">3</text><line x1="532.0" y1="30.0" x2="40.0" y2="30.0" class="jg"/><text x="26" y="34.0" class="jt">5</text><path d="M40.0,75.2 L138.4,97.9 L236.8,143.1 L335.2,165.8 L433.6,97.9 L532.0,188.4 L532.0,211.0 L40.0,211.0 Z" class="ja"/><path d="M40.0,75.2 L138.4,97.9 L236.8,143.1 L335.2,165.8 L433.6,97.9 L532.0,188.4" class="jl"/><circle cx="40.0" cy="75.2" r="5" class="jd"/><text x="40.0" y="62.2" class="jv">4</text><text x="40.0" y="237" class="jn">1</text><circle cx="138.4" cy="97.9" r="5" class="jd"/><text x="138.4" y="84.9" class="jv">3.5</text><text x="138.4" y="237" class="jn">2</text><circle cx="236.8" cy="143.1" r="5" class="jd"/><text x="236.8" y="130.1" class="jv">2.5</text><text x="236.8" y="237" class="jn">3</text><circle cx="335.2" cy="165.8" r="5" class="jd"/><text x="335.2" y="152.8" class="jv">2</text><text x="335.2" y="237" class="jn">4</text><circle cx="433.6" cy="97.9" r="5" class="jd"/><text x="433.6" y="84.9" class="jv">3.5</text><text x="433.6" y="237" class="jn">5</text><circle cx="532.0" cy="188.4" r="6" class="jd jd--low"/><text x="532.0" y="175.4" class="jv jv--low">1.5</text><text x="532.0" y="237" class="jn">6</text></svg><ol class="jlegend"><li><span class="jn-num">1</span><svg class="ico ico--hi" aria-hidden="true"><use href="#f-hi"/></svg><span class="jn-body"><b>Deal appears</b><span>Excited · 4</span></span></li><li><span class="jn-num">2</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Research</b><span>Focused · 3.5</span></span></li><li><span class="jn-num">3</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Real deal?</b><span>Suspicious · 2.5</span></span></li><li><span class="jn-num">4</span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg><span class="jn-body"><b>Deadline</b><span>Pressured · 2</span></span></li><li><span class="jn-num">5</span><svg class="ico ico--mid" aria-hidden="true"><use href="#f-mid"/></svg><span class="jn-body"><b>Checkout</b><span>Relieved · 3.5</span></span></li><li><span class="jn-num">6</span><svg class="ico ico--lo" aria-hidden="true"><use href="#f-lo"/></svg><span class="jn-body"><b>Weeks later</b><span>Mild regret · 1.5</span></span></li></ol><p class="jnote">The dip sits after checkout: the deal felt good, the use didn't. Last stage forks: worth it 4, overpaid 2.</p><div class="gallery gallery--one" style="--ar:3/1;margin-block-start:1rem"><button type="button" data-full="assets/board-cjm-a.webp" data-cap="The original board. Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote"><span class="shot"><img src="assets/board-cjm-a-thumb.webp" alt="FigJam journey map A: seven stages with screens, actions, pains and opportunities" loading="lazy"></span><span class="zoom" aria-hidden="true"><svg class="ico" style="width:1.05rem;height:1.05rem"><use href="#i-zoom"/></svg></span><span class="cap"><span class="role">Evidence</span><b>The original board</b>Screens, actions, pains and opportunities behind the chart, each pain traced to an interview quote.</span></button></div></article>
@@ -842,7 +862,7 @@ details.more>div{padding-bottom:1.5rem}
     </div>
     <div role="tablist" aria-label="Verdict" class="seg" id="vseg">
       <button type="button" role="tab" aria-selected="true" data-v="0"><i class="dot" style="background:var(--buy)"></i>Buy</button>
-      <button type="button" role="tab" aria-selected="false" data-v="1"><i class="dot" style="background:var(--wait)"></i>Wait for payday</button>
+      <button type="button" role="tab" aria-selected="false" data-v="1"><i class="dot" style="background:var(--wait)"></i>Wait<span class="lg"> for payday</span></button>
       <button type="button" role="tab" aria-selected="false" data-v="2"><i class="dot" style="background:var(--no)"></i>Not now</button>
     </div>
     <div class="stage" id="verd">
@@ -1084,15 +1104,23 @@ details.more>div{padding-bottom:1.5rem}
   /* live phones: the real prototype in demo mode (nothing saved). Hero loads on wide screens; elsewhere on tap */
   function fitFrame(scr){ var f = scr.querySelector('iframe'); if (!f) return; var w = scr.clientWidth, h = scr.clientHeight, top = h*.054, s = w/390;
     f.style.top = top + 'px'; f.style.height = ((h - top)/s) + 'px'; f.style.transform = 'scale(' + s + ')'; }
+  /* the screenshot stays until the app has really loaded; a slow or missing connection gets a message, not a white screen */
   function startPhone(phone){
     var scr = phone.querySelector('.phone__screen'); if (scr.querySelector('iframe')) return;
-    var f = document.createElement('iframe');
+    var st = scr.querySelector('.phone__start'); if (st) st.hidden = true;
+    var msg = scr.querySelector('.phone__msg');
+    if (!msg){ msg = document.createElement('div'); msg.className = 'phone__msg'; msg.setAttribute('role', 'status'); scr.appendChild(msg); }
+    msg.innerHTML = '<span class="spin" aria-hidden="true"></span><b>Loading the live app</b>'; msg.hidden = false;
+    var f = document.createElement('iframe'), done = false;
     f.src = '../?demo=' + phone.dataset.demo; f.title = 'DeciBuy, the live prototype on demo data'; f.setAttribute('allow', 'clipboard-write');
-    f.addEventListener('load', function(){ sendTheme(); setTimeout(sendTheme, 300);
-      setTimeout(function(){ var p = scr.querySelector('.phone__poster'); if (p) p.remove(); }, 400);
+    var timer = setTimeout(function(){ if (done) return; f.remove();
+      msg.innerHTML = '<b>The live app didn’t load</b><span>Check your connection, then try again.</span>';
+      var again = document.createElement('button'); again.type = 'button'; again.className = 'cta'; again.textContent = 'Try again';
+      again.addEventListener('click', function(){ startPhone(phone); }); msg.appendChild(again); }, 15000);
+    f.addEventListener('load', function(){ done = true; clearTimeout(timer); sendTheme(); setTimeout(sendTheme, 300);
+      setTimeout(function(){ f.classList.add('on'); msg.hidden = true; var p = scr.querySelector('.phone__poster'); if (p) setTimeout(function(){ p.remove(); }, 400); }, 500);
       phone.dispatchEvent(new CustomEvent('ready')); });
     scr.appendChild(f); fitFrame(scr);
-    var st = scr.querySelector('.phone__start'); if (st) st.remove();
   }
   document.querySelectorAll('.phone[data-demo]').forEach(function(phone){
     var st = phone.querySelector('.phone__start');
