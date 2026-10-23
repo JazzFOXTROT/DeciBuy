@@ -490,8 +490,17 @@ details.more>div{padding-bottom:1.5rem}
   .seg button{flex:1 1 0;padding-inline:.5rem;white-space:nowrap;font-size:.88rem}
   .seg .lg{display:none}
   .chapters{flex-direction:column;gap:0}
-  .lab-ctrls{display:grid;grid-template-columns:1fr 1fr}
-  .lab-ctrls .reset{margin-inline-start:0}
+  .lab-ctrls{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:.45rem}
+  .lab-ctrls button{padding:.55rem .75rem;font-size:.84rem;white-space:nowrap}
+  .lab-ctrls .reset{grid-column:1/-1;justify-self:start;margin-inline-start:0}
+  .seg{justify-content:center;padding:.3rem}
+  .seg button{display:flex;align-items:center;justify-content:center}
+  .hero2{padding-block:1.75rem 1.5rem;gap:1.75rem}
+  .hero2 .btn-row{margin-top:1.4rem}
+  .herophone .phone-stage{padding:0 1rem 1rem}
+  .livebadge{margin-bottom:.9rem}
+  .role-line{margin-top:.5rem !important}
+  .chapters{margin-top:1.75rem !important}
   .stage-shot{margin-inline:auto}
 }
 </style>
@@ -834,7 +843,7 @@ details.more>div{padding-bottom:1.5rem}
         <div class="lab-ctrls" role="group" aria-label="Jump to a state">
           <button type="button" data-go="M1" aria-pressed="true" disabled>My items</button>
           <button type="button" data-go="H" aria-pressed="false" disabled>Home</button>
-          <button type="button" data-go="V2" aria-pressed="false" disabled>An open verdict</button>
+          <button type="button" data-go="V2" aria-pressed="false" disabled>A verdict</button>
           <button type="button" data-go="reset" class="reset" disabled>Reset</button>
         </div>
         <p class="tiny" style="margin-top:1rem">The real prototype on its demo data; nothing is saved. The buttons are a way in without gestures. Screen reader support for the gestures is still open.</p>
