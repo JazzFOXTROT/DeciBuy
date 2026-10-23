@@ -2391,13 +2391,20 @@ applyTheme(false);
 /* demo mode for embeds (case study): ?demo=<screen code from FLOWS>. Uses the demo data, never saves, never touches the user's own data.
    The page that embeds it can switch screens with postMessage({decibuyDemo:'V1'}). */
 const DEMO = (() => { try { return new URLSearchParams(location.search).get('demo'); } catch(_){ return null; } })();
-function demoJump(code){ const hit = FLOWS.flatMap(f => f[1]).find(x => x[0] === code); A.live = false; A.onbDone = false; jump(hit ? hit[2] : {tab:'home'}); }
-if (DEMO){ document.body.classList.add('demo'); demoJump(DEMO);
+function demoJump(code, quiet){ const hit = FLOWS.flatMap(f => f[1]).find(x => x[0] === code); A.live = false; A.onbDone = false; jump(hit ? hit[2] : {tab:'home'});
+  if (!quiet && !(hit && hit[2].go)) demoEnter(); }
+// in the embed, folders arrive the way they do in the app: they stack in from below, one after another
+function demoEnter(){
+  const st = A.tab === 'items' ? A.items : A.tab === 'home' ? A.home : null; if (!st || !st.items.length) return;
+  const G = st.geo();
+  st.items.forEach((it, i) => { const g = G[it.id]; setv(it.el, {y:g.y + 320 + i*70, o:0}); spring(it.el, {y:g.y, o:g.o}, {response:.62, damping:.8, delay:.08 + i*.07}); }); }
+if (DEMO){ document.body.classList.add('demo'); demoJump(DEMO, true);
   addEventListener('message', e => { if (e.data && typeof e.data.decibuyDemo === 'string') demoJump(e.data.decibuyDemo); }); }
 else { const saved = loadState(); A.live = true;
   if (saved){ A.onbDone = true; jump({tab:'home', restore:saved}); qa('.p-list button').forEach(x => x.classList.remove('on')); }
   else { const ob = loadOnb(); if (ob) jump({onb:Math.min(ob.step, 8), resume:ob.U}); else jump({onb:0}); } }
 document.fonts && document.fonts.ready.then(() => { for (const s of [A.home, A.check, A.items]) if (s) s.layout({instant:true}); });
+if (DEMO && !/^V/.test(DEMO)) (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(demoEnter, 60));
 </script>
 <script>
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js");
