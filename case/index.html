@@ -479,9 +479,10 @@ details.more>div{padding-bottom:1.5rem}
 @media (max-width:900px){ .desk-only{display:none !important} }
 @media (min-width:901px){ .mob-only{display:none !important} }
 /* phones: the three verdict cards, swipe to switch, tap to flip */
-.vcar{position:relative;overflow:hidden;margin-inline:-20px;padding:1.25rem 0 .5rem;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.vtrack{position:relative;height:calc(min(70vw,270px) * 1.564 + 10px);perspective:1100px}
-.vcard{position:absolute;top:0;left:50%;width:min(70vw,270px);will-change:transform;transform-style:preserve-3d}
+.vcar{position:relative;overflow:visible;padding:1.25rem 0 .5rem;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+#top{overflow-x:clip}
+.vtrack{position:relative;height:calc(min(56vw,260px) * 1.564 + 10px);perspective:1100px}
+.vcard{position:absolute;top:0;left:50%;width:min(56vw,260px);will-change:transform;transform-style:preserve-3d;transition:opacity .25s ease}
 .vflip{display:block;width:100%;padding:0;border:0;background:none;cursor:pointer;perspective:1200px;-webkit-tap-highlight-color:transparent}
 .vinner{position:relative;display:block;width:100%;aspect-ratio:var(--ar);transform-style:preserve-3d;transition:transform .9s cubic-bezier(.25,1.55,.45,1)}
 .vflip[aria-pressed="true"] .vinner{transform:rotateY(180deg)}
@@ -494,7 +495,7 @@ details.more>div{padding-bottom:1.5rem}
 .vflip:focus-visible{outline:none}
 .vflip:focus-visible .vface{box-shadow:0 0 0 3px var(--blueS)}
 .vfloat{position:absolute;inset:0;pointer-events:none}
-.vf{position:absolute;top:var(--t);left:var(--l);width:62%;display:flex;justify-content:space-between;align-items:center;padding:.85rem 1rem;border-radius:16px;background:var(--c);color:#000;font:700 .82rem/1 var(--fb);opacity:.5;filter:blur(1px);transform:rotate(var(--r));animation:vfl 7s ease-in-out infinite;animation-delay:var(--d)}
+.vf{position:absolute;top:var(--t);left:var(--l);width:52%;display:flex;justify-content:space-between;align-items:center;padding:.85rem 1rem;border-radius:16px;background:var(--c);color:#000;font:700 .82rem/1 var(--fb);opacity:.5;filter:blur(1px);transform:rotate(var(--r));animation:vfl 7s ease-in-out infinite;animation-delay:var(--d)}
 .vf b{font-weight:800}
 @keyframes vfl{0%,100%{transform:rotate(var(--r)) translateY(0)}50%{transform:rotate(var(--r)) translateY(-12px)}}
 .vdots{display:flex;justify-content:center;gap:.25rem;margin-top:.9rem}
@@ -512,9 +513,10 @@ details.more>div{padding-bottom:1.5rem}
 .vnav button{display:none;appearance:none;border:0;cursor:pointer;inline-size:44px;block-size:44px;border-radius:50%;background:var(--sf);color:var(--tx);font:700 1.5rem/1 var(--fb);transition:background-color .18s ease}
 @media (hover:hover){ .vnav button:hover{background:var(--sf2)} }
 @media (min-width:901px){
-  .vcar{margin-inline:0;padding-block:2.5rem 1rem;border-radius:var(--r-lg)}
-  .vcard{width:300px}
-  .vtrack{height:calc(300px * 1.564 + 16px)}
+  .vcar{padding-block:2.5rem 1rem}
+  .vcard{width:270px}
+  .vtrack{height:calc(270px * 1.564 + 16px)}
+  .hero2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .vnav button{display:grid;place-items:center}
   .vnav{gap:1rem}
 }
@@ -614,10 +616,10 @@ details.more>div{padding-bottom:1.5rem}
       </div>
       <div class="vcar" aria-roledescription="carousel" aria-label="The three verdicts">
         <div class="vfloat" aria-hidden="true">
-          <span class="vf" style="--c:#F6DB56;--t:12%;--l:-14%;--r:-9deg;--d:0s">Mushroom table lamp<b>$180</b></span>
-          <span class="vf" style="--c:#56F683;--t:30%;--l:62%;--r:8deg;--d:-2.2s">Nike Air Force 1 ’07<b>$110</b></span>
-          <span class="vf" style="--c:#F66B56;--t:70%;--l:-20%;--r:6deg;--d:-4.1s">Canon EOS R50<b>$1,240</b></span>
-          <span class="vf" style="--c:#F6DB56;--t:84%;--l:58%;--r:-7deg;--d:-1.3s">Dyson V8<b>$349</b></span>
+          <span class="vf" style="--c:#F6DB56;--t:10%;--l:-2%;--r:-9deg;--d:0s">Mushroom table lamp<b>$180</b></span>
+          <span class="vf" style="--c:#56F683;--t:30%;--l:50%;--r:8deg;--d:-2.2s">Nike Air Force 1 ’07<b>$110</b></span>
+          <span class="vf" style="--c:#F66B56;--t:68%;--l:-4%;--r:6deg;--d:-4.1s">Canon EOS R50<b>$1,240</b></span>
+          <span class="vf" style="--c:#F6DB56;--t:84%;--l:50%;--r:-7deg;--d:-1.3s">Dyson V8<b>$349</b></span>
         </div>
         <div class="vtrack"><div class="vcard" data-i="0" style="--ar:706/894" role="group" aria-roledescription="slide" aria-label="Buy, 1 of 3"><button type="button" class="vflip" aria-pressed="false" aria-label="Flip the Buy card"><span class="vinner"><span class="vface vfront"><span class="vglare"></span><img src="assets/card-buy.webp" alt="Buy verdict card from the app" draggable="false"></span><span class="vface vback"><span class="vglare"></span><span class="vlogo"><svg width="319" height="65" viewBox="0 0 319 65" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path d="M208.795 32.1306L209.816 29.7924C213.29 29.8757 216.159 30.4033 218.417 31.3808C220.676 32.3639 222.363 33.7191 223.484 35.4576C224.605 37.196 225.16 39.2066 225.16 41.4838C225.16 43.9221 224.599 46.0937 223.484 47.9933C222.363 49.8928 220.698 51.3924 218.478 52.4921C216.259 53.5918 213.495 54.1417 210.177 54.1417H176.977L180.451 31.0476L176.977 9.15321H208.978C213.135 9.15321 216.37 10.1252 218.689 12.0636C221.003 14.002 222.163 16.6902 222.163 20.1337C222.163 22.011 221.725 23.8106 220.842 25.5323C219.966 27.2541 218.556 28.7038 216.619 29.8812C214.683 31.0587 212.075 31.8085 208.801 32.1306H208.795ZM189.257 51.2646L184.463 45.4439H206.814C208.612 45.4439 210.011 45.0051 211.009 44.122C212.008 43.2445 212.508 42.0226 212.508 40.4618C212.508 38.9011 211.969 37.6515 210.887 36.7128C209.811 35.7742 208.213 35.3021 206.093 35.3021H187.637V26.782H204.417C205.854 26.782 207.064 26.3544 208.041 25.4935C209.017 24.6326 209.511 23.4662 209.511 21.9833C209.511 20.7836 209.089 19.7949 208.251 19.0118C207.414 18.2287 206.215 17.8399 204.656 17.8399H184.518L189.251 12.0191L192.309 31.0365L189.251 51.2535L189.257 51.2646Z"/>
@@ -1225,40 +1227,41 @@ details.more>div{padding-bottom:1.5rem}
     var n = cards.length, pos = 0, target = 0, vel = 0, raf = null, drag = null;
     function place(){
       var w = cards[0].offsetWidth;
+      var gap = matchMedia('(min-width:901px)').matches ? 0.58 : 0.5;
       cards.forEach(function(c, i){
-        var d = i - pos, a = Math.abs(d);
-        c.style.transform = 'translateX(calc(-50% + ' + (d*w*0.62) + 'px)) translateZ(' + (-a*90) + 'px) rotateY(' + (-d*30) + 'deg) scale(' + (1 - Math.min(a, 2)*0.08) + ')';
-        c.style.zIndex = 10 - Math.round(a*3); c.style.opacity = a > 1.6 ? 0 : 1;
+        var d = ((i - pos) % n + n) % n; if (d > n/2) d -= n; var a = Math.abs(d);
+        c.style.transform = 'translateX(calc(-50% + ' + (d*w*gap) + 'px)) translateZ(' + (-a*90) + 'px) rotateY(' + (-d*30) + 'deg) scale(' + (1 - Math.min(a, 2)*0.08) + ')';
+        c.style.zIndex = 10 - Math.round(a*3); c.style.opacity = a > 1.15 ? 0 : 1;
         c.setAttribute('aria-hidden', a > .5 ? 'true' : 'false');
         c.querySelector('.vflip').tabIndex = a > .5 ? -1 : 0;
       });
-      var cur = Math.round(pos); dots.forEach(function(d, i){ d.setAttribute('aria-selected', i === cur); });
+      var cur = ((Math.round(pos) % n) + n) % n; dots.forEach(function(d, i){ d.setAttribute('aria-selected', i === cur); });
     }
     function tick(){ var k = reduce ? 1 : 0.16; pos += (target - pos)*k; if (Math.abs(target - pos) < .001){ pos = target; raf = null; place(); return; } place(); raf = requestAnimationFrame(tick); }
-    function go(i){ target = Math.max(0, Math.min(n - 1, i)); if (!raf) raf = requestAnimationFrame(tick); }
+    function go(i){ target = i; if (!raf) raf = requestAnimationFrame(tick); }
+    function idx(){ return ((Math.round(target) % n) + n) % n; }
     car.addEventListener('pointerdown', function(e){ drag = {x:e.clientX, y:e.clientY, p:pos, t:performance.now(), moved:false, id:e.pointerId}; });
     car.addEventListener('pointermove', function(e){ if (!drag) return;
       var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
       if (!drag.moved){ if (Math.abs(dx) < (e.pointerType === 'mouse' ? 4 : 8)) return; if (Math.abs(dy) > Math.abs(dx)){ drag = null; return; } drag.moved = true; try { car.setPointerCapture(drag.id); } catch(_){} if (typeof tilt !== 'undefined'){ tilt.tx = tilt.ty = 0; tilt.ts = 1; tilt.tg = 0; tiltGo(); } }
-      var w = cards[0].offsetWidth*0.62, p = drag.p - dx/w;
-      if (p < 0) p = p*0.35; if (p > n - 1) p = n - 1 + (p - n + 1)*0.35;
+      var w = cards[0].offsetWidth*0.58, p = drag.p - dx/w;
       vel = (p - pos)/Math.max(1, performance.now() - drag.t)*16; drag.t = performance.now();
       pos = target = p; place(); });
     function end(e){ if (!drag) return; var d = drag; drag = null;
       if (!d.moved){ var c = e.target.closest && e.target.closest('.vcard'); if (!c) return; var i = +c.dataset.i;
-        if (i === Math.round(pos)){ var f = c.querySelector('.vflip'); f.setAttribute('aria-pressed', f.getAttribute('aria-pressed') !== 'true'); } else go(i); return; }
+        if (i === idx()){ var f = c.querySelector('.vflip'); f.setAttribute('aria-pressed', f.getAttribute('aria-pressed') !== 'true'); } else { var s = ((i - idx()) % n + n) % n; go(Math.round(target) + (s > n/2 ? s - n : s)); } return; }
       go(Math.round(pos + vel*4)); }
     car.addEventListener('pointerup', end); car.addEventListener('pointercancel', function(){ if (drag && drag.moved) go(Math.round(pos)); drag = null; });
     car.querySelectorAll('.vflip').forEach(function(f){ f.addEventListener('click', function(e){ if (e.detail === 0){ f.setAttribute('aria-pressed', f.getAttribute('aria-pressed') !== 'true'); } }); });
     car.addEventListener('keydown', function(e){ if (e.key === 'ArrowRight'){ go(Math.round(pos) + 1); e.preventDefault(); } if (e.key === 'ArrowLeft'){ go(Math.round(pos) - 1); e.preventDefault(); } });
-    dots.forEach(function(d, i){ d.addEventListener('click', function(){ go(i); }); });
+    dots.forEach(function(d, i){ d.addEventListener('click', function(){ var s = ((i - idx()) % n + n) % n; go(Math.round(target) + (s > n/2 ? s - n : s)); }); });
     car.querySelector('.vprev').addEventListener('click', function(){ go(Math.round(pos) - 1); });
     car.querySelector('.vnext').addEventListener('click', function(){ go(Math.round(pos) + 1); });
     /* a mouse tilts the front card toward the pointer, with a soft glare, on springs (like React Bits' Flip Card) */
     var tilt = {x:0, y:0, s:1, g:0, tx:0, ty:0, ts:1, tg:0, gx:50, gy:50, raf:null};
     function tiltTick(){
       var k = .18; tilt.x += (tilt.tx - tilt.x)*k; tilt.y += (tilt.ty - tilt.y)*k; tilt.s += (tilt.ts - tilt.s)*k; tilt.g += (tilt.tg - tilt.g)*k;
-      var c = cards[Math.round(target)], f = c && c.querySelector('.vflip');
+      var c = cards[idx()], f = c && c.querySelector('.vflip');
       cards.forEach(function(x){ if (x !== c){ var g = x.querySelector('.vflip'); g.style.transform = ''; g.style.setProperty('--sheen', 0); } });
       if (f){ f.style.transform = 'scale(' + tilt.s.toFixed(4) + ') rotateX(' + tilt.x.toFixed(2) + 'deg) rotateY(' + tilt.y.toFixed(2) + 'deg)';
         f.style.setProperty('--gx', tilt.gx + '%'); f.style.setProperty('--gy', tilt.gy + '%'); f.style.setProperty('--sheen', tilt.g.toFixed(3)); }
@@ -1267,7 +1270,7 @@ details.more>div{padding-bottom:1.5rem}
     function tiltGo(){ if (!tilt.raf) tilt.raf = requestAnimationFrame(tiltTick); }
     if (!reduce){
       car.addEventListener('pointermove', function(e){ if (e.pointerType !== 'mouse' || (drag && drag.moved)) return;
-        var c = cards[Math.round(target)]; if (!c) return; var r = c.getBoundingClientRect();
+        var c = cards[idx()]; if (!c) return; var r = c.getBoundingClientRect();
         var px = (e.clientX - r.left)/r.width, py = (e.clientY - r.top)/r.height;
         if (px < 0 || px > 1 || py < 0 || py > 1){ tilt.tx = tilt.ty = 0; tilt.ts = 1; tilt.tg = 0; tiltGo(); return; }
         var back = c.querySelector('.vflip').getAttribute('aria-pressed') === 'true';
