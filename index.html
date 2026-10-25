@@ -89,6 +89,13 @@ body{background:var(--page);color:var(--ink);font-family:var(--fb);overflow:hidd
 /* type */
 .eyebrow{position:absolute;left:24px;font:800 24px/1.1 var(--fb);color:var(--tx2);white-space:nowrap}
 .ttl{position:absolute;left:24px;font:800 32px/1.1 var(--fd);white-space:nowrap}
+/* long greeting: scrolls like a long song title in Apple Music (pause, glide to the end, loop) */
+.mq{left:0;width:378px;padding-left:24px;box-sizing:border-box;overflow:hidden}
+.mq-in{display:inline-flex;will-change:transform}
+.mq-in>span+span{padding-left:48px}
+.mq.on{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 24px,#000 calc(100% - 24px),transparent)}
+.mq.rm .mq-in{display:block;overflow:hidden;text-overflow:ellipsis}
+.mq.rm .mq-in>span+span{display:none}
 .h36{font:800 36px/1.1 var(--fd);text-wrap:balance}
 .sub16{font:600 16px/1.4 var(--fb);color:var(--tx2)}
 .sec{position:absolute;left:28px;font:700 18px/1.3 var(--fb)}
@@ -1275,12 +1282,28 @@ function fitText(el, alt){
   el.style.fontSize = fs + 'px'; el.style.lineHeight = Math.round(fs*1.2) + 'px';
   el.style.marginTop = fs < base ? ((base - fs)*.6) + 'px' : '';
 }
+/* Text wider than its box: wait, glide left to the end, loop with a copy following (Apple Music style).
+   Reduced motion: no movement, the text ends with an ellipsis. */
+function marquee(box){
+  const inn = box.firstElementChild, a = inn.children[0], b = inn.children[1];
+  const w = box.clientWidth - 24, tw = a.offsetWidth, key = a.textContent + '|' + w + '|' + tw;
+  if (box._k === key) return;
+  box._k = key;
+  if (box._anim){ box._anim.cancel(); box._anim = null; }
+  box.classList.remove('on', 'rm'); b.textContent = '';
+  if (!w || tw <= w) return;
+  if (RM){ box.classList.add('rm'); return; }
+  b.textContent = a.textContent; box.classList.add('on');
+  const d = tw + 48, pause = 2500, travel = d / 34 * 1000, T = pause + travel;
+  box._anim = inn.animate([{transform:'translateX(0)', offset:0}, {transform:'translateX(0)', offset:pause/T}, {transform:`translateX(${-d}px)`, offset:1}], {duration:T, iterations:Infinity, easing:'linear'});
+}
 function refresh(){
   const V = vals();
   scheduleSave();
   if (!refresh._f && document.fonts){ refresh._f = 1; document.fonts.ready.then(() => refresh()); }
   qa('[data-b]', D).forEach(el => { const t = V[el.dataset.b]; if (t !== undefined) el.textContent = t; if (FIT[el.dataset.b]) fitText(el, V[FIT[el.dataset.b]]); });
   qa('.spfill', D).forEach(f => { spring(f, {w:Math.max(8, 306*V.usedFrac)}, {response:.7}); f.style.background = V.over ? 'var(--no)' : '#fff'; });
+  requestAnimationFrame(() => qa('.mq', D).forEach(marquee));
   qa('[data-goal]', D).forEach(renderGoal);
   qa('[data-bought]', D).forEach(renderBought);
   for (const s of [A.home, A.items, A.check]) if (s) s.refreshData();
@@ -1346,7 +1369,7 @@ function buildHome(fresh, list){
     <div class="a" style="left:0;top:873px;width:1px;height:1px"></div>
     <div class="hdr L">
       <div class="ico gear" style="left:350px;top:80px">${IC.gear}</div>
-      <div class="eyebrow" data-b="hi" style="top:118px"></div>
+      <div class="eyebrow mq" style="top:118px"><div class="mq-in"><span data-b="hi"></span><span aria-hidden="true" data-notr></span></div></div>
       <div class="ttl" style="top:147px">YOUR SPARE MONEY</div>
       <div class="spare" style="top:197px;height:149px">
         <div class="a" style="top:20px;width:306px;display:flex;justify-content:space-between;font:600 14px/19px var(--fb)"><span style="opacity:.8">This month</span><b class="edit" style="cursor:pointer;padding:6px;margin:-6px">Edit</b></div>
@@ -1997,8 +2020,8 @@ function qScreen(kind, mode, T, done){
     add(head('What should we call you?', 'We’ll use it on your Home screen.'));
     add(fieldInput('Your name', 'Name', {x:24, y:250, w:354, id:'uname', bg:'var(--sf)', value:T.name || ''}));
     const inp = q('input[data-k="uname"]', el);
-    inp.setAttribute('autocapitalize', 'words');
-    inp.addEventListener('input', () => { T.name = inp.value.trim().slice(0, 24); sync(); });
+    inp.setAttribute('autocapitalize', 'words'); inp.maxLength = 60;
+    inp.addEventListener('input', () => { T.name = inp.value.trim().slice(0, 60); sync(); });
     wireFields(el);
     ok = () => !!(T.name || '').trim();
     mainBtn(btnLabel);
